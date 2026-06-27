@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IQ2GQ Hub - Stage 1</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">IQ2GQ</p>
+      <h1>IQ2GQ Hub</h1>
+      <p>Stage 1 live Google Sheets connection test.</p>
+    </header>
+
+    <section class="card">
+      <h2>Connection status</h2>
+      <div id="status" class="status">Connecting to Google Sheets...</div>
+      <div class="metrics">
+        <div>
+          <span class="label">Rows loaded</span>
+          <strong id="rowCount">-</strong>
+        </div>
+        <div>
+          <span class="label">Headers found</span>
+          <strong id="headerCount">-</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>First 10 rows</h2>
+      <div class="tableWrap">
+        <table id="previewTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
