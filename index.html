@@ -3,42 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IQ2GQ Hub - Stage 1</title>
+  <title>IQ2GQ Hub</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="wrap">
-    <header class="hero">
-      <p class="eyebrow">IQ2GQ</p>
-      <h1>IQ2GQ Hub</h1>
-      <p>Stage 1 live Google Sheets connection test.</p>
-    </header>
-
-    <section class="card">
-      <h2>Connection status</h2>
-      <div id="status" class="status">Connecting to Google Sheets...</div>
-      <div class="metrics">
-        <div>
-          <span class="label">Rows loaded</span>
-          <strong id="rowCount">-</strong>
-        </div>
-        <div>
-          <span class="label">Headers found</span>
-          <strong id="headerCount">-</strong>
-        </div>
+  <header class="hero">
+    <div class="brand-row">
+      <img src="assets/iq2gq-logo.png" alt="IQ2GQ logo" class="logo">
+      <div>
+        <p class="eyebrow">IQ2GQ</p>
+        <h1>IQ2GQ Hub</h1>
+        <p class="sub">Statistics - Records - Insights - Decision support</p>
       </div>
-    </section>
+    </div>
+    <div class="status" id="status">Loading live Google Sheet data...</div>
+  </header>
 
-    <section class="card">
-      <h2>First 10 rows</h2>
-      <div class="tableWrap">
-        <table id="previewTable">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+  <nav class="nav" id="nav">
+    <button class="tab active" data-page="dashboard">Home</button>
+    <button class="tab" data-page="live">Current season</button>
+    <button class="tab" data-page="members">Members</button>
+    <button class="tab" data-page="sports">Sports</button>
+    <button class="tab" data-page="bettypes">Bet types</button>
+    <button class="tab" data-page="odds">Odds</button>
+    <button class="tab" data-page="records">Records</button>
+    <button class="tab" data-page="search">Search</button>
+  </nav>
+
+  <section class="filters">
+    <div class="mobile-filter-title">Filters</div>
+    <label>Member<select id="memberFilter"></select></label>
+    <label>Sport group<select id="sportGroupFilter"></select></label>
+    <label>Bet type<select id="betTypeFilter"></select></label>
+    <label>Year<select id="yearFilter"></select></label>
+    <label>Odds<select id="oddsFilter"></select></label>
+    <label>Result<select id="resultFilter"></select></label>
+    <label class="search-label">Search<input id="searchInput" placeholder="NRL, Warriors, Bulldogs, H2H..."></label>
+    <label>Min picks<input id="minPicks" type="number" min="1" value="10"></label>
+    <button id="resetBtn">Reset</button>
+  </section>
+
+  <section class="quick-filters">
+    <button data-quick="nrl">Best NRL</button>
+    <button data-quick="nfl">Best NFL</button>
+    <button data-quick="union">Best Union</button>
+    <button data-quick="football">Best Football</button>
+    <button data-quick="h2h">H2H</button>
+    <button data-quick="point">Point starts</button>
+    <button data-quick="scorer">Anytime scorers</button>
+    <button data-quick="2plus">$2+ odds</button>
+    <button data-quick="losses">Losses only</button>
+  </section>
+
+  <main id="app" class="main"></main>
+
+  <footer class="footer">IQ2GQ Hub v1.0 - live from Google Sheets</footer>
+
   <script src="app.js"></script>
 </body>
 </html>

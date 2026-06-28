@@ -1,46 +1,59 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxkk34u9pyYb6KIKZ6J08owwLmqiT_WXBfHkXtDhdsW4PDlZZ3wn9yWmmJafudaYCEG/exec";
-
-const statusEl = document.getElementById("status");
-const rowCountEl = document.getElementById("rowCount");
-const headerCountEl = document.getElementById("headerCount");
-const tableHead = document.querySelector("#previewTable thead");
-const tableBody = document.querySelector("#previewTable tbody");
-
-function esc(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+const API_URL = 'https://script.google.com/macros/s/AKfycbxkk34u9pyYb6KIKZ6J08owwLmqiT_WXBfHkXtDhdsW4PDlZZ3wn9yWmmJafudaYCEG/exec';
+const state = { raw: [], data: [], page: 'dashboard', sort: {}, filters: {} };
+const ODDS = [
+  ['under1.20','Under 1.20',0,1.1999],['1.20-1.39','1.20-1.39',1.2,1.3999],['1.40-1.59','1.40-1.59',1.4,1.5999],['1.60-1.89','1.60-1.89',1.6,1.8999],['1.90-1.99','1.90-1.99',1.9,1.9999],['2plus','2.00+',2,999]
+];
+const $ = id => document.getElementById(id);
+const clean = v => String(v ?? '').trim();
+const num = v => { const n = parseFloat(String(v ?? '').replace(/[$,%]/g,'')); return Number.isFinite(n) ? n : null; };
+const pct = v => `${(v*100).toFixed(1)}%`;
+const money = v => `$${(v||0).toFixed(2)}`;
+function pick(row, names){ for(const n of names){ if(row[n] !== undefined && clean(row[n]) !== '') return row[n]; } return ''; }
+function normalise(r, i){
+  const resultRaw = clean(pick(r,['Result','result']));
+  const result = /^(yes|y|win|won|true|1)$/i.test(resultRaw) ? 'Win' : /^(no|n|loss|lost|false|0)$/i.test(resultRaw) ? 'Loss' : '';
+  const sport = clean(pick(r,['Sport','sport']));
+  const betType = clean(pick(r,['Bet Type','Bet type','Bet Option','Option','betType']));
+  const odds = num(pick(r,['Odds','odds']));
+  const member = clean(pick(r,['Member code','Member Code','Member','member']));
+  const year = clean(pick(r,['Synd. Year','Synd Year','Synd Year','Year','season']));
+  const date = clean(pick(r,['Date','date']));
+  const name = clean(pick(r,['Bet Name','Name','Bet','betName']));
+  const key = clean(pick(r,['Key','ID','Id']));
+  return { key:key || String(i+1), member, sport, group:sportGroup(sport), betType, odds, result, win: result==='Win', loss: result==='Loss', year, date, name, raw:r };
 }
-
-async function loadData() {
-  try {
-    const response = await fetch(API_URL, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const payload = await response.json();
-    if (payload.error) throw new Error(payload.error);
-
-    const headers = Array.isArray(payload.headers) ? payload.headers : [];
-    const rows = Array.isArray(payload.data) ? payload.data : [];
-
-    statusEl.textContent = "Connected to Google Sheets";
-    statusEl.className = "status ok";
-    rowCountEl.textContent = Number(payload.count || rows.length).toLocaleString();
-    headerCountEl.textContent = headers.length.toLocaleString();
-
-    const previewHeaders = headers.slice(0, 10);
-    tableHead.innerHTML = `<tr>${previewHeaders.map(h => `<th>${esc(h)}</th>`).join("")}</tr>`;
-    tableBody.innerHTML = rows.slice(0, 10).map(row => {
-      return `<tr>${previewHeaders.map(h => `<td>${esc(row[h])}</td>`).join("")}</tr>`;
-    }).join("");
-  } catch (err) {
-    statusEl.textContent = `Connection failed: ${err.message}`;
-    statusEl.className = "status bad";
-    console.error(err);
-  }
+function sportGroup(s){ const x=s.toLowerCase(); if(x.includes('rugby league')||x.includes('nrl')||x.includes('super league')) return 'Rugby League'; if(x.includes('rugby union')||x.includes('super rugby')||x.includes('six nations')) return 'Rugby Union'; if(x.includes('american football')||x.includes('nfl')||x.includes('ncaaf')) return 'American Football'; if(x.includes('football')||x.includes('epl')||x.includes('premier league')||x.includes('soccer')) return 'Football'; if(x.includes('basketball')||x.includes('nba')) return 'Basketball'; if(x.includes('afl')) return 'AFL'; return s ? s.split('(')[0].trim() : 'Other'; }
+function qualifies(r){ return r.member && r.sport && r.betType && r.odds && r.result; }
+async function init(){
+  try{ const res = await fetch(API_URL); const json = await res.json(); state.raw = (json.data||[]).map(normalise).filter(qualifies); buildFilters(); bind(); render(); $('status').textContent = `${state.raw.length.toLocaleString()} resulted picks loaded from Google Sheets`; }
+  catch(e){ $('status').textContent = 'Could not load Google Sheet data'; console.error(e); }
 }
-
-loadData();
+function uniq(arr){ return [...new Set(arr.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b))); }
+function fill(id, vals, all='All'){ $(id).innerHTML = `<option value="">${all}</option>` + vals.map(v=>`<option>${v}</option>`).join(''); }
+function buildFilters(){ fill('memberFilter', uniq(state.raw.map(r=>r.member))); fill('sportGroupFilter', uniq(state.raw.map(r=>r.group))); fill('betTypeFilter', uniq(state.raw.map(r=>r.betType))); fill('yearFilter', uniq(state.raw.map(r=>r.year))); $('oddsFilter').innerHTML = '<option value="">All</option>' + ODDS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join(''); $('resultFilter').innerHTML = '<option value="">All</option><option>Win</option><option>Loss</option>'; }
+function bind(){ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.page=b.dataset.page; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render();}); ['memberFilter','sportGroupFilter','betTypeFilter','yearFilter','oddsFilter','resultFilter','searchInput','minPicks'].forEach(id=>$(id).addEventListener('input', render)); $('resetBtn').onclick=()=>{['memberFilter','sportGroupFilter','betTypeFilter','yearFilter','oddsFilter','resultFilter','searchInput'].forEach(id=>$(id).value=''); $('minPicks').value=10; render();}; document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>quick(b.dataset.quick)); }
+function quick(q){ $('memberFilter').value=''; $('sportGroupFilter').value=''; $('betTypeFilter').value=''; $('oddsFilter').value=''; $('resultFilter').value=''; if(q==='nrl') $('searchInput').value='NRL'; if(q==='nfl') $('searchInput').value='NFL'; if(q==='union') $('sportGroupFilter').value='Rugby Union'; if(q==='football') $('sportGroupFilter').value='Football'; if(q==='h2h') $('searchInput').value='H2H'; if(q==='point') $('searchInput').value='point start'; if(q==='scorer') $('searchInput').value='scorer'; if(q==='2plus') $('oddsFilter').value='2plus'; if(q==='losses') $('resultFilter').value='Loss'; render(); }
+function filtered(){ let d=[...state.raw]; const m=$('memberFilter').value,g=$('sportGroupFilter').value,b=$('betTypeFilter').value,y=$('yearFilter').value,o=$('oddsFilter').value,res=$('resultFilter').value,q=$('searchInput').value.toLowerCase(); if(m)d=d.filter(r=>r.member===m); if(g)d=d.filter(r=>r.group===g); if(b)d=d.filter(r=>r.betType===b); if(y)d=d.filter(r=>r.year===y); if(res)d=d.filter(r=>r.result===res); if(o){const band=ODDS.find(x=>x[0]===o); d=d.filter(r=>r.odds>=band[2]&&r.odds<=band[3]);} if(q)d=d.filter(r=>[r.member,r.sport,r.group,r.betType,r.name,r.year].join(' ').toLowerCase().includes(q)); return d; }
+function agg(data, key){ const m=new Map(); data.forEach(r=>{ const k=r[key]||'Unknown'; if(!m.has(k))m.set(k,{name:k,picks:0,wins:0,losses:0,oddsSum:0,profit:0}); const a=m.get(k); a.picks++; if(r.win)a.wins++; if(r.loss)a.losses++; a.oddsSum += r.odds||0; a.profit += r.win ? (10*(r.odds-1)) : -10; }); return [...m.values()].map(a=>({...a,success:a.picks?a.wins/a.picks:0,avgOdds:a.picks?a.oddsSum/a.picks:0,roi:a.picks?a.profit/(a.picks*10):0,confidence:a.picks>=50?'High':a.picks>=20?'Moderate':'Low'})); }
+function sortRows(rows, table, def='success'){ const s=state.sort[table]||{key:def,dir:-1}; return rows.sort((a,b)=>{ const av=a[s.key],bv=b[s.key]; if(typeof av==='number'&&typeof bv==='number') return (av-bv)*s.dir; return String(av).localeCompare(String(bv))*s.dir; }); }
+function table(rows, tableId, cols){ const head=cols.map(c=>`<th data-table="${tableId}" data-key="${c.key}">${c.label}</th>`).join(''); const body=rows.map(r=>`<tr>${cols.map(c=>`<td>${format(c,r[c.key],r)}</td>`).join('')}</tr>`).join(''); const cards=rows.map(r=>`<div class="mini-card">${cardContent(cols,r)}</div>`).join(''); setTimeout(()=>document.querySelectorAll(`th[data-table="${tableId}"]`).forEach(th=>th.onclick=()=>{const id=th.dataset.table,key=th.dataset.key; const cur=state.sort[id]||{}; state.sort[id]={key,dir:cur.key===key ? -cur.dir : -1}; render();}),0); return `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div><div class="cards">${cards}</div>`; }
+function format(c,v,r){ if(c.type==='pct') return `<span class="good">${pct(v)}</span>`; if(c.type==='money') return v<0?`<span class="bad">${money(v)}</span>`:`<span class="good">${money(v)}</span>`; if(c.type==='num') return Number(v).toLocaleString(); return v; }
+function cardContent(cols,r){ const title=cols.find(c=>c.primary)?.key || cols[1]?.key || cols[0].key; const rank=r.rank?`#${r.rank}`:''; const stats=cols.filter(c=>!c.primary && c.key!=='rank').slice(0,4).map(c=>`<div><span class="muted">${c.label}</span><strong>${format(c,r[c.key],r)}</strong></div>`).join(''); return `<div class="mini-title"><span>${r[title]}</span><span>${rank}</span></div><div class="mini-stats">${stats}</div>`; }
+function rank(rows){ return rows.map((r,i)=>({...r,rank:i+1})); }
+function currentYear(data){ return uniq(data.map(r=>r.year)).pop() || ''; }
+function kpis(data){ const wins=data.filter(r=>r.win).length, losses=data.filter(r=>r.loss).length; return `<section class="grid"><div class="kpi"><div class="label">Resulted picks</div><div class="value">${data.length.toLocaleString()}</div><div class="hint">Current filter</div></div><div class="kpi"><div class="label">Success rate</div><div class="value">${pct(wins/(wins+losses||1))}</div><div class="hint">${wins} wins / ${losses} losses</div></div><div class="kpi"><div class="label">Average odds</div><div class="value">${(data.reduce((s,r)=>s+r.odds,0)/(data.length||1)).toFixed(2)}</div><div class="hint">Known odds only</div></div><div class="kpi"><div class="label">Members</div><div class="value">${uniq(data.map(r=>r.member)).length}</div><div class="hint">In filtered data</div></div></section>`; }
+function render(){ const data=filtered(); const app=$('app'); const page=state.page; if(page==='dashboard') app.innerHTML=dashboard(data); if(page==='live') app.innerHTML=live(data); if(page==='members') app.innerHTML=members(data); if(page==='sports') app.innerHTML=sports(data); if(page==='bettypes') app.innerHTML=betTypes(data); if(page==='odds') app.innerHTML=odds(data); if(page==='records') app.innerHTML=records(data); if(page==='search') app.innerHTML=search(data); }
+function dashboard(data){ const min=+$('minPicks').value||1; const members=rank(sortRows(agg(data,'member').filter(x=>x.picks>=min),'members').slice(0,13)); const sports=rank(sortRows(agg(data,'sport').filter(x=>x.picks>=min),'sports').slice(0,20)); return `${kpis(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members,'members',memberCols())}</div><div class="panel"><h2>Sport performance</h2>${table(sports,'sports',sportCols())}</div></section>${insights(data)}`; }
+function live(data){ const cy=currentYear(state.raw); const d=data.filter(r=>r.year===cy); return `<div class="panel"><h2>${cy || 'Current'} Live</h2><p class="muted">Current season view. This will become the priority page once Raw_Live starts on 7 August 2026.</p></div>${dashboard(d)}`; }
+function members(data){ const min=+$('minPicks').value||1; const rows=rank(sortRows(agg(data,'member').filter(x=>x.picks>=min),'membersPage')); return `<div class="panel"><h2>Members</h2>${table(rows,'membersPage',memberCols())}</div>`; }
+function sports(data){ const min=+$('minPicks').value||1; const rows=rank(sortRows(agg(data,'sport').filter(x=>x.picks>=min),'sportsPage')); return `<div class="panel"><h2>Sports and competitions</h2>${table(rows,'sportsPage',sportCols())}</div>`; }
+function betTypes(data){ const min=+$('minPicks').value||1; const rows=rank(sortRows(agg(data,'betType').filter(x=>x.picks>=min),'betTypes')); return `<div class="panel"><h2>Bet types</h2>${table(rows,'betTypes',sportCols('Bet type'))}</div>`; }
+function odds(data){ const rows=ODDS.map(o=>{const d=data.filter(r=>r.odds>=o[2]&&r.odds<=o[3]); const a=agg(d,'group')[0]||{picks:0,wins:0,losses:0,success:0,avgOdds:0,profit:0,roi:0,confidence:'Low'}; return {name:o[1],...a};}); return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows,'odds','success')),'odds',sportCols('Odds band'))}</div>`; }
+function records(data){ const streaks=bestStreaks(data); const highWins=data.filter(r=>r.win).sort((a,b)=>b.odds-a.odds).slice(0,20).map((r,i)=>({rank:i+1,name:r.member,picks:r.name,success:r.odds,avgOdds:r.year,confidence:r.sport})); return `<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks,'streaks',[{key:'rank',label:'Rank',type:'num'},{key:'name',label:'Member',primary:true},{key:'streak',label:'Best streak',type:'num'}])}</div><div class="panel"><h2>Highest winning odds</h2>${table(highWins,'highWins',[{key:'rank',label:'Rank',type:'num'},{key:'name',label:'Member',primary:true},{key:'picks',label:'Bet'},{key:'success',label:'Odds'},{key:'avgOdds',label:'Year'},{key:'confidence',label:'Sport'}])}</div></section>`; }
+function bestStreaks(data){ const by=groupBy(data,'member'); return rank(Object.entries(by).map(([m,rows])=>{ rows.sort((a,b)=>new Date(a.date)-new Date(b.date)); let best=0,cur=0; rows.forEach(r=>{ if(r.win){cur++; best=Math.max(best,cur)} else cur=0; }); return {name:m,streak:best}; }).sort((a,b)=>b.streak-a.streak)); }
+function search(data){ const rows=data.slice(0,500).map((r,i)=>({rank:i+1,name:r.member,picks:r.name,success:r.result,avgOdds:r.odds,confidence:r.sport,year:r.year,bet:r.betType})); return `<div class="panel"><h2>Search results</h2>${table(rows,'search',[{key:'rank',label:'#',type:'num'},{key:'name',label:'Member',primary:true},{key:'picks',label:'Bet'},{key:'bet',label:'Bet type'},{key:'confidence',label:'Sport'},{key:'avgOdds',label:'Odds'},{key:'success',label:'Result'},{key:'year',label:'Year'}])}</div>`; }
+function insights(data){ const m=sortRows(agg(data,'member'),'insM')[0]; const s=sortRows(agg(data,'sport'),'insS')[0]; return `<div class="panel"><h2>Quick insights</h2><div class="insight-list"><div class="insight">Best member in this view: <strong>${m?.name||'-'}</strong> (${m?pct(m.success):'-'})</div><div class="insight">Best sport in this view: <strong>${s?.name||'-'}</strong> (${s?pct(s.success):'-'})</div><div class="insight">Use the Current season tab as the priority page once 2026/27 starts in Raw_Live.</div></div></div>`; }
+function memberCols(){ return [{key:'rank',label:'Rank',type:'num'},{key:'name',label:'Name',primary:true},{key:'picks',label:'Picks',type:'num'},{key:'wins',label:'Wins',type:'num'},{key:'losses',label:'Losses',type:'num'},{key:'success',label:'Success',type:'pct'},{key:'avgOdds',label:'Avg odds'},{key:'profit',label:'$10 P/L',type:'money'}]; }
+function sportCols(label='Sport'){ return [{key:'rank',label:'Rank',type:'num'},{key:'name',label,primary:true},{key:'picks',label:'Picks',type:'num'},{key:'wins',label:'Wins',type:'num'},{key:'losses',label:'Losses',type:'num'},{key:'success',label:'Success',type:'pct'},{key:'avgOdds',label:'Avg odds'},{key:'confidence',label:'Confidence'}]; }
+function groupBy(data,key){ return data.reduce((a,r)=>{(a[r[key]] ||= []).push(r); return a;},{}); }
+init();
