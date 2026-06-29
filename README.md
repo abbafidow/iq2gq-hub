@@ -1,4 +1,4 @@
-# IQ2GQ Hub v1.2
+# IQ2GQ Hub v1.2.1
 
 Live GitHub Pages site connected to the IQ2GQ Google Sheets Apps Script API.
 
@@ -20,3 +20,9 @@ Upload these files to GitHub:
 - assets/iq2gq-logo.png
 
 No data.js required.
+
+
+## v1.2.1 patch
+- Normalises Synd Year values before filtering the Live tab.
+- Live tab now treats `25/26`, `2025/26` and `2025/2026` as the same season.
+- Current season selection now sorts seasons by year rather than text order.

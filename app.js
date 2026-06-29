@@ -39,6 +39,34 @@ function pick(row, names) {
   return '';
 }
 
+function normaliseYear(value) {
+  const raw = clean(value);
+  if (!raw) return '';
+
+  // Convert common variations into the canonical IQ2GQ format: 2025/26.
+  const text = raw.replace(/\s+/g, '').replace(/-/g, '/');
+
+  let match = text.match(/^(\d{4})\/(\d{2})$/);
+  if (match) return `${match[1]}/${match[2]}`;
+
+  match = text.match(/^(\d{4})\/(\d{4})$/);
+  if (match) return `${match[1]}/${match[2].slice(-2)}`;
+
+  match = text.match(/^(\d{2})\/(\d{2})$/);
+  if (match) return `20${match[1]}/${match[2]}`;
+
+  match = text.match(/^(\d{4})$/);
+  if (match) return match[1];
+
+  return raw;
+}
+
+function yearStartValue(value) {
+  const y = normaliseYear(value);
+  const match = y.match(/^(\d{4})(?:\/\d{2})?$/);
+  return match ? Number(match[1]) : 0;
+}
+
 function normalise(row, index) {
   const resultRaw = clean(pick(row, [
     'Result', 'Bet successful', 'Bet Successful', 'Successful', 'Success',
@@ -58,7 +86,7 @@ function normalise(row, index) {
   ])) || 'Unknown';
   const odds = num(pick(row, ['Odds', 'Final odds', 'Final Odds', 'Price', 'TAB odds', 'TAB Odds']));
   const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
-  const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
+  const year = normaliseYear(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
   const date = clean(pick(row, ['Date', 'MM Drop', 'Drop Date', 'date']));
   const name = clean(pick(row, ['Bet Name', 'Name', 'Bet', 'Selection', 'Team', 'Option Name', 'betName']));
   const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
@@ -275,7 +303,8 @@ function rank(rows) {
 }
 
 function currentYear(data) {
-  return uniq(data.map(r => r.year)).pop() || '';
+  const years = uniq(data.map(r => r.year)).filter(Boolean);
+  return years.sort((a, b) => yearStartValue(a) - yearStartValue(b)).pop() || '';
 }
 
 function kpis(data) {
