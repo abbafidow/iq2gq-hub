@@ -39,34 +39,6 @@ function pick(row, names) {
   return '';
 }
 
-function normaliseYear(value) {
-  const raw = clean(value);
-  if (!raw) return '';
-
-  // Convert common variations into the canonical IQ2GQ format: 2025/26.
-  const text = raw.replace(/\s+/g, '').replace(/-/g, '/');
-
-  let match = text.match(/^(\d{4})\/(\d{2})$/);
-  if (match) return `${match[1]}/${match[2]}`;
-
-  match = text.match(/^(\d{4})\/(\d{4})$/);
-  if (match) return `${match[1]}/${match[2].slice(-2)}`;
-
-  match = text.match(/^(\d{2})\/(\d{2})$/);
-  if (match) return `20${match[1]}/${match[2]}`;
-
-  match = text.match(/^(\d{4})$/);
-  if (match) return match[1];
-
-  return raw;
-}
-
-function yearStartValue(value) {
-  const y = normaliseYear(value);
-  const match = y.match(/^(\d{4})(?:\/\d{2})?$/);
-  return match ? Number(match[1]) : 0;
-}
-
 function normalise(row, index) {
   const resultRaw = clean(pick(row, [
     'Result', 'Bet successful', 'Bet Successful', 'Successful', 'Success',
@@ -86,7 +58,7 @@ function normalise(row, index) {
   ])) || 'Unknown';
   const odds = num(pick(row, ['Odds', 'Final odds', 'Final Odds', 'Price', 'TAB odds', 'TAB Odds']));
   const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
-  const year = normaliseYear(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
+  const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
   const date = clean(pick(row, ['Date', 'MM Drop', 'Drop Date', 'date']));
   const name = clean(pick(row, ['Bet Name', 'Name', 'Bet', 'Selection', 'Team', 'Option Name', 'betName']));
   const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
@@ -302,9 +274,28 @@ function rank(rows) {
   return rows.map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
+function seasonStart(year) {
+  const text = clean(year);
+  const match = text.match(/(\d{2,4})\s*\/\s*(\d{2,4})/);
+  if (!match) return -1;
+  let start = Number(match[1]);
+  if (start < 100) start += 2000;
+  return start;
+}
+
+function normalisedSeason(year) {
+  const start = seasonStart(year);
+  if (start < 0) return clean(year);
+  return `${start}/${String(start + 1).slice(-2)}`;
+}
+
+function seasonEqual(a, b) {
+  return normalisedSeason(a) === normalisedSeason(b);
+}
+
 function currentYear(data) {
-  const years = uniq(data.map(r => r.year)).filter(Boolean);
-  return years.sort((a, b) => yearStartValue(a) - yearStartValue(b)).pop() || '';
+  const seasons = uniq(data.map(r => normalisedSeason(r.year))).filter(Boolean);
+  return seasons.sort((a, b) => seasonStart(a) - seasonStart(b)).pop() || '';
 }
 
 function kpis(data) {
@@ -337,14 +328,27 @@ function render() {
 function dashboard(data) {
   const min = Number($('minPicks').value) || 1;
   const members = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'members').slice(0, 13));
-  const sports = rank(sortRows(aggregate(data, 'sport').filter(x => x.picks >= min), 'sports').slice(0, 20));
-  return `${kpis(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Sport performance</h2>${table(sports, 'sports', sportCols())}</div></section>${insights(data)}`;
+  const sports = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
+  return `${kpis(data)}${insights(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Sport group performance</h2>${table(sports, 'sports', sportCols('Sport group'))}</div></section>`;
 }
 
 function live(data) {
   const cy = currentYear(state.raw);
-  const current = data.filter(r => r.year === cy);
-  return `<div class="panel"><h2>${escapeHtml(cy || 'Current season')} Live</h2><p class="muted">Current season view. When Raw_Live starts on 7 August 2026, this page becomes the priority weekly page.</p></div>${dashboard(current)}`;
+  const current = data.filter(r => seasonEqual(r.year, cy));
+  const min = Number($('minPicks').value) || 1;
+  const members = rank(sortRows(enrichMembers(aggregate(current, 'member'), current).filter(x => x.picks >= min), 'liveMembers'));
+  const recent = current.slice().sort(comparePickOrder).slice(-20).reverse().map((r, i) => ({
+    rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
+  }));
+  return `<div class="panel"><h2>● ${escapeHtml(cy || 'Current season')} Live</h2><p class="muted">Current season view. This includes all rows tagged to the current syndicate year, whether they sit in Raw_History or Raw_Live.</p></div>${kpis(current)}${insights(current)}<section class="two"><div class="panel"><h2>Current ladder</h2>${table(members, 'liveMembers', memberCols())}</div><div class="panel"><h2>Latest current-season picks</h2>${table(recent, 'liveRecent', [
+    { key: 'rank', label: '#', type: 'num' },
+    { key: 'name', label: 'Member', primary: true },
+    { key: 'bet', label: 'Bet' },
+    { key: 'betType', label: 'Bet type' },
+    { key: 'sport', label: 'Sport' },
+    { key: 'odds', label: 'Odds', type: 'odds' },
+    { key: 'result', label: 'Result' },
+  ])}</div></section>`;
 }
 
 function members(data) {
@@ -448,17 +452,119 @@ function search(data) {
 }
 
 function insights(data) {
-  const topMember = sortRows(enrichMembers(aggregate(data, 'member'), data), 'insM')[0];
-  const topSport = sortRows(aggregate(data, 'group'), 'insS')[0];
-  const topBetType = sortRows(aggregate(data, 'betType'), 'insB')[0];
-  const next = nextRoundInsights(data).slice(0, 5);
   const scope = insightScopeLabel();
+  const cards = smartInsightCards(data);
   return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
-    <div class="insight"><span>Best member</span><strong>${topMember?.name || '-'}</strong><em>${topMember ? `${pct(topMember.success)} from ${topMember.picks.toLocaleString()} picks` : '-'}</em></div>
-    <div class="insight"><span>Best sport group</span><strong>${topSport?.name || '-'}</strong><em>${topSport ? `${pct(topSport.success)} from ${topSport.picks.toLocaleString()} picks` : '-'}</em></div>
-    <div class="insight"><span>Best bet type</span><strong>${topBetType?.name || '-'}</strong><em>${topBetType ? `${pct(topBetType.success)} from ${topBetType.picks.toLocaleString()} picks` : '-'}</em></div>
-    ${next.map(text => `<div class="insight">${text}</div>`).join('')}
+    ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span><strong>${escapeHtml(card.value)}</strong><em>${escapeHtml(card.detail)}</em></div>`).join('')}
   </div></div>`;
+}
+
+function smartInsightCards(data) {
+  const member = $('memberFilter').value;
+  const group = $('sportGroupFilter').value;
+  const betType = $('betTypeFilter').value;
+  const oddsFilter = $('oddsFilter').value;
+  const cards = [];
+  const wins = data.filter(r => r.win).length;
+  const losses = data.filter(r => r.loss).length;
+  const success = data.length ? wins / data.length : 0;
+  cards.push({ label: 'Filtered record', value: data.length.toLocaleString(), detail: `${pct(success)} success | ${confidence(data.length)} confidence` });
+
+  if (!data.length) {
+    return [
+      { label: 'No data', value: '0 picks', detail: 'Adjust or clear filters to generate insights.' }
+    ];
+  }
+
+  if (member) {
+    const memberRows = data.filter(r => r.member === member);
+    const allMemberRows = state.raw.filter(r => r.member === member).sort(comparePickOrder);
+    const active = activeStreak(allMemberRows);
+    const last10 = allMemberRows.slice(-10);
+    const last10Wins = last10.filter(r => r.win).length;
+    cards.push({ label: `${member} current streak`, value: active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-', detail: `${last10Wins}/${last10.length || 0} in last 10 overall` });
+    cards.push(bestDimensionCard(memberRows, 'group', `${member} best sport`, 'Sport group'));
+    cards.push(bestOddsBandCard(memberRows, `${member} best odds band`));
+    cards.push(highestWinCard(memberRows, `${member} highest win`));
+  } else if (group) {
+    cards.push(bestDimensionCard(data, 'member', `Best ${group} member`, 'Member'));
+    cards.push(bestDimensionCard(data, 'betType', `Best ${group} bet type`, 'Bet type'));
+    cards.push(bestOddsBandCard(data, `Best ${group} odds band`));
+    cards.push(hotMemberCard(data));
+  } else if (betType) {
+    cards.push(bestDimensionCard(data, 'member', `Best ${betType} member`, 'Member'));
+    cards.push(bestDimensionCard(data, 'group', `Best ${betType} sport`, 'Sport group'));
+    cards.push(bestOddsBandCard(data, `Best ${betType} odds band`));
+    cards.push(hotMemberCard(data));
+  } else if (oddsFilter) {
+    cards.push(bestDimensionCard(data, 'member', 'Best member in odds band', 'Member'));
+    cards.push(bestDimensionCard(data, 'group', 'Best sport in odds band', 'Sport group'));
+    cards.push(bestDimensionCard(data, 'betType', 'Best bet type in odds band', 'Bet type'));
+    cards.push(hotMemberCard(data));
+  } else {
+    cards.push(bestDimensionCard(data, 'member', 'Best overall member', 'Member'));
+    cards.push(hotMemberCard(data));
+    cards.push(bestDimensionCard(data, 'group', 'Best sport group', 'Sport group'));
+    cards.push(bestDimensionCard(data, 'betType', 'Best bet type', 'Bet type'));
+    cards.push(bestOddsBandCard(data, 'Best odds band'));
+  }
+
+  const streakCards = nextRoundInsightCards(data).slice(0, 3);
+  cards.push(...streakCards);
+  return cards.filter(Boolean).slice(0, 8);
+}
+
+function bestDimensionCard(data, key, label, noun) {
+  const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
+  const rows = aggregate(data, key).filter(x => x.picks >= min).sort((a, b) => b.success - a.success || b.picks - a.picks);
+  const top = rows[0];
+  if (!top) return { label, value: '-', detail: `No ${noun.toLowerCase()} meets the ${min}-pick threshold.` };
+  return { label, value: top.name, detail: `${pct(top.success)} from ${top.picks.toLocaleString()} picks | ${confidence(top.picks)} confidence` };
+}
+
+function bestOddsBandCard(data, label) {
+  const rows = ODDS.map(band => {
+    const picks = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+    const wins = picks.filter(r => r.win).length;
+    return { label: band[1], picks: picks.length, wins, success: picks.length ? wins / picks.length : 0 };
+  }).filter(x => x.picks >= 5).sort((a, b) => b.success - a.success || b.picks - a.picks);
+  const top = rows[0];
+  if (!top) return { label, value: '-', detail: 'Not enough odds-band data in this filter.' };
+  return { label, value: top.label, detail: `${pct(top.success)} from ${top.picks.toLocaleString()} picks | ${confidence(top.picks)} confidence` };
+}
+
+function highestWinCard(data, label) {
+  const top = data.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
+  if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
+  return { label, value: oddsFmt(top.odds), detail: `${top.member} - ${top.name || top.sport || 'Unknown pick'} (${top.year || '-'})` };
+}
+
+function hotMemberCard(data) {
+  const grouped = groupBy(data, 'member');
+  const rows = Object.entries(grouped).map(([member, picks]) => {
+    const sorted = picks.slice().sort(comparePickOrder);
+    const last10 = sorted.slice(-10);
+    const wins = last10.filter(r => r.win).length;
+    return { member, total: last10.length, wins, rate: last10.length ? wins / last10.length : 0 };
+  }).filter(x => x.total >= 5).sort((a, b) => b.rate - a.rate || b.total - a.total);
+  const top = rows[0];
+  if (!top) return { label: 'Current form', value: '-', detail: 'Not enough recent picks in this filter.' };
+  return { label: 'Current form', value: top.member, detail: `${top.wins}/${top.total} in latest picks within this filter` };
+}
+
+function confidence(n) {
+  if (n >= 100) return 'High';
+  if (n >= 40) return 'Medium';
+  if (n >= 10) return 'Low';
+  return 'Very low';
+}
+
+function nextRoundInsightCards(data) {
+  return nextRoundInsights(data).map(text => ({ label: 'Next round', value: stripHtml(text).split('.')[0].slice(0, 38), detail: stripHtml(text) }));
+}
+
+function stripHtml(value) {
+  return String(value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 
 function nextRoundInsights(data) {

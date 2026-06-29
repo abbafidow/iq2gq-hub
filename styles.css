@@ -4,3 +4,11 @@
 .live-tab{border-color:var(--good);box-shadow:0 0 0 1px rgba(121,242,163,.18) inset}.tab.live-tab.active{background:var(--good);color:#061022}.smart-insights .insight-list{grid-template-columns:repeat(3,1fr);display:grid}.smart-insights .insight span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.smart-insights .insight strong{display:block;font-size:20px;margin:5px 0}.smart-insights .insight em{display:block;color:var(--muted);font-style:normal;font-size:13px}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.footer::after{content:'Google Sheets live data';color:var(--accent)}
 @media(max-width:900px){.smart-insights .insight-list{grid-template-columns:1fr 1fr}.cards.compact-cards{grid-template-columns:1fr 1fr}.mini-card{min-height:112px}.mini-stats{gap:4px}.mini-stats div:nth-child(n+5){display:none}}
 @media(max-width:420px){.cards.compact-cards{grid-template-columns:1fr 1fr}.smart-insights .insight-list{grid-template-columns:1fr}.mini-title{font-size:15px}.mini-card{padding:9px}.mini-stats strong{font-size:13px}}
+
+/* v1.3A Smart Insights */
+.smart-insights .insight{min-height:112px;display:flex;flex-direction:column;justify-content:flex-start}
+.smart-insights .insight strong{word-break:break-word}
+.smart-insights .insight em{line-height:1.35}
+@media(max-width:900px){.smart-insights .insight{min-height:104px}}
+@media(max-width:520px){.smart-insights .insight-list{grid-template-columns:1fr 1fr}.smart-insights .insight{padding:10px;min-height:100px}.smart-insights .insight strong{font-size:15px}.smart-insights .insight em{font-size:11px}}
+@media(max-width:360px){.smart-insights .insight-list{grid-template-columns:1fr}}
