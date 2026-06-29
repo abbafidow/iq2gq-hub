@@ -1,22 +1,22 @@
-# IQ2GQ Hub v1.1
+# IQ2GQ Hub v1.2
 
 Live GitHub Pages site connected to the IQ2GQ Google Sheets Apps Script API.
 
-## Files
+## v1.2 updates
+- Smart Insights panel added and scoped to active filters where possible.
+- Current Season navigation restyled as a live button.
+- Sports page now groups by sport group first, with competitions shown separately.
+- Member tables now include Current Streak and Last 10.
+- Summary cards distinguish resulted picks, source rows and excluded admin/non-pick rows.
+- Footer updated to v1.2.
+- Mobile cards tightened for more efficient phone layout.
+
+## Upload files
+Upload these files to GitHub:
 - index.html
 - styles.css
 - app.js
 - README.md
 - assets/iq2gq-logo.png
 
-## v1.1 fixes
-- Uses live API with cache-busting.
-- Shows resulted picks and source row count.
-- Adds broader column-name matching for live Google Sheet data.
-- Formats all odds to 2 decimal places.
-- Removes P/L columns.
-- Improves mobile cards to reduce scrolling.
-- Adds next-round style insights based on current winning streaks.
-
-## Deploy
-Upload all files and the assets folder to the `iq2gq-hub` repository, then commit changes.
+No data.js required.

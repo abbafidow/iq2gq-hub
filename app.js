@@ -5,6 +5,7 @@ const state = {
   apiCount: 0,
   page: 'dashboard',
   sort: {},
+  sportDrilldown: false,
 };
 
 const ODDS = [
@@ -214,11 +215,17 @@ function aggregate(data, key) {
 function sortRows(rows, table, defaultKey = 'success') {
   const sort = state.sort[table] || { key: defaultKey, dir: -1 };
   return rows.sort((a, b) => {
-    const av = a[sort.key];
-    const bv = b[sort.key];
+    const av = sortValue(a, sort.key);
+    const bv = sortValue(b, sort.key);
     if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sort.dir;
     return String(av ?? '').localeCompare(String(bv ?? '')) * sort.dir;
   });
+}
+
+function sortValue(row, key) {
+  if (key === 'currentStreak') return row.streakValue ?? 0;
+  if (key === 'last10') return row.last10Value ?? 0;
+  return row[key];
 }
 
 function table(rows, tableId, columns) {
@@ -275,11 +282,12 @@ function kpis(data) {
   const wins = data.filter(r => r.win).length;
   const losses = data.filter(r => r.loss).length;
   const avg = data.reduce((sum, row) => sum + (row.odds || 0), 0) / (data.length || 1);
+  const excluded = Math.max(0, state.apiCount - state.raw.length);
   return `<section class="grid">
-    <div class="kpi"><div class="label">Resulted picks</div><div class="value">${data.length.toLocaleString()}</div><div class="hint">${state.apiCount.toLocaleString()} source rows</div></div>
-    <div class="kpi"><div class="label">Success rate</div><div class="value">${pct(wins / (wins + losses || 1))}</div><div class="hint">${wins} wins / ${losses} losses</div></div>
+    <div class="kpi"><div class="label">Resulted picks</div><div class="value">${data.length.toLocaleString()}</div><div class="hint">${state.raw.length.toLocaleString()} valid picks in database</div></div>
+    <div class="kpi"><div class="label">Success rate</div><div class="value">${pct(wins / (wins + losses || 1))}</div><div class="hint">${wins.toLocaleString()} wins / ${losses.toLocaleString()} losses</div></div>
     <div class="kpi"><div class="label">Average odds</div><div class="value">${oddsFmt(avg)}</div><div class="hint">Known odds only</div></div>
-    <div class="kpi"><div class="label">Members</div><div class="value">${uniq(data.map(r => r.member)).length}</div><div class="hint">In filtered data</div></div>
+    <div class="kpi"><div class="label">Source rows</div><div class="value">${state.apiCount.toLocaleString()}</div><div class="hint">${excluded.toLocaleString()} admin/non-pick rows excluded</div></div>
   </section>`;
 }
 
@@ -299,7 +307,7 @@ function render() {
 
 function dashboard(data) {
   const min = Number($('minPicks').value) || 1;
-  const members = rank(sortRows(aggregate(data, 'member').filter(x => x.picks >= min), 'members').slice(0, 13));
+  const members = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'members').slice(0, 13));
   const sports = rank(sortRows(aggregate(data, 'sport').filter(x => x.picks >= min), 'sports').slice(0, 20));
   return `${kpis(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Sport performance</h2>${table(sports, 'sports', sportCols())}</div></section>${insights(data)}`;
 }
@@ -312,14 +320,15 @@ function live(data) {
 
 function members(data) {
   const min = Number($('minPicks').value) || 1;
-  const rows = rank(sortRows(aggregate(data, 'member').filter(x => x.picks >= min), 'membersPage'));
+  const rows = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'membersPage'));
   return `<div class="panel"><h2>Members</h2>${table(rows, 'membersPage', memberCols())}</div>`;
 }
 
 function sports(data) {
   const min = Number($('minPicks').value) || 1;
-  const rows = rank(sortRows(aggregate(data, 'sport').filter(x => x.picks >= min), 'sportsPage'));
-  return `<div class="panel"><h2>Sports and competitions</h2>${table(rows, 'sportsPage', sportCols())}</div>`;
+  const groupedRows = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sportsPage'));
+  const competitionRows = rank(sortRows(aggregate(data, 'sport').filter(x => x.picks >= min), 'competitionsPage'));
+  return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use the Sport group filter to narrow a code, or review competitions below.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'))}</div>`;
 }
 
 function betTypes(data) {
@@ -410,12 +419,15 @@ function search(data) {
 }
 
 function insights(data) {
-  const topMember = sortRows(aggregate(data, 'member'), 'insM')[0];
-  const topSport = sortRows(aggregate(data, 'sport'), 'insS')[0];
-  const next = nextRoundInsights(state.raw).slice(0, 6);
-  return `<div class="panel"><h2>Quick insights</h2><div class="insight-list">
-    <div class="insight">Best member in this view: <strong>${topMember?.name || '-'}</strong> (${topMember ? pct(topMember.success) : '-'})</div>
-    <div class="insight">Best sport in this view: <strong>${topSport?.name || '-'}</strong> (${topSport ? pct(topSport.success) : '-'})</div>
+  const topMember = sortRows(enrichMembers(aggregate(data, 'member'), data), 'insM')[0];
+  const topSport = sortRows(aggregate(data, 'group'), 'insS')[0];
+  const topBetType = sortRows(aggregate(data, 'betType'), 'insB')[0];
+  const next = nextRoundInsights(data).slice(0, 5);
+  const scope = insightScopeLabel();
+  return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
+    <div class="insight"><span>Best member</span><strong>${topMember?.name || '-'}</strong><em>${topMember ? `${pct(topMember.success)} from ${topMember.picks.toLocaleString()} picks` : '-'}</em></div>
+    <div class="insight"><span>Best sport group</span><strong>${topSport?.name || '-'}</strong><em>${topSport ? `${pct(topSport.success)} from ${topSport.picks.toLocaleString()} picks` : '-'}</em></div>
+    <div class="insight"><span>Best bet type</span><strong>${topBetType?.name || '-'}</strong><em>${topBetType ? `${pct(topBetType.success)} from ${topBetType.picks.toLocaleString()} picks` : '-'}</em></div>
     ${next.map(text => `<div class="insight">${text}</div>`).join('')}
   </div></div>`;
 }
@@ -491,6 +503,8 @@ function memberCols() {
     { key: 'losses', label: 'Losses', type: 'num' },
     { key: 'success', label: 'Success', type: 'pct' },
     { key: 'avgOdds', label: 'Avg odds', type: 'odds' },
+    { key: 'currentStreak', label: 'Current streak' },
+    { key: 'last10', label: 'Last 10' },
   ];
 }
 
@@ -505,6 +519,43 @@ function sportCols(label = 'Sport') {
     { key: 'avgOdds', label: 'Avg odds', type: 'odds' },
     { key: 'confidence', label: 'Confidence' },
   ];
+}
+
+
+function enrichMembers(rows, data) {
+  const grouped = groupBy(data, 'member');
+  return rows.map(row => {
+    const picks = (grouped[row.name] || []).slice().sort(comparePickOrder);
+    const active = activeStreak(picks);
+    const last10Rows = picks.slice(-10);
+    const last10Wins = last10Rows.filter(p => p.win).length;
+    return {
+      ...row,
+      currentStreak: active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-',
+      streakValue: active.type === 'Win' ? active.count : -active.count,
+      last10: last10Rows.length ? `${last10Wins}/${last10Rows.length}` : '-',
+      last10Value: last10Rows.length ? last10Wins / last10Rows.length : 0,
+    };
+  });
+}
+
+function insightScopeLabel() {
+  const parts = [];
+  const member = $('memberFilter').value;
+  const group = $('sportGroupFilter').value;
+  const betType = $('betTypeFilter').value;
+  const year = $('yearFilter').value;
+  const odds = $('oddsFilter').value;
+  const result = $('resultFilter').value;
+  const query = $('searchInput').value;
+  if (member) parts.push(`Member: ${member}`);
+  if (group) parts.push(`Sport group: ${group}`);
+  if (betType) parts.push(`Bet type: ${betType}`);
+  if (year) parts.push(`Year: ${year}`);
+  if (odds) parts.push(`Odds: ${ODDS.find(o => o[0] === odds)?.[1] || odds}`);
+  if (result) parts.push(`Result: ${result}`);
+  if (query) parts.push(`Search: ${query}`);
+  return parts.length ? `Insights based on current filters - ${parts.join(' | ')}` : 'Overall intelligence across all resulted picks.';
 }
 
 function groupBy(data, key) {
