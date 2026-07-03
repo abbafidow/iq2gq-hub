@@ -1,39 +1,25 @@
-# IQ2GQ Hub v1.3A - Smart Insights
+# IQ2GQ Hub v1.3B - Member Intelligence Centre
 
-## Release focus
+Live GitHub Pages site connected to the IQ2GQ Google Sheets Apps Script API.
 
-This release upgrades Smart Insights so they respond more intelligently to the active filters.
+## v1.3B changes
 
-## Included
+- Adds Member Intelligence Centre when a member is selected in the Member filter.
+- Adds member overview cards covering career, current season, current streak and filtered success.
+- Adds member-specific Smart Insights within the profile view.
+- Adds form guide: last 5, last 10, last 20, highest winning odds.
+- Adds member records: longest winning streak, longest losing streak, average odds and confidence.
+- Adds best sports, watch areas, best bet types, odds bands and latest picks.
+- Keeps existing v1.3A Smart Insights, Google Sheets API connection, sortable tables and mobile layout.
 
-- Smart Insights now adapt to member, sport group, bet type, odds band, year, result and search filters.
-- Added confidence ratings based on sample size.
-- Added member-specific insights when a member is selected.
-- Added sport-specific and bet-type insights when those filters are selected.
-- Added current-form insight based on the latest picks in the filtered dataset.
-- Added stronger current-season handling so equivalent season labels are treated consistently.
-- Current season page now includes current ladder and latest current-season picks.
-- Footer updated to v1.3A.
+## Files
 
-## Upload files
+Upload or replace these files at the root of the GitHub repository:
 
-Upload these files to GitHub:
-
-- index.html
-- styles.css
-- app.js
-- README.md
-- assets/iq2gq-logo.png
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
+- `assets/iq2gq-logo.png`
 
 No Google Sheet or Apps Script changes are required.
-
-## Test checklist
-
-- Home page loads.
-- Smart Insights display with no filters.
-- Select a member; Smart Insights become member-specific.
-- Select sport group; Smart Insights become sport-specific.
-- Select member + sport group; Smart Insights reflect the filtered data.
-- 2025/26 Live page still shows the latest 2025/26 rows.
-- Mobile Smart Insight cards remain readable.
-Redeploy trigger

@@ -352,9 +352,166 @@ function live(data) {
 }
 
 function members(data) {
+  const selected = $('memberFilter').value;
+  if (selected) return memberIntelligence(selected, data);
   const min = Number($('minPicks').value) || 1;
   const rows = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'membersPage'));
-  return `<div class="panel"><h2>Members</h2>${table(rows, 'membersPage', memberCols())}</div>`;
+  return `<div class="panel"><h2>Members</h2><p class="muted">Select a member from the Member filter to open their Member Intelligence Centre.</p>${table(rows, 'membersPage', memberCols())}</div>`;
+}
+
+
+function memberIntelligence(member, data) {
+  const allMemberRows = state.raw.filter(r => r.member === member).sort(comparePickOrder);
+  const currentSeason = currentYear(state.raw);
+  const currentRows = allMemberRows.filter(r => seasonEqual(r.year, currentSeason));
+  const filteredRows = data.filter(r => r.member === member).sort(comparePickOrder);
+  const profileData = filteredRows.length ? filteredRows : allMemberRows;
+  const career = summary(profileData);
+  const careerAll = summary(allMemberRows);
+  const season = summary(currentRows);
+  const active = activeStreak(allMemberRows);
+  const last10 = recentRecord(allMemberRows, 10);
+  const last20 = recentRecord(allMemberRows, 20);
+  const bestWin = longestStreak(allMemberRows, 'Win');
+  const bestLoss = longestStreak(allMemberRows, 'Loss');
+  const highWin = allMemberRows.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
+  const latest = allMemberRows.slice(-12).reverse().map((r, i) => ({
+    rank: i + 1,
+    name: r.member,
+    bet: r.name,
+    betType: r.betType,
+    sport: r.sport,
+    odds: r.odds,
+    result: r.result,
+    year: r.year,
+  }));
+  const bestSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberSports-${member}`, 'success').slice(0, 8));
+  const betRows = rank(sortRows(aggregate(profileData, 'betType').filter(x => x.picks >= 5), `memberBetTypes-${member}`, 'success').slice(0, 8));
+  const oddsRows = rank(sortRows(memberOddsBands(profileData), `memberOdds-${member}`, 'success'));
+  const worstSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberWorstSports-${member}`, 'success').reverse().slice(0, 5));
+
+  return `<section class="member-profile">
+    <div class="panel profile-hero">
+      <div>
+        <p class="eyebrow">Member Intelligence Centre</p>
+        <h2>${escapeHtml(member)}</h2>
+        <p class="muted">This view uses the current filters where possible. Clear filters for full-career analysis.</p>
+      </div>
+      <div class="profile-badges">
+        <span>${career.picks.toLocaleString()} filtered picks</span>
+        <span>${careerAll.picks.toLocaleString()} career picks</span>
+        <span>${confidence(career.picks)} confidence</span>
+      </div>
+    </div>
+
+    <section class="grid profile-kpis">
+      <div class="kpi"><div class="label">Filtered success</div><div class="value">${pct(career.success)}</div><div class="hint">${career.wins.toLocaleString()} wins / ${career.losses.toLocaleString()} losses</div></div>
+      <div class="kpi"><div class="label">Career success</div><div class="value">${pct(careerAll.success)}</div><div class="hint">${careerAll.picks.toLocaleString()} all-time picks</div></div>
+      <div class="kpi"><div class="label">${escapeHtml(currentSeason || 'Current season')}</div><div class="value">${season.picks ? pct(season.success) : '-'}</div><div class="hint">${season.picks.toLocaleString()} current-season picks</div></div>
+      <div class="kpi"><div class="label">Current streak</div><div class="value">${active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-'}</div><div class="hint">Best W${bestWin} / Worst L${bestLoss}</div></div>
+    </section>
+
+    ${insights(profileData)}
+
+    <section class="two">
+      <div class="panel"><h2>Form guide</h2><div class="form-grid">
+        ${formCard('Last 5', recentRecord(allMemberRows, 5))}
+        ${formCard('Last 10', last10)}
+        ${formCard('Last 20', last20)}
+        ${formCard('Highest win', { text: highWin ? oddsFmt(highWin.odds) : '-', detail: highWin ? `${highWin.name || highWin.sport || 'Unknown'} (${highWin.year || '-'})` : 'No winning odds found' })}
+      </div></div>
+      <div class="panel"><h2>Member records</h2><div class="record-list">
+        <div><span>Longest winning streak</span><strong>${bestWin}</strong></div>
+        <div><span>Longest losing streak</span><strong>${bestLoss}</strong></div>
+        <div><span>Average odds</span><strong>${oddsFmt(career.avgOdds)}</strong></div>
+        <div><span>Confidence</span><strong>${confidence(career.picks)}</strong></div>
+      </div></div>
+    </section>
+
+    <section class="two">
+      <div class="panel"><h2>Best sports</h2>${table(bestSports, `memberSports-${member}`, sportCols('Sport group'))}</div>
+      <div class="panel"><h2>Watch areas</h2><p class="muted">Lower success areas with at least five picks in the current view.</p>${table(worstSports, `memberWorstSports-${member}`, sportCols('Sport group'))}</div>
+    </section>
+
+    <section class="two">
+      <div class="panel"><h2>Best bet types</h2>${table(betRows, `memberBetTypes-${member}`, sportCols('Bet type'))}</div>
+      <div class="panel"><h2>Odds bands</h2>${table(oddsRows, `memberOdds-${member}`, sportCols('Odds band'))}</div>
+    </section>
+
+    <div class="panel"><h2>Latest picks</h2>${table(latest, `memberLatest-${member}`, [
+      { key: 'rank', label: '#', type: 'num' },
+      { key: 'bet', label: 'Bet', primary: true },
+      { key: 'betType', label: 'Bet type' },
+      { key: 'sport', label: 'Sport' },
+      { key: 'odds', label: 'Odds', type: 'odds' },
+      { key: 'result', label: 'Result' },
+      { key: 'year', label: 'Year' },
+    ])}</div>
+  </section>`;
+}
+
+function summary(rows) {
+  const wins = rows.filter(r => r.win).length;
+  const losses = rows.filter(r => r.loss).length;
+  const picks = rows.length;
+  const oddsRows = rows.filter(r => Number.isFinite(r.odds));
+  return {
+    picks,
+    wins,
+    losses,
+    success: picks ? wins / picks : 0,
+    avgOdds: oddsRows.length ? oddsRows.reduce((sum, r) => sum + r.odds, 0) / oddsRows.length : 0,
+  };
+}
+
+function recentRecord(rows, n) {
+  const recent = rows.slice().sort(comparePickOrder).slice(-n);
+  const wins = recent.filter(r => r.win).length;
+  return {
+    picks: recent.length,
+    wins,
+    losses: recent.length - wins,
+    rate: recent.length ? wins / recent.length : 0,
+    text: recent.length ? `${wins}/${recent.length}` : '-',
+    detail: recent.length ? `${pct(recent.length ? wins / recent.length : 0)} success` : 'No recent picks',
+  };
+}
+
+function formCard(label, record) {
+  return `<div class="form-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(record.text)}</strong><em>${escapeHtml(record.detail || '')}</em></div>`;
+}
+
+function longestStreak(rows, type) {
+  const target = type === 'Win' ? 'win' : 'loss';
+  let best = 0;
+  let current = 0;
+  rows.slice().sort(comparePickOrder).forEach(row => {
+    const hit = target === 'win' ? row.win : row.loss;
+    if (hit) {
+      current += 1;
+      best = Math.max(best, current);
+    } else {
+      current = 0;
+    }
+  });
+  return best;
+}
+
+function memberOddsBands(data) {
+  return ODDS.map(band => {
+    const rows = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+    const wins = rows.filter(r => r.win).length;
+    const oddsRows = rows.filter(r => Number.isFinite(r.odds));
+    return {
+      name: band[1],
+      picks: rows.length,
+      wins,
+      losses: rows.length - wins,
+      success: rows.length ? wins / rows.length : 0,
+      avgOdds: oddsRows.length ? oddsRows.reduce((sum, r) => sum + r.odds, 0) / oddsRows.length : 0,
+      confidence: rows.length >= 50 ? 'High' : rows.length >= 20 ? 'Moderate' : 'Low',
+    };
+  }).filter(x => x.picks > 0);
 }
 
 function sports(data) {
