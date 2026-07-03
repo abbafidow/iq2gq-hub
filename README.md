@@ -36,3 +36,4 @@ No Google Sheet or Apps Script changes are required.
 - Select member + sport group; Smart Insights reflect the filtered data.
 - 2025/26 Live page still shows the latest 2025/26 rows.
 - Mobile Smart Insight cards remain readable.
+Redeploy trigger
