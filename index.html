@@ -7,57 +7,53 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="hero">
-    <div class="brand-row">
+  <header class="topbar">
+    <div class="brand">
       <img src="assets/iq2gq-logo.png" alt="IQ2GQ logo" class="logo">
-      <div>
-        <p class="eyebrow">IQ2GQ</p>
+      <div class="brand-text">
         <h1>IQ2GQ Hub</h1>
-        <p class="sub">Statistics - Records - Insights - Decision support</p>
+        <p class="status" id="status">Loading live Google Sheet data...</p>
       </div>
     </div>
-    <div class="status" id="status">Loading live Google Sheet data...</div>
   </header>
 
-  <nav class="nav" id="nav">
-    <button class="tab active" data-page="dashboard">Home</button>
-    <button class="tab live-tab" data-page="live">● 2025/26 LIVE</button>
-    <button class="tab" data-page="members">Members</button>
-    <button class="tab" data-page="sports">Sports</button>
-    <button class="tab" data-page="bettypes">Bet types</button>
-    <button class="tab" data-page="odds">Odds</button>
-    <button class="tab" data-page="records">Records</button>
-    <button class="tab" data-page="search">Search</button>
-  </nav>
-
-  <section class="filters">
-    <div class="mobile-filter-title">Filters</div>
-    <label>Member<select id="memberFilter"></select></label>
-    <label>Sport group<select id="sportGroupFilter"></select></label>
-    <label>Bet type<select id="betTypeFilter"></select></label>
-    <label>Year<select id="yearFilter"></select></label>
-    <label>Odds<select id="oddsFilter"></select></label>
-    <label>Result<select id="resultFilter"></select></label>
-    <label class="search-label">Search<input id="searchInput" placeholder="NRL, Warriors, Bulldogs, H2H..."></label>
-    <label>Min picks<input id="minPicks" type="number" min="1" value="10"></label>
-    <button id="resetBtn">Reset</button>
-  </section>
-
-  <section class="quick-filters">
-    <button data-quick="nrl">Best NRL</button>
-    <button data-quick="nfl">Best NFL</button>
-    <button data-quick="union">Best Union</button>
-    <button data-quick="football">Best Football</button>
-    <button data-quick="h2h">H2H</button>
-    <button data-quick="point">Point starts</button>
-    <button data-quick="scorer">Anytime scorers</button>
-    <button data-quick="2plus">$2+ odds</button>
-    <button data-quick="losses">Losses only</button>
-  </section>
+  <div class="site-toolbar" id="siteToolbar">
+    <div class="toolbar-row">
+      <nav class="nav" id="nav">
+        <button class="tab active" data-page="dashboard">Dashboard</button>
+        <button class="tab" data-page="members">Members</button>
+        <button class="tab" data-page="sports">Sports</button>
+        <button class="tab" data-page="bettypes">Bet types</button>
+        <button class="tab" data-page="odds">Odds</button>
+        <button class="tab" data-page="records">Records</button>
+        <button class="tab" data-page="search">Search</button>
+      </nav>
+      <div class="toolbar-controls">
+        <div class="season-toggle" id="seasonToggle">
+          <button class="season-btn active" data-season="all" type="button">All-time</button>
+          <button class="season-btn" data-season="current" type="button">&#9679; Current season</button>
+        </div>
+        <details class="filters-toggle" id="filtersToggle">
+          <summary id="filtersSummary">Filters <span class="chev">&#9662;</span></summary>
+          <div class="filters" id="filtersPanel">
+            <label>Member<select id="memberFilter"></select></label>
+            <label>Sport group<select id="sportGroupFilter"></select></label>
+            <label>Bet type<select id="betTypeFilter"></select></label>
+            <label>Year<select id="yearFilter"></select></label>
+            <label>Odds<select id="oddsFilter"></select></label>
+            <label>Result<select id="resultFilter"></select></label>
+            <label class="search-label">Search<input id="searchInput" placeholder="Warriors, Bunnings, McCaw..."></label>
+            <label>Min picks<input id="minPicks" type="number" min="1" value="10"></label>
+            <button id="resetBtn" type="button">Reset</button>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
 
   <main id="app" class="main"></main>
 
-  <footer class="footer">IQ2GQ Hub v1.3A - Smart Insights - live from Google Sheets</footer>
+  <footer class="footer">IQ2GQ Hub v1.5 - Smart Insights - live from Google Sheets</footer>
 
   <script src="app.js"></script>
 </body>

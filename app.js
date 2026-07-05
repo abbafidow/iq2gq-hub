@@ -6,7 +6,11 @@ const state = {
   page: 'dashboard',
   sort: {},
   sportDrilldown: false,
+  seasonScope: 'all', // 'all' | 'current'
+  mmSuccess: new Map(),
 };
+
+const FILTER_IDS = ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput'];
 
 const ODDS = [
   ['under1.20', 'Under 1.20', 0, 1.199999],
@@ -59,9 +63,10 @@ function normalise(row, index) {
   const odds = num(pick(row, ['Odds', 'Final odds', 'Final Odds', 'Price', 'TAB odds', 'TAB Odds']));
   const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
   const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
-  const date = clean(pick(row, ['Date', 'MM Drop', 'Drop Date', 'date']));
+  const date = clean(pick(row, ['Date', 'Drop Date', 'date']));
   const name = clean(pick(row, ['Bet Name', 'Name', 'Bet', 'Selection', 'Team', 'Option Name', 'betName']));
   const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
+  const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
 
   return {
     key: key || String(index + 1),
@@ -69,6 +74,7 @@ function normalise(row, index) {
     sport,
     group: sportGroup(sport),
     betType,
+    betTypeGroup: betTypeGroup(betType),
     odds,
     result,
     win: result === 'Win',
@@ -76,6 +82,7 @@ function normalise(row, index) {
     year,
     date,
     name,
+    mm,
     row,
   };
 }
@@ -89,7 +96,20 @@ function sportGroup(sport) {
   if (x.includes('basketball') || x.includes('nba') || x.includes('anbl') || x.includes('wnbl')) return 'Basketball';
   if (x.includes('afl')) return 'AFL';
   if (x.includes('mma') || x.includes('ufc')) return 'MMA';
+  if (x.includes('olympic')) return 'Olympics';
   return sport ? sport.split('(')[0].trim() : 'Other';
+}
+
+function betTypeGroup(betType) {
+  const x = lower(betType);
+  if (x.includes('h2h') || x.includes('head to head') || x.includes('moneyline')) return 'Head to Head (H2H)';
+  if (x.includes('point start') || x.includes('points start') || x.includes('handicap') || x.includes('line ')) return 'Point Starts';
+  if (x.includes('margin')) return 'Winning Margins';
+  if (x.includes('scorer') || x.includes('anytime') || x.includes('try scorer') || x.includes('goal scorer')) return 'Anytime Scorers';
+  if (x.includes('total') || x.includes('over') || x.includes('under')) return 'Totals (Over/Under)';
+  if (x.includes('multi') || x.includes('parlay') || x.includes('accumulator')) return 'Multis';
+  if (x.includes('future') || x.includes('outright') || x.includes('premiership') || x.includes('winner')) return 'Futures/Outrights';
+  return betType || 'Other';
 }
 
 function qualifies(row) {
@@ -103,6 +123,7 @@ async function init() {
     const json = await res.json();
     state.apiCount = Number(json.count || 0);
     state.raw = (json.data || []).map(normalise).filter(qualifies);
+    state.mmSuccess = buildMMSuccess(state.raw);
     buildFilters();
     bind();
     render();
@@ -111,6 +132,23 @@ async function init() {
     $('status').textContent = 'Could not load Google Sheet data';
     console.error(error);
   }
+}
+
+function mmKey(row) {
+  return row.mm ? `${row.date}||${row.mm}` : '';
+}
+
+function buildMMSuccess(rows) {
+  const groups = new Map();
+  rows.forEach(row => {
+    const key = mmKey(row);
+    if (!key) return;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+  const success = new Map();
+  groups.forEach((legs, key) => success.set(key, legs.length > 0 && legs.every(r => r.win)));
+  return success;
 }
 
 function uniq(values) {
@@ -124,7 +162,7 @@ function fill(id, values, all = 'All') {
 function buildFilters() {
   fill('memberFilter', uniq(state.raw.map(r => r.member)));
   fill('sportGroupFilter', uniq(state.raw.map(r => r.group)));
-  fill('betTypeFilter', uniq(state.raw.map(r => r.betType)));
+  fill('betTypeFilter', uniq(state.raw.map(r => r.betTypeGroup)));
   fill('yearFilter', uniq(state.raw.map(r => r.year)));
   $('oddsFilter').innerHTML = '<option value="">All</option>' + ODDS.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
   $('resultFilter').innerHTML = '<option value="">All</option><option>Win</option><option>Loss</option>';
@@ -139,34 +177,25 @@ function bind() {
       render();
     };
   });
-  ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput', 'minPicks']
-    .forEach(id => $(id).addEventListener('input', render));
+  document.querySelectorAll('.season-btn').forEach(button => {
+    button.onclick = () => {
+      state.seasonScope = button.dataset.season;
+      document.querySelectorAll('.season-btn').forEach(x => x.classList.remove('active'));
+      button.classList.add('active');
+      render();
+    };
+  });
+  [...FILTER_IDS, 'minPicks'].forEach(id => $(id).addEventListener('input', render));
   $('resetBtn').onclick = () => {
-    ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput']
-      .forEach(id => $(id).value = '');
+    FILTER_IDS.forEach(id => $(id).value = '');
     $('minPicks').value = 10;
     render();
   };
-  document.querySelectorAll('[data-quick]').forEach(button => button.onclick = () => quick(button.dataset.quick));
 }
 
-function quick(q) {
-  $('memberFilter').value = '';
-  $('sportGroupFilter').value = '';
-  $('betTypeFilter').value = '';
-  $('oddsFilter').value = '';
-  $('resultFilter').value = '';
-  $('searchInput').value = '';
-  if (q === 'nrl') $('searchInput').value = 'NRL';
-  if (q === 'nfl') $('searchInput').value = 'NFL';
-  if (q === 'union') $('sportGroupFilter').value = 'Rugby Union';
-  if (q === 'football') $('sportGroupFilter').value = 'Football';
-  if (q === 'h2h') $('searchInput').value = 'H2H';
-  if (q === 'point') $('searchInput').value = 'point start';
-  if (q === 'scorer') $('searchInput').value = 'scorer';
-  if (q === '2plus') $('oddsFilter').value = '2plus';
-  if (q === 'losses') $('resultFilter').value = 'Loss';
-  render();
+function updateFiltersSummary() {
+  const active = FILTER_IDS.filter(id => $(id).value).length;
+  $('filtersSummary').innerHTML = `Filters${active ? ` (${active} active)` : ''} <span class="chev">&#9662;</span>`;
 }
 
 function filtered() {
@@ -178,9 +207,13 @@ function filtered() {
   const odds = $('oddsFilter').value;
   const result = $('resultFilter').value;
   const query = lower($('searchInput').value);
+  if (!year && state.seasonScope === 'current') {
+    const cy = currentYear(state.raw);
+    data = data.filter(r => seasonEqual(r.year, cy));
+  }
   if (member) data = data.filter(r => r.member === member);
   if (group) data = data.filter(r => r.group === group);
-  if (betType) data = data.filter(r => r.betType === betType);
+  if (betType) data = data.filter(r => r.betTypeGroup === betType);
   if (year) data = data.filter(r => r.year === year);
   if (result) data = data.filter(r => r.result === result);
   if (odds) {
@@ -191,6 +224,44 @@ function filtered() {
     data = data.filter(r => [r.member, r.sport, r.group, r.betType, r.name, r.year].join(' ').toLowerCase().includes(query));
   }
   return data;
+}
+
+function presidentialRace(data) {
+  const map = new Map();
+  data.forEach(row => {
+    if (!row.member) return;
+    if (!map.has(row.member)) {
+      map.set(row.member, { name: row.member, points: 0, picks: 0, wins: 0, losses: 0, mmBonus: 0, bigWins: 0, bigLosses: 0 });
+    }
+    const m = map.get(row.member);
+    m.picks += 1;
+    if (row.win) { m.points += 0.5; m.wins += 1; }
+    if (row.loss) { m.points -= 1; m.losses += 1; }
+    const key = mmKey(row);
+    if (key && state.mmSuccess.get(key)) { m.points += 1.5; m.mmBonus += 1; }
+    if (row.win && Number.isFinite(row.odds) && row.odds >= 2) { m.points += 3; m.bigWins += 1; }
+    if (row.loss && Number.isFinite(row.odds) && row.odds >= 2) { m.points -= 3; m.bigLosses += 1; }
+  });
+  const rows = [...map.values()].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  return rows.map((row, index, arr) => ({
+    ...row,
+    rank: index + 1,
+    title: index === 0 ? 'Minor Premier' : index === 1 ? 'Runner-up' : index === arr.length - 1 && arr.length > 2 ? 'Benson' : '',
+  }));
+}
+
+function presidentialCols() {
+  return [
+    { key: 'rank', label: 'Rank', type: 'num' },
+    { key: 'name', label: 'Member', primary: true },
+    { key: 'points', label: 'Points', type: 'num1' },
+    { key: 'wins', label: 'Wins', type: 'num' },
+    { key: 'losses', label: 'Losses', type: 'num' },
+    { key: 'mmBonus', label: 'Successful MMs', type: 'num' },
+    { key: 'bigWins', label: '$2+ wins', type: 'num' },
+    { key: 'bigLosses', label: '$2+ losses', type: 'num' },
+    { key: 'title', label: 'Standing' },
+  ];
 }
 
 function aggregate(data, key) {
@@ -253,6 +324,7 @@ function table(rows, tableId, columns) {
 function format(column, value) {
   if (column.type === 'pct') return `<span class="good">${pct(value)}</span>`;
   if (column.type === 'num') return Number(value || 0).toLocaleString();
+  if (column.type === 'num1') return Number(value || 0).toFixed(1);
   if (column.type === 'odds') return oddsFmt(value);
   return escapeHtml(value ?? '');
 }
@@ -312,11 +384,11 @@ function kpis(data) {
 }
 
 function render() {
+  updateFiltersSummary();
   const data = filtered();
   const page = state.page;
   const app = $('app');
   if (page === 'dashboard') app.innerHTML = dashboard(data);
-  if (page === 'live') app.innerHTML = live(data);
   if (page === 'members') app.innerHTML = members(data);
   if (page === 'sports') app.innerHTML = sports(data);
   if (page === 'bettypes') app.innerHTML = betTypes(data);
@@ -327,20 +399,16 @@ function render() {
 
 function dashboard(data) {
   const min = Number($('minPicks').value) || 1;
-  const members = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'members').slice(0, 13));
-  const sports = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
-  return `${kpis(data)}${insights(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Sport group performance</h2>${table(sports, 'sports', sportCols('Sport group'))}</div></section>`;
-}
-
-function live(data) {
   const cy = currentYear(state.raw);
-  const current = data.filter(r => seasonEqual(r.year, cy));
-  const min = Number($('minPicks').value) || 1;
-  const members = rank(sortRows(enrichMembers(aggregate(current, 'member'), current).filter(x => x.picks >= min), 'liveMembers'));
-  const recent = current.slice().sort(comparePickOrder).slice(-20).reverse().map((r, i) => ({
+  const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
+  const members = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'members').slice(0, 13));
+  const presidential = sortRows(presidentialRace(data), 'presidentialRace', 'points');
+  const sportGroups = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
+  const betTypeGroups = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'dashboardBetTypes').slice(0, 20));
+  const recent = data.slice().sort(comparePickOrder).slice(-10).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `<div class="panel"><h2>● ${escapeHtml(cy || 'Current season')} Live</h2><p class="muted">Current season view. This includes all rows tagged to the current syndicate year, whether they sit in Raw_History or Raw_Live.</p></div>${kpis(current)}${insights(current)}<section class="two"><div class="panel"><h2>Current ladder</h2>${table(members, 'liveMembers', memberCols())}</div><div class="panel"><h2>Latest current-season picks</h2>${table(recent, 'liveRecent', [
+  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>${kpis(data)}${insights(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Presidential Race</h2><p class="muted">0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p>${table(presidential, 'presidentialRace', presidentialCols())}</div></section><section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section><div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'bet', label: 'Bet' },
@@ -348,7 +416,7 @@ function live(data) {
     { key: 'sport', label: 'Sport' },
     { key: 'odds', label: 'Odds', type: 'odds' },
     { key: 'result', label: 'Result' },
-  ])}</div></section>`;
+  ])}</div>`;
 }
 
 function members(data) {
@@ -386,7 +454,7 @@ function memberIntelligence(member, data) {
     year: r.year,
   }));
   const bestSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberSports-${member}`, 'success').slice(0, 8));
-  const betRows = rank(sortRows(aggregate(profileData, 'betType').filter(x => x.picks >= 5), `memberBetTypes-${member}`, 'success').slice(0, 8));
+  const betRows = rank(sortRows(aggregate(profileData, 'betTypeGroup').filter(x => x.picks >= 5), `memberBetTypes-${member}`, 'success').slice(0, 8));
   const oddsRows = rank(sortRows(memberOddsBands(profileData), `memberOdds-${member}`, 'success'));
   const worstSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberWorstSports-${member}`, 'success').reverse().slice(0, 5));
 
@@ -434,7 +502,7 @@ function memberIntelligence(member, data) {
     </section>
 
     <section class="two">
-      <div class="panel"><h2>Best bet types</h2>${table(betRows, `memberBetTypes-${member}`, sportCols('Bet type'))}</div>
+      <div class="panel"><h2>Best bet types</h2>${table(betRows, `memberBetTypes-${member}`, sportCols('Bet type group'))}</div>
       <div class="panel"><h2>Odds bands</h2>${table(oddsRows, `memberOdds-${member}`, sportCols('Odds band'))}</div>
     </section>
 
@@ -523,8 +591,9 @@ function sports(data) {
 
 function betTypes(data) {
   const min = Number($('minPicks').value) || 1;
-  const rows = rank(sortRows(aggregate(data, 'betType').filter(x => x.picks >= min), 'betTypes'));
-  return `<div class="panel"><h2>Bet types</h2>${table(rows, 'betTypes', sportCols('Bet type'))}</div>`;
+  const groupedRows = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'betTypesGrouped'));
+  const specificRows = rank(sortRows(aggregate(data, 'betType').filter(x => x.picks >= min), 'betTypesSpecific'));
+  return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use the Bet type filter to narrow a category, or search for a specific market below.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'))}</div>`;
 }
 
 function odds(data) {
@@ -645,7 +714,7 @@ function smartInsightCards(data) {
     cards.push(highestWinCard(memberRows, `${member} highest win`));
   } else if (group) {
     cards.push(bestDimensionCard(data, 'member', `Best ${group} member`, 'Member'));
-    cards.push(bestDimensionCard(data, 'betType', `Best ${group} bet type`, 'Bet type'));
+    cards.push(bestDimensionCard(data, 'betTypeGroup', `Best ${group} bet type`, 'Bet type'));
     cards.push(bestOddsBandCard(data, `Best ${group} odds band`));
     cards.push(hotMemberCard(data));
   } else if (betType) {
@@ -656,13 +725,13 @@ function smartInsightCards(data) {
   } else if (oddsFilter) {
     cards.push(bestDimensionCard(data, 'member', 'Best member in odds band', 'Member'));
     cards.push(bestDimensionCard(data, 'group', 'Best sport in odds band', 'Sport group'));
-    cards.push(bestDimensionCard(data, 'betType', 'Best bet type in odds band', 'Bet type'));
+    cards.push(bestDimensionCard(data, 'betTypeGroup', 'Best bet type in odds band', 'Bet type'));
     cards.push(hotMemberCard(data));
   } else {
     cards.push(bestDimensionCard(data, 'member', 'Best overall member', 'Member'));
     cards.push(hotMemberCard(data));
     cards.push(bestDimensionCard(data, 'group', 'Best sport group', 'Sport group'));
-    cards.push(bestDimensionCard(data, 'betType', 'Best bet type', 'Bet type'));
+    cards.push(bestDimensionCard(data, 'betTypeGroup', 'Best bet type', 'Bet type'));
     cards.push(bestOddsBandCard(data, 'Best odds band'));
   }
 
@@ -833,10 +902,11 @@ function enrichMembers(rows, data) {
 
 function insightScopeLabel() {
   const parts = [];
+  const year = $('yearFilter').value;
+  if (!year && state.seasonScope === 'current') parts.push(`Season: ${currentYear(state.raw) || 'Current season'}`);
   const member = $('memberFilter').value;
   const group = $('sportGroupFilter').value;
   const betType = $('betTypeFilter').value;
-  const year = $('yearFilter').value;
   const odds = $('oddsFilter').value;
   const result = $('resultFilter').value;
   const query = $('searchInput').value;
