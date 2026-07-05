@@ -402,13 +402,14 @@ function dashboard(data) {
   const cy = currentYear(state.raw);
   const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
   const members = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'members').slice(0, 13));
-  const presidential = sortRows(presidentialRace(data), 'presidentialRace', 'points');
+  const presidentialRows = state.raw.filter(r => seasonEqual(r.year, cy));
+  const presidential = sortRows(presidentialRace(presidentialRows), 'presidentialRace', 'points');
   const sportGroups = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
   const betTypeGroups = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'dashboardBetTypes').slice(0, 20));
   const recent = data.slice().sort(comparePickOrder).slice(-10).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>${kpis(data)}${insights(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Presidential Race</h2><p class="muted">0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p>${table(presidential, 'presidentialRace', presidentialCols())}</div></section><section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section><div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
+  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>${kpis(data)}${insights(data)}<section class="two"><div class="panel"><h2>Top members</h2>${table(members, 'members', memberCols())}</div><div class="panel"><h2>Presidential Race</h2><p class="muted">${escapeHtml(cy || 'Current season')} only - always the full current season, independent of the filters and season toggle above. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p>${table(presidential, 'presidentialRace', presidentialCols())}</div></section><section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section><div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'bet', label: 'Bet' },

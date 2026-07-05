@@ -4,6 +4,12 @@ Live GitHub Pages site connected to the IQ2GQ Google Sheets Apps Script API.
 
 ## v1.5 changes
 
+- **Presidential Race is fixed to the current season only.** It no longer
+  changes when you toggle All-time/Current season or apply any filter
+  (Member, Sport group, Bet type, Odds, Result, Search) - it always
+  calculates from the full current syndicate year, matching your master
+  scoreboard sheet. Verified: applying a Member filter or a Sport group
+  filter no longer changes the Presidential Race numbers at all.
 - **Removed quick-filter chips entirely** ("Best NRL", "Best NFL", "H2H", "$2+ odds" etc.). The nav, season toggle and filters button now sit in a single sticky row - one less layer of chrome, and one less "layer before the information" per the original brief.
 - **High-level grouping for Bet Types**, matching the pattern Sports already used:
   - The **Bet type** filter now offers grouped categories (Head to Head (H2H), Point Starts, Winning Margins, Anytime Scorers, Totals (Over/Under), Multis, Futures/Outrights, plus anything unmatched keeps its own name so nothing is hidden).
