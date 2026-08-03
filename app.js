@@ -71,20 +71,24 @@ const oddsValue = pick(row, [
 
 const odds = oddsValue === ''
   ? null
-  : num(oddsValue); const member =
-    clean(row["Member code"]) ||
-    clean(row["Member Code"]) ||
-    clean(row["Member"]) ||
-    clean(row["Code"]) ||
-    clean(row["member"]) ||
-    "Unknown";
-  const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
-  const date = clean(pick(row, ['Date', 'Drop Date', 'date']));
+  : num(oddsValue);
+
+const member =
+  clean(row["Member code"]) ||
+  clean(row["Member Code"]) ||
+  clean(row["Member"]) ||
+  clean(row["Code"]) ||
+  clean(row["member"]) ||
+  "Unknown";
 const name =
-    clean(row["Option"]) ||
-    clean(row["Selection"]) ||
-    clean(row["Bet Name"]) ||
-    clean(row["Team"]) ||
+  clean(row["Option"]) ||
+  clean(row["Selection"]) ||
+  clean(row["Bet Name"]) ||
+  clean(row["Team"]) ||
+  clean(row["Name"]) ||
+  "Unknown";
+
+const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
     clean(row["Name"]) ||
     "Unknown";  const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
   const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
