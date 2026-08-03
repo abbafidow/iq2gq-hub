@@ -71,11 +71,22 @@ const oddsValue = pick(row, [
 
 const odds = oddsValue === ''
   ? null
-  : num(oddsValue);  const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
+  : num(oddsValue); const member =
+    clean(row["Member code"]) ||
+    clean(row["Member Code"]) ||
+    clean(row["Member"]) ||
+    clean(row["Code"]) ||
+    clean(row["member"]) ||
+    "Unknown";
   const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
   const date = clean(pick(row, ['Date', 'Drop Date', 'date']));
-  const name = clean(pick(row, ['Bet Name', 'Name', 'Bet', 'Selection', 'Team', 'Option Name', 'betName']));
-  const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
+const name =
+    clean(row["Option"]) ||
+    clean(row["Selection"]) ||
+    clean(row["Bet Name"]) ||
+    clean(row["Team"]) ||
+    clean(row["Name"]) ||
+    "Unknown";  const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
   const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
 
   return {
@@ -224,8 +235,12 @@ function filtered() {
   const group = $('sportGroupFilter').value;
   const betType = $('betTypeFilter').value;
   const year = $('yearFilter').value;
-  const odds = $('oddsFilter').value;
-  const result = $('resultFilter').value;
+const odds = parseFloat(
+    row["Odds"] ??
+    row["Final Odds"] ??
+    row["Final odds"] ??
+    0
+);  const result = $('resultFilter').value;
   const query = lower($('searchInput').value);
   if (!year && state.seasonScope === 'current') {
     const cy = currentYear(state.raw);
