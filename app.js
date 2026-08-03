@@ -1,4 +1,5 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyEQsjdYNmRx7Q3U1pmmVlwH8-qvk6cjXy6JWzX4xoCwdB3_VwvCu9l0mJ0ylb5bySR/exec';
+
 const state = {
   raw: [],
   apiCount: 0,
@@ -59,8 +60,18 @@ function normalise(row, index) {
     'Bet Type', 'Bet type', 'Betting Type', 'Betting type', 'Bet Option',
     'Option', 'Market', 'Type', 'betType'
   ])) || 'Unknown';
-  const odds = num(pick(row, ['Odds', 'Final odds', 'Final Odds', 'Price', 'TAB odds', 'TAB Odds']));
-  const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
+const oddsValue = pick(row, [
+  'Odds',
+  'Final odds',
+  'Final Odds',
+  'Price',
+  'TAB odds',
+  'TAB Odds'
+]);
+
+const odds = oddsValue === ''
+  ? null
+  : num(oddsValue);  const member = clean(pick(row, ['Member code', 'Member Code', 'Member', 'Code', 'member']));
   const year = clean(pick(row, ['Synd. Year', 'Synd Year', 'Syndicate Year', 'Year', 'Season', 'season']));
   const date = clean(pick(row, ['Date', 'Drop Date', 'date']));
   const name = clean(pick(row, ['Bet Name', 'Name', 'Bet', 'Selection', 'Team', 'Option Name', 'betName']));
@@ -112,8 +123,18 @@ function betTypeGroup(betType) {
 }
 
 function qualifies(row) {
-  // Count only resulted pick rows. Missing bet type is allowed and shown as Unknown.
-  return row.member && row.result && Number.isFinite(row.odds);
+
+  // Ignore blank rows
+  if (!row.result) return false;
+
+  // Ignore summary/header rows
+  if (!row.sport && !row.betType) return false;
+
+  // Member can be blank for older seasons
+  // Odds can be blank for older seasons
+
+  return true;
+
 }
 
 async function init() {
