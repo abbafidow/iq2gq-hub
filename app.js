@@ -235,11 +235,7 @@ function filtered() {
   const group = $('sportGroupFilter').value;
   const betType = $('betTypeFilter').value;
   const year = $('yearFilter').value;
-const odds = parseFloat(
-    row["Odds"] ??
-    row["Final Odds"] ??
-    row["Final odds"] ??
-    0
+  const odds = $('oddsFilter').value;
 );  const result = $('resultFilter').value;
   const query = lower($('searchInput').value);
   if (!year && state.seasonScope === 'current') {
