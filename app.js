@@ -44,84 +44,69 @@ function pick(row, names) {
 }
 
 function normalise(row, index) {
-  const resultRaw = clean(pick(row, [
-    'Result', 'Bet successful', 'Bet Successful', 'Successful', 'Success',
-    'Correct', 'Win Loss', 'Win/Loss', 'W/L'
-  ]));
 
-  const result = /^(yes|y|win|won|true|1|correct|success)$/i.test(resultRaw)
-    ? 'Win'
-    : /^(no|n|loss|lost|false|0|incorrect|crash|failed)$/i.test(resultRaw)
-      ? 'Loss'
-      : '';
+  const member = clean(row["Member code"]);
 
-  const sport = clean(pick(row, ['Sport', 'Competition', 'Sport / Competition', 'sport']));
-  const betType = clean(pick(row, [
-    'Bet Type', 'Bet type', 'Betting Type', 'Betting type', 'Bet Option',
-    'Option', 'Market', 'Type', 'betType'
-  ])) || 'Unknown';
-const oddsValue = pick(row, [
-  'Odds',
-  'Final odds',
-  'Final Odds',
-  'Price',
-  'TAB odds',
-  'TAB Odds'
-]);
+  const year = clean(row["Synd. Year"]);
 
-const odds = oddsValue === ''
-  ? null
-  : num(oddsValue);
+  const date = clean(row["Date"]);
 
-const member =
-  clean(row["Member code"]) ||
-  clean(row["Member Code"]) ||
-  clean(row["Member"]) ||
-  clean(row["Code"]) ||
-  clean(row["member"]) ||
-  "Unknown";
-const year = clean(pick(row, [
-  'Synd. Year',
-  'Synd Year',
-  'Syndicate Year',
-  'Year',
-  'Season',
-  'season'
-]));
+  const sport = clean(row["Sport"]);
 
-const date = clean(pick(row, [
-  'Date',
-  'Drop Date',
-  'date'
-]));
-  const name =
-  clean(row["Option"]) ||
-  clean(row["Selection"]) ||
-  clean(row["Bet Name"]) ||
-  clean(row["Team"]) ||
-  clean(row["Name"]) ||
-  "Unknown";
+  const betType = clean(row["Bet Type"]);
 
-const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
-const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
-console.log(row["Member code"], member);
+  const name = clean(row["Option"]);
+
+  const key = clean(row["Key"]);
+
+  const mm = clean(row["MM drop"]);
+
+  const odds = num(row["Odds"]);
+
+  const resultRaw = lower(row["Result (Yes/No)"]);
+
+  let result = "";
+
+  if (["yes","y","win","won","true","1"].includes(resultRaw))
+    result = "Win";
+
+  else if (["no","n","loss","lost","false","0"].includes(resultRaw))
+    result = "Loss";
+
   return {
+
     key: key || String(index + 1),
-    member,
-    sport,
-    group: sportGroup(sport),
-    betType,
-    betTypeGroup: betTypeGroup(betType),
-    odds,
-    result,
-    win: result === 'Win',
-    loss: result === 'Loss',
+
+    member: member || "Unknown",
+
     year,
+
     date,
+
+    sport,
+
+    group: sportGroup(sport),
+
+    betType,
+
+    betTypeGroup: betTypeGroup(betType),
+
     name,
+
+    odds,
+
+    result,
+
+    win: result === "Win",
+
+    loss: result === "Loss",
+
     mm,
-    row,
+
+    row
+
   };
+
 }
 
 function sportGroup(sport) {
@@ -151,17 +136,14 @@ function betTypeGroup(betType) {
 
 function qualifies(row) {
 
-  // Ignore blank rows
-  if (!row.result) return false;
+  // Ignore future template rows
+  if (!row.name) return false;
 
-  // Ignore summary/header rows
-  if (!row.sport && !row.betType) return false;
+  if (!row.sport) return false;
 
-  // Member can be blank for older seasons
-  // Odds can be blank for older seasons
+  if (!row.betType) return false;
 
   return true;
-
 }
 
 async function init() {
