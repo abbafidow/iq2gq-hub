@@ -104,7 +104,7 @@ const date = clean(pick(row, [
 
 const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
 const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
-
+console.log(row["Member code"], member);
   return {
     key: key || String(index + 1),
     member,
