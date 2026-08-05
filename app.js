@@ -73,13 +73,16 @@ const odds = oddsValue === ''
   ? null
   : num(oddsValue);
 
-const member =
-  clean(row["Member code"]) ||
-  clean(row["Member Code"]) ||
-  clean(row["Member"]) ||
-  clean(row["Code"]) ||
-  clean(row["member"]) ||
-  "Unknown";
+const member = pick(row, [
+  'Member code',
+  'Member Code',
+  'Member',
+  'Code',
+  'member'
+]);
+
+console.log(row);
+console.log("Member =", member);
 const year = clean(pick(row, [
   'Synd. Year',
   'Synd Year',
