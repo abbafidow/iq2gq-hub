@@ -240,7 +240,7 @@ function filtered() {
   const betType = $('betTypeFilter').value;
   const year = $('yearFilter').value;
   const odds = $('oddsFilter').value;
-);  const result = $('resultFilter').value;
+const result = $('resultFilter').value;
   const query = lower($('searchInput').value);
   if (!year && state.seasonScope === 'current') {
     const cy = currentYear(state.raw);
