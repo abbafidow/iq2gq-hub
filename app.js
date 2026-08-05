@@ -63,7 +63,7 @@ function normalise(row, index) {
 
   const odds = num(row["Odds"]);
 
-  const resultRaw = lower(row["Result (Yes/No)"]);
+  const resultRaw = lower(row["Result"]);
 
   let result = "";
 
