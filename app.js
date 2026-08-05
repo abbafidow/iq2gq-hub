@@ -167,9 +167,16 @@ function qualifies(row) {
 async function init() {
   try {
     const res = await fetch(`${API_URL}?v=${Date.now()}`, { cache: 'no-store' });
+    
     const json = await res.json();
+    
+    console.log("API count:", json.count);
+    console.log("API data length:", json.data.length);
+    
     state.apiCount = Number(json.count || 0);
-    state.raw = (json.data || []).map(normalise);    state.mmSuccess = buildMMSuccess(state.raw);
+    state.raw = (json.data || []).map(normalise);    
+    state.mmSuccess = buildMMSuccess(state.raw);
+    
     buildFilters();
     bind();
     render();
