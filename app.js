@@ -80,7 +80,21 @@ const member =
   clean(row["Code"]) ||
   clean(row["member"]) ||
   "Unknown";
-const name =
+const year = clean(pick(row, [
+  'Synd. Year',
+  'Synd Year',
+  'Syndicate Year',
+  'Year',
+  'Season',
+  'season'
+]));
+
+const date = clean(pick(row, [
+  'Date',
+  'Drop Date',
+  'date'
+]));
+  const name =
   clean(row["Option"]) ||
   clean(row["Selection"]) ||
   clean(row["Bet Name"]) ||
