@@ -89,9 +89,7 @@ const name =
   "Unknown";
 
 const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
-    clean(row["Name"]) ||
-    "Unknown";  const key = clean(pick(row, ['Key', 'ID', 'Id', 'Record ID']));
-  const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
+const mm = clean(pick(row, ['MM drop', 'MM Drop', 'Team', 'mm']));
 
   return {
     key: key || String(index + 1),
