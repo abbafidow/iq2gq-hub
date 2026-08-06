@@ -714,12 +714,92 @@ function search(data) {
   ])}</div>`;
 }
 function pickAssistant(data) {
+
   return `
-    <div class="panel">
-      <h2>Pick Assistant</h2>
-      <p>Coming soon...</p>
+
+<div class="pa-page">
+
+    <div class="pa-header">
+
+        <h1>Pick Assistant</h1>
+
+        <p>Personalised insights to help with this week's pick.</p>
+
     </div>
-  `;
+
+    <div class="pa-card">
+
+        <div class="pa-title">THIS WEEK</div>
+
+        <div class="pa-section">
+
+            <div class="pa-label">Opportunity</div>
+
+            <div class="pa-value">
+
+                Rugby League H2H between $1.25 and $1.50 remains your strongest play.
+
+            </div>
+
+        </div>
+
+        <div class="pa-section">
+
+            <div class="pa-label">Evidence</div>
+
+            <div class="pa-stats">
+
+                <span>You: 16 / 20</span>
+
+                <span>Syndicate: 74%</span>
+
+                <span>↑ Trending</span>
+
+            </div>
+
+        </div>
+
+        <div class="pa-section">
+
+            <div class="pa-label">Consider</div>
+
+            <div class="pa-watch">
+
+                Recent losses have mainly been away favourites.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="pa-card">
+
+        <div class="pa-title">YOUR EDGE</div>
+
+        <p>Coming next...</p>
+
+    </div>
+
+    <div class="pa-card">
+
+        <div class="pa-title">TRENDING</div>
+
+        <p>Coming next...</p>
+
+    </div>
+
+    <div class="pa-card">
+
+        <div class="pa-title">WATCH</div>
+
+        <p>Coming next...</p>
+
+    </div>
+
+</div>
+
+`;
 }
 function insights(data) {
   const scope = insightScopeLabel();
