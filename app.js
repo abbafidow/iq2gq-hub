@@ -713,7 +713,14 @@ function search(data) {
     { key: 'year', label: 'Year' },
   ])}</div>`;
 }
-
+function pickAssistant(data) {
+  return `
+    <div class="panel">
+      <h2>Pick Assistant</h2>
+      <p>Coming soon...</p>
+    </div>
+  `;
+}
 function insights(data) {
   const scope = insightScopeLabel();
   const cards = smartInsightCards(data);
