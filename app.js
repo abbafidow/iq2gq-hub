@@ -430,6 +430,7 @@ function render() {
   if (page === 'odds') app.innerHTML = odds(data);
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
+  if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
 }
 
 function dashboard(data) {
