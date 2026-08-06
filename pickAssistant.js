@@ -10,3 +10,11 @@ console.log("Pick Assistant loaded");
 if (!ENABLE_PICK_ASSISTANT) {
     console.log("Pick Assistant is disabled.");
 }
+
+// ========================================
+// Build "This Week"
+// ========================================
+
+function buildThisWeek() {
+    console.log("Building This Week...");
+}
