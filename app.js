@@ -775,27 +775,41 @@ function pickAssistant(data) {
 
     <div class="pa-card">
 
-        <div class="pa-title">YOUR EDGE</div>
+       <div class="pa-card">
 
-        <p>Coming next...</p>
+    <div class="pa-title">TRENDING</div>
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Members</div>
+
+        <div id="pa-trending-members" class="pa-placeholder">
+            Loading...
+        </div>
+
+    </div>
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Sports</div>
+
+        <div id="pa-trending-sports" class="pa-placeholder">
+            Loading...
+        </div>
 
     </div>
 
-    <div class="pa-card">
+    <div class="pa-section">
 
-        <div class="pa-title">TRENDING</div>
+        <div class="pa-label">Top Competitions</div>
 
-        <p>Coming next...</p>
-
-    </div>
-
-    <div class="pa-card">
-
-        <div class="pa-title">WATCH</div>
-
-        <p>Coming next...</p>
+        <div id="pa-trending-competitions" class="pa-placeholder">
+            Loading...
+        </div>
 
     </div>
+
+</div>
 
 </div>
 
