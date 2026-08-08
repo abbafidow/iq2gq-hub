@@ -306,3 +306,49 @@ tr:last-child td { border-bottom: 0; }
 @media (max-width: 360px) {
   .smart-insights .insight-list { grid-template-columns: 1fr; }
 }
+/* ---------- Pick Assistant ---------- */
+
+.pa-card {
+    background: #16213a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.pa-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.pa-section {
+    margin-bottom: 16px;
+}
+
+.pa-section:last-child {
+    margin-bottom: 0;
+}
+
+.pa-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8fb8ff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+.pa-placeholder {
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 12px;
+    color: #d8e2f0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
