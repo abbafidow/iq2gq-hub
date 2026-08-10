@@ -343,12 +343,118 @@ tr:last-child td { border-bottom: 0; }
 }
 
 .pa-placeholder {
-    background: rgba(255,255,255,0.04);
-    border: 1px dashed rgba(255,255,255,0.12);
-    border-radius: 8px;
-    padding: 12px;
-    color: #d8e2f0;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
+  padding: 12px;
+  border: 1px dashed #53627a;
+  border-radius: 8px;
+  color: #b8c4d6;
+  background: rgba(255,255,255,0.04) !important;
+}
+}/* Pick Assistant */
+
+.pa-page {
+  margin-top: 20px;
+}
+
+.pa-header {
+  margin-bottom: 20px;
+}
+
+.pa-header h1 {
+  margin: 0 0 6px;
+}
+
+.pa-header p {
+  margin: 0;
+}
+
+.pa-card {
+background: #111a2e;
+border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.pa-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  letter-spacing: 0.04em;
+}
+
+.pa-section {
+  margin-bottom: 18px;
+}
+
+.pa-section:last-child {
+  margin-bottom: 0;
+}
+
+.pa-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.pa-value {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pa-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pa-stats span {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  color: #d8e2f0;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.pa-watch {
+  padding: 10px 12px;
+  border-left: 3px solid #53627a;
+  background: rgba(255,255,255,0.04);
+  color: #d8e2f0;
+  line-height: 1.4;
+}
+
+.pa-placeholder {
+  padding: 12px;
+  border: 1px dashed #c9ced4;
+  border-radius: 8px;
+  color: #6b7280;
+  background: #f8f9fa;
+}
+
+@media (max-width: 700px) {
+  .pa-page {
+    margin-top: 12px;
+  }
+
+  .pa-card {
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .pa-header h1 {
+    font-size: 24px;
+  }
+
+  .pa-value {
+    font-size: 15px;
+  }
+
+  .pa-stats {
+    gap: 6px;
+  }
 }
