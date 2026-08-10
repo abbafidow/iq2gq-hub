@@ -714,92 +714,168 @@ function search(data) {
   ])}</div>`;
 }
 function pickAssistant(data) {
+  const member = $('memberFilter').value;
+  const currentSeason = currentYear(state.raw);
+
+  if (!member) {
+    return `
+      <div class="pa-page">
+        <div class="pa-header">
+          <h1>Pick Assistant</h1>
+          <p>Select your name in the Member filter to see your personalised insights.</p>
+        </div>
+
+        <div class="pa-card">
+          <div class="pa-title">THIS WEEK</div>
+          <div class="pa-section">
+            <div class="pa-label">Member</div>
+            <div class="pa-value">
+              Select your member from the Member filter above.
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const memberRows = data.filter(r => r.member === member);
+  const allMemberRows = state.raw
+    .filter(r => r.member === member)
+    .sort(comparePickOrder);
+
+  const career = summary(allMemberRows);
+  const recent = recentRecord(allMemberRows, 20);
+  const active = activeStreak(allMemberRows);
+
+  const bestSport = bestDimensionCard(
+    memberRows,
+    'group',
+    'Best sport',
+    'sport group'
+  );
+
+  const bestOdds = bestOddsBandCard(
+    memberRows,
+    'Best odds band'
+  );
+
+  const memberSuccess = career.success;
+
+  const syndicateRows = state.raw.filter(r =>
+    seasonEqual(r.year, currentSeason)
+  );
+
+  const syndicateWins = syndicateRows.filter(r => r.win).length;
+  const syndicateSuccess = syndicateRows.length
+    ? syndicateWins / syndicateRows.length
+    : 0;
+
+  const trendText = memberSuccess > syndicateSuccess
+    ? 'Above syndicate rate'
+    : memberSuccess < syndicateSuccess
+      ? 'Below syndicate rate'
+      : 'At syndicate rate';
+
+  const streakText = active.count
+    ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
+    : '-';
+
+  const opportunityText = bestSport.value !== '-'
+    ? `${bestSport.value} is your strongest sport area based on your historical results.`
+    : 'Not enough data yet to identify a strongest sport area.';
+
+  const considerText = active.type === 'Loss' && active.count >= 2
+    ? `You are currently on a ${active.count}-pick losing streak.`
+    : active.type === 'Win' && active.count >= 2
+      ? `You are currently on a ${active.count}-pick winning streak.`
+      : 'Your recent form does not show a strong current streak.';
 
   return `
+    <div class="pa-page">
 
-<div class="pa-page">
+      <div class="pa-header">
+        <h1>Pick Assistant - ${escapeHtml(member)}</h1>
+        <p>Personalised insights based on your betting history.</p>
+      </div>
 
-    <div class="pa-header">
-
-        <h1>Pick Assistant</h1>
-
-        <p>Personalised insights to help with this week's pick.</p>
-
-    </div>
-
-    <div class="pa-card">
+      <div class="pa-card">
 
         <div class="pa-title">THIS WEEK</div>
 
         <div class="pa-section">
-
-            <div class="pa-label">Opportunity</div>
-
-            <div class="pa-value">
-
-                Rugby League H2H between $1.25 and $1.50 remains your strongest play.
-
-            </div>
-
+          <div class="pa-label">Opportunity</div>
+          <div class="pa-value">
+            ${escapeHtml(opportunityText)}
+          </div>
         </div>
 
         <div class="pa-section">
-
-            <div class="pa-label">Evidence</div>
-
-            <div class="pa-stats">
-
-                <span>You: 16 / 20</span>
-
-                <span>Syndicate: 74%</span>
-
-                <span>↑ Trending</span>
-
-            </div>
-
+          <div class="pa-label">Evidence</div>
+          <div class="pa-stats">
+            <span>Your record: ${career.wins} / ${career.picks}</span>
+            <span>Your success: ${pct(memberSuccess)}</span>
+            <span>${escapeHtml(trendText)}</span>
+          </div>
         </div>
 
         <div class="pa-section">
-
-            <div class="pa-label">Consider</div>
-
-            <div class="pa-watch">
-
-                Recent losses have mainly been away favourites.
-
-            </div>
-
+          <div class="pa-label">Consider</div>
+          <div class="pa-watch">
+            ${escapeHtml(considerText)}
+          </div>
         </div>
 
-    </div>
+      </div>
 
-    <div class="pa-card">
+      <div class="pa-card">
 
-        <div class="pa-title">YOUR EDGE</div>
+        <div class="pa-title">YOUR PROFILE</div>
 
-        <p>Coming next...</p>
+        <div class="pa-section">
+          <div class="pa-label">Current streak</div>
+          <div class="pa-value">${escapeHtml(streakText)}</div>
+        </div>
 
-    </div>
+        <div class="pa-section">
+          <div class="pa-label">Recent form</div>
+          <div class="pa-stats">
+            <span>Last 20: ${escapeHtml(recent.text)}</span>
+            <span>${escapeHtml(recent.detail)}</span>
+            <span>${escapeHtml(bestOdds.value)} odds band</span>
+          </div>
+        </div>
 
-    <div class="pa-card">
+      </div>
+
+      <div class="pa-card">
 
         <div class="pa-title">TRENDING</div>
 
-        <p>Coming next...</p>
+        <div class="pa-section">
+          <div class="pa-label">Top Members</div>
+          <div id="pa-trending-members" class="pa-placeholder">
+            Coming next...
+          </div>
+        </div>
+
+        <div class="pa-section">
+          <div class="pa-label">Top Sports</div>
+          <div id="pa-trending-sports" class="pa-placeholder">
+            Coming next...
+          </div>
+        </div>
+
+        <div class="pa-section">
+          <div class="pa-label">Top Competitions</div>
+          <div id="pa-trending-competitions" class="pa-placeholder">
+            Coming next...
+          </div>
+        </div>
+
+      </div>
 
     </div>
-
-    <div class="pa-card">
-
-        <div class="pa-title">WATCH</div>
-
-        <p>Coming next...</p>
-
-    </div>
-
-</div>
-
-`;
+  `;
 }
 function insights(data) {
   const scope = insightScopeLabel();
