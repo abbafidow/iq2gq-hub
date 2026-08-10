@@ -834,6 +834,16 @@ function pickAssistant(data) {
         <div class="pa-section">
           <div class="pa-label">Current streak</div>
           <div class="pa-value">${escapeHtml(streakText)}</div>
+       <div class="pa-card">
+
+    <div class="pa-title">TRENDING</div>
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Members</div>
+
+        <div id="pa-trending-members" class="pa-placeholder">
+            Loading...
         </div>
 
         <div class="pa-section">
@@ -848,8 +858,9 @@ function pickAssistant(data) {
       </div>
 
       <div class="pa-card">
+    <div class="pa-section">
 
-        <div class="pa-title">TRENDING</div>
+        <div class="pa-label">Top Sports</div>
 
         <div class="pa-section">
           <div class="pa-label">Top Members</div>
@@ -876,6 +887,27 @@ function pickAssistant(data) {
 
     </div>
   `;
+        <div id="pa-trending-sports" class="pa-placeholder">
+            Loading...
+        </div>
+
+    </div>
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Competitions</div>
+
+        <div id="pa-trending-competitions" class="pa-placeholder">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+`;
 }
 function insights(data) {
   const scope = insightScopeLabel();
