@@ -149,20 +149,20 @@ function qualifies(row) {
 async function init() {
   try {
     const res = await fetch(`${API_URL}?v=${Date.now()}`, { cache: 'no-store' });
-    
+
     const json = await res.json();
-    
+
     console.log("API count:", json.count);
     console.log("API data length:", json.data.length);
-    
+
     state.apiCount = Number(json.count || 0);
-    state.raw = (json.data || []).map(normalise);    
+    state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
     state.mmSuccess = buildMMSuccess(state.raw);
-    
+
     buildFilters();
     bind();
     render();
-    $('status').textContent = `${state.raw.length.toLocaleString()} resulted picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
+    $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
   } catch (error) {
     $('status').textContent = 'Could not load Google Sheet data';
     console.error(error);
@@ -829,11 +829,16 @@ function pickAssistant(data) {
 
       <div class="pa-card">
 
-        <div class="pa-title">YOUR PROFILE</div>
+       <div class="pa-card">
 
-        <div class="pa-section">
-          <div class="pa-label">Current streak</div>
-          <div class="pa-value">${escapeHtml(streakText)}</div>
+    <div class="pa-title">TRENDING</div>
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Members</div>
+
+        <div id="pa-trending-members" class="pa-placeholder">
+            Loading...
         </div>
 
         <div class="pa-section">
@@ -845,37 +850,31 @@ function pickAssistant(data) {
           </div>
         </div>
 
-      </div>
+    <div class="pa-section">
 
-      <div class="pa-card">
+        <div class="pa-label">Top Sports</div>
 
-        <div class="pa-title">TRENDING</div>
-
-        <div class="pa-section">
-          <div class="pa-label">Top Members</div>
-          <div id="pa-trending-members" class="pa-placeholder">
-            Coming next...
-          </div>
+        <div id="pa-trending-sports" class="pa-placeholder">
+            Loading...
         </div>
-
-        <div class="pa-section">
-          <div class="pa-label">Top Sports</div>
-          <div id="pa-trending-sports" class="pa-placeholder">
-            Coming next...
-          </div>
-        </div>
-
-        <div class="pa-section">
-          <div class="pa-label">Top Competitions</div>
-          <div id="pa-trending-competitions" class="pa-placeholder">
-            Coming next...
-          </div>
-        </div>
-
-      </div>
 
     </div>
-  `;
+
+    <div class="pa-section">
+
+        <div class="pa-label">Top Competitions</div>
+
+        <div id="pa-trending-competitions" class="pa-placeholder">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+`;
 }
 function insights(data) {
   const scope = insightScopeLabel();
