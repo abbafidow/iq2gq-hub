@@ -829,24 +829,11 @@ function pickAssistant(data) {
 
       <div class="pa-card">
 
-<<<<<<< HEAD
-       <div class="pa-card">
-
-    <div class="pa-title">TRENDING</div>
-
-    <div class="pa-section">
-
-        <div class="pa-label">Top Members</div>
-
-        <div id="pa-trending-members" class="pa-placeholder">
-            Loading...
-=======
         <div class="pa-title">YOUR PROFILE</div>
 
         <div class="pa-section">
           <div class="pa-label">Current streak</div>
           <div class="pa-value">${escapeHtml(streakText)}</div>
->>>>>>> a2825be (Spint 4 - Personalise Pick Assistant by member)
         </div>
 
         <div class="pa-section">
@@ -858,39 +845,12 @@ function pickAssistant(data) {
           </div>
         </div>
 
-<<<<<<< HEAD
-    <div class="pa-section">
-=======
       </div>
 
       <div class="pa-card">
->>>>>>> a2825be (Spint 4 - Personalise Pick Assistant by member)
 
-        <div class="pa-label">Top Sports</div>
+        <div class="pa-title">TRENDING</div>
 
-<<<<<<< HEAD
-        <div id="pa-trending-sports" class="pa-placeholder">
-            Loading...
-        </div>
-
-    </div>
-
-    <div class="pa-section">
-
-        <div class="pa-label">Top Competitions</div>
-
-        <div id="pa-trending-competitions" class="pa-placeholder">
-            Loading...
-        </div>
-
-    </div>
-
-</div>
-
-</div>
-
-`;
-=======
         <div class="pa-section">
           <div class="pa-label">Top Members</div>
           <div id="pa-trending-members" class="pa-placeholder">
@@ -916,7 +876,6 @@ function pickAssistant(data) {
 
     </div>
   `;
->>>>>>> a2825be (Spint 4 - Personalise Pick Assistant by member)
 }
 function insights(data) {
   const scope = insightScopeLabel();
