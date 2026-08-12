@@ -936,13 +936,14 @@ function smartInsightCards(data) {
   label: 'Member performance',
   value: '',
   valueHtml:
-    '<span class="member-metric"><strong>' + (career ? career.name : '-') + '</strong> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
-    '<span class="member-metric"><strong>' + (best500 ? best500.name : '-') + '</strong> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
-    '<span class="member-metric"><strong>' + (best1000 ? best1000.name : '-') + '</strong> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
-  detail: ''
+    '<span><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +    '<span class="member-metric"><strong>' + (best500 ? best500.name : '-') + '</strong> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
+    '<span><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +  detail: ''
+    '<span><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',}function currentFormCard(data) {
+   detail: ''
 };
-}function currentFormCard(data) {
-  const rows = groupBy(data, 'member');
+}
+function currentFormCard(data) {
+    const rows = groupBy(data, 'member');
 
   const members = Object.entries(rows).map(([member, picks]) => {
     const recent = picks.slice().sort(comparePickOrder).slice(-12);
