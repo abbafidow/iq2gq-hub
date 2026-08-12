@@ -267,7 +267,8 @@ tr:last-child td { border-bottom: 0; }
   .filters { position: fixed; top: auto; left: 12px; right: 12px; width: auto; grid-template-columns: 1fr 1fr; margin-top: 10px; max-height: 70vh; overflow-y: auto; }
   .filters .search-label { grid-column: 1 / -1; }
   .main { padding: 14px; }
-  .grid, .two { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr 1fr; }
+.two { grid-template-columns: 1fr; }
   .card-grid { grid-template-columns: 1fr 1fr; }
   .table-wrap { display: none; }
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -297,6 +298,33 @@ tr:last-child td { border-bottom: 0; }
 
   .toolbar-controls {
     width: 100%;
+  }
+    .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .grid .kpi {
+    padding: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .grid .kpi:nth-child(4) {
+    display: none;
+  }
+
+  .grid .kpi .label {
+    font-size: 10px;
+  }
+
+  .grid .kpi .value {
+    font-size: 20px;
+    margin-top: 2px;
+  }
+
+  .grid .kpi .hint {
+    display: none;
   }
   .brand-text h1 { font-size: 16px; }
   .logo { width: 32px; height: 32px; }
