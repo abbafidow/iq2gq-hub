@@ -878,9 +878,8 @@ function pickAssistant(data) {
 function insights(data) {
   const scope = insightScopeLabel();
   const cards = smartInsightCards(data);
-  return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
-${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span>${card.valueHtml ? card.valueHtml : `<strong>${escapeHtml(card.value)}</strong>`}${card.detailHtml ? card.detailHtml : `<em>${escapeHtml(card.detail)}</em>`}</div>`).join('')}
-}
+return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
+${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span>${card.valueHtml ? card.valueHtml : `<strong>${escapeHtml(card.value)}</strong>`}${card.detailHtml ? card.detailHtml : `<em>${escapeHtml(card.detail)}</em>`}</div>`).join('')}</div></div>`;
 
 function smartInsightCards(data) {
   const cards = [];
