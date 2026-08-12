@@ -935,11 +935,10 @@ function smartInsightCards(data) {
   return {
   label: 'Member performance',
   value: '',
-  valueHtml: `
-    <span class="member-metric"><strong>${career ? career.name : '-'}</strong> Career: ${career ? pct(career.success) : '-'}</span>
-    <span class="member-metric"><strong>${best500 ? best500.name : '-'}</strong> Last 500: ${best500 ? pct(best500.last500) : '-'}</span>
-    <span class="member-metric"><strong>${best1000 ? best1000.name : '-'}</strong> Last 1,000: ${best1000 ? pct(best1000.last1000) : '-'}</span>
-  `,
+  valueHtml:
+    '<span class="member-metric"><strong>' + (career ? career.name : '-') + '</strong> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
+    '<span class="member-metric"><strong>' + (best500 ? best500.name : '-') + '</strong> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
+    '<span class="member-metric"><strong>' + (best1000 ? best1000.name : '-') + '</strong> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
   detail: ''
 };
 }function currentFormCard(data) {
