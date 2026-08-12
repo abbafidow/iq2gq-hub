@@ -884,15 +884,7 @@ function insights(data) {
 }
 
 function smartInsightCards(data) {
-  const member = $('memberFilter').value;
-  const group = $('sportGroupFilter').value;
-  const betType = $('betTypeFilter').value;
-  const oddsFilter = $('oddsFilter').value;
   const cards = [];
-  const wins = data.filter(r => r.win).length;
-  const losses = data.filter(r => r.loss).length;
-  const success = data.length ? wins / data.length : 0;
-  cards.push({ label: 'Filtered record', value: data.length.toLocaleString(), detail: `${pct(success)} success | ${confidence(data.length)} confidence` });
 
   if (!data.length) {
     return [
@@ -900,44 +892,162 @@ function smartInsightCards(data) {
     ];
   }
 
-  if (member) {
-    const memberRows = data.filter(r => r.member === member);
-    const allMemberRows = state.raw.filter(r => r.member === member).sort(comparePickOrder);
-    const active = activeStreak(allMemberRows);
-    const last10 = allMemberRows.slice(-10);
-    const last10Wins = last10.filter(r => r.win).length;
-    cards.push({ label: `${member} current streak`, value: active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-', detail: `${last10Wins}/${last10.length || 0} in last 10 overall` });
-    cards.push(bestDimensionCard(memberRows, 'group', `${member} best sport`, 'Sport group'));
-    cards.push(bestOddsBandCard(memberRows, `${member} best odds band`));
-    cards.push(highestWinCard(memberRows, `${member} highest win`));
-  } else if (group) {
-    cards.push(bestDimensionCard(data, 'member', `Best ${group} member`, 'Member'));
-    cards.push(bestDimensionCard(data, 'betTypeGroup', `Best ${group} bet type`, 'Bet type'));
-    cards.push(bestOddsBandCard(data, `Best ${group} odds band`));
-    cards.push(hotMemberCard(data));
-  } else if (betType) {
-    cards.push(bestDimensionCard(data, 'member', `Best ${betType} member`, 'Member'));
-    cards.push(bestDimensionCard(data, 'group', `Best ${betType} sport`, 'Sport group'));
-    cards.push(bestOddsBandCard(data, `Best ${betType} odds band`));
-    cards.push(hotMemberCard(data));
-  } else if (oddsFilter) {
-    cards.push(bestDimensionCard(data, 'member', 'Best member in odds band', 'Member'));
-    cards.push(bestDimensionCard(data, 'group', 'Best sport in odds band', 'Sport group'));
-    cards.push(bestDimensionCard(data, 'betTypeGroup', 'Best bet type in odds band', 'Bet type'));
-    cards.push(hotMemberCard(data));
-  } else {
-    cards.push(bestDimensionCard(data, 'member', 'Best overall member', 'Member'));
-    cards.push(hotMemberCard(data));
-    cards.push(bestDimensionCard(data, 'group', 'Best sport group', 'Sport group'));
-    cards.push(bestDimensionCard(data, 'betTypeGroup', 'Best bet type', 'Bet type'));
-    cards.push(bestOddsBandCard(data, 'Best odds band'));
+  cards.push(memberPerformanceCard(data));
+  cards.push(currentFormCard(data));
+  cards.push(highConfidenceCard(data));
+  cards.push(oddsPerformanceCard(data));
+
+  return cards.filter(Boolean);
+}function memberPerformanceCard(data) {
+  const rows = aggregate(data, 'member')
+    .filter(x => x.picks >= 10)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks);
+
+  const career = rows[0];
+
+  const sorted = data.slice().sort(comparePickOrder);
+  const last500 = sorted.slice(-500);
+  const last1000 = sorted.slice(-1000);
+
+  const recent = rows.map(row => {
+    const member500 = last500.filter(r => r.member === row.name);
+    const member1000 = last1000.filter(r => r.member === row.name);
+
+    const wins500 = member500.filter(r => r.win).length;
+    const wins1000 = member1000.filter(r => r.win).length;
+
+    return {
+      name: row.name,
+      last500: member500.length ? wins500 / member500.length : 0,
+      last1000: member1000.length ? wins1000 / member1000.length : 0,
+      picks500: member500.length,
+      picks1000: member1000.length
+    };
+  });
+
+  const best500 = recent
+    .filter(x => x.picks500 >= 10)
+    .sort((a, b) => b.last500 - a.last500 || b.picks500 - a.picks500)[0];
+
+  const best1000 = recent
+    .filter(x => x.picks1000 >= 10)
+    .sort((a, b) => b.last1000 - a.last1000 || b.picks1000 - a.picks1000)[0];
+
+  return {
+    label: 'Member performance',
+    value: career ? career.name : '-',
+    detail: career
+      ? `Career ${pct(career.success)} | Last 500: ${best500 ? `${best500.name} ${pct(best500.last500)}` : '-'} | Last 1,000: ${best1000 ? `${best1000.name} ${pct(best1000.last1000)}` : '-'}`
+      : 'Not enough member data.'
+  };
+}function currentFormCard(data) {
+  const rows = groupBy(data, 'member');
+
+  const members = Object.entries(rows).map(([member, picks]) => {
+    const recent = picks.slice().sort(comparePickOrder).slice(-12);
+    const wins = recent.filter(r => r.win).length;
+
+    return {
+      member,
+      picks: recent.length,
+      wins,
+      success: recent.length ? wins / recent.length : 0
+    };
+  })
+  .filter(x => x.picks >= 5)
+  .sort((a, b) => b.success - a.success || b.wins - a.wins);
+
+  const top = members[0];
+
+  if (!top) {
+    return {
+      label: 'Current form',
+      value: '-',
+      detail: 'Not enough recent picks.'
+    };
   }
 
-  const streakCards = nextRoundInsightCards(data).slice(0, 3);
-  cards.push(...streakCards);
-  return cards.filter(Boolean).slice(0, 8);
-}
+  return {
+    label: 'Current form',
+    value: top.member,
+    detail: `${top.wins}/${top.picks} wins in last ${top.picks} picks (${pct(top.success)})`
+  };
+}function highConfidenceCard(data) {
+  const sportRows = aggregate(data, 'group')
+    .filter(x => x.picks >= 100)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks);
 
+  const betTypeRows = aggregate(data, 'betTypeGroup')
+    .filter(x => x.picks >= 100)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks);
+
+  const sport = sportRows[0];
+  const betType = betTypeRows[0];
+
+  return {
+    label: 'High-confidence strengths',
+    value: sport ? sport.name : '-',
+    detail: `Sport: ${sport ? `${pct(sport.success)} from ${sport.picks} picks` : 'No high-confidence sport'} | Bet type: ${betType ? `${betType.name} ${pct(betType.success)} from ${betType.picks} picks` : 'No high-confidence bet type'}`
+  };
+}function oddsPerformanceCard(data) {
+  const bands = [];
+
+  for (let start = 1.01; start < 2.00; start += 0.10) {
+    const lower = Number(start.toFixed(2));
+    const upper = Number(Math.min(2.00, start + 0.09).toFixed(2));
+    const picks = data.filter(r => r.odds >= lower && r.odds <= upper);
+    const wins = picks.filter(r => r.win).length;
+
+    if (picks.length >= 10) {
+      const success = wins / picks.length;
+      const implied = picks.reduce((sum, r) => sum + (1 / r.odds), 0) / picks.length;
+
+      bands.push({
+        label: `${lower.toFixed(2)}-${upper.toFixed(2)}`,
+        picks: picks.length,
+        success,
+        implied,
+        difference: success - implied
+      });
+    }
+  }
+
+  const twoPlus = data.filter(r => r.odds >= 2);
+  const twoPlusWins = twoPlus.filter(r => r.win).length;
+
+  if (twoPlus.length >= 10) {
+    const success = twoPlusWins / twoPlus.length;
+    const implied = twoPlus.reduce((sum, r) => sum + (1 / r.odds), 0) / twoPlus.length;
+
+    bands.push({
+      label: '2.00+',
+      picks: twoPlus.length,
+      success,
+      implied,
+      difference: success - implied
+    });
+  }
+
+  const top = bands.sort((a, b) =>
+    b.difference - a.difference || b.picks - a.picks
+  )[0];
+
+  if (!top) {
+    return {
+      label: 'Odds performance',
+      value: '-',
+      detail: 'Not enough picks within the odds ranges.'
+    };
+  }
+
+  const points = (top.difference * 100).toFixed(1);
+
+  return {
+    label: 'Odds performance',
+    value: top.label,
+    detail: `${pct(top.success)} actual | ${pct(top.implied)} implied | ${points >= 0 ? '+' : ''}${points} pts | ${top.picks} picks`
+  };
+}
 function bestDimensionCard(data, key, label, noun) {
   const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
   const rows = aggregate(data, key).filter(x => x.picks >= min).sort((a, b) => b.success - a.success || b.picks - a.picks);
