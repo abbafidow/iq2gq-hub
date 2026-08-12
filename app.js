@@ -878,10 +878,9 @@ function pickAssistant(data) {
 function insights(data) {
   const scope = insightScopeLabel();
   const cards = smartInsightCards(data);
-return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
+  return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
 ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span>${card.valueHtml ? card.valueHtml : `<strong>${escapeHtml(card.value)}</strong>`}${card.detailHtml ? card.detailHtml : `<em>${escapeHtml(card.detail)}</em>`}</div>`).join('')}</div></div>`;
-
-function smartInsightCards(data) {
+}function smartInsightCards(data) {
   const cards = [];
 
   if (!data.length) {
@@ -931,7 +930,7 @@ function smartInsightCards(data) {
     .filter(x => x.picks1000 >= 10)
     .sort((a, b) => b.last1000 - a.last1000 || b.picks1000 - a.picks1000)[0];
 
-    return {
+      return {
     label: 'Member performance',
     value: '',
     valueHtml:
