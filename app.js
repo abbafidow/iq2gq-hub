@@ -972,8 +972,7 @@ function currentFormCard(data) {
   return {
     label: 'Current form',
     value: top.member,
-    detail: `${top.wins}/${top.picks} wins in last ${top.picks} picks (${pct(top.success)})`
-  };
+    detail: `${top.wins}/${top.picks} wins in last ${top.picks} picks (${pct(top.success)})`  };
 }function highConfidenceCard(data) {
   const sportRows = aggregate(data, 'group')
     .filter(x => x.picks >= 100)
