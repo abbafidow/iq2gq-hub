@@ -879,7 +879,7 @@ function insights(data) {
   const scope = insightScopeLabel();
   const cards = smartInsightCards(data);
   return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
-${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span><strong>${card.valueHtml || escapeHtml(card.value)}</strong><em>${card.detailHtml || escapeHtml(card.detail)}</em></div>`).join('')}  </div></div>`;
+${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span>${card.valueHtml ? card.valueHtml : `<strong>${escapeHtml(card.value)}</strong>`}${card.detailHtml ? card.detailHtml : `<em>${escapeHtml(card.detail)}</em>`}</div>`).join('')}
 }
 
 function smartInsightCards(data) {
