@@ -932,16 +932,17 @@ function smartInsightCards(data) {
     .filter(x => x.picks1000 >= 10)
     .sort((a, b) => b.last1000 - a.last1000 || b.picks1000 - a.picks1000)[0];
 
-  return {
-  label: 'Member performance',
-  value: '',
-  valueHtml:
-    '<span><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +    '<span class="member-metric"><strong>' + (best500 ? best500.name : '-') + '</strong> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
-    '<span><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +  detail: ''
-    '<span><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',}function currentFormCard(data) {
-   detail: ''
-};
+    return {
+    label: 'Member performance',
+    value: '',
+    valueHtml:
+      '<span><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
+      '<span><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
+      '<span><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
+    detail: ''
+  };
 }
+
 function currentFormCard(data) {
     const rows = groupBy(data, 'member');
 
