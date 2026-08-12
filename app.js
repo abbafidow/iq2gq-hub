@@ -879,8 +879,7 @@ function insights(data) {
   const scope = insightScopeLabel();
   const cards = smartInsightCards(data);
   return `<div class="panel smart-insights"><h2>Smart insights</h2><p class="muted">${escapeHtml(scope)}</p><div class="insight-list">
-    ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span><strong>${escapeHtml(card.value)}</strong><em>${escapeHtml(card.detail)}</em></div>`).join('')}
-  </div></div>`;
+${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(card.label)}</span><strong>${card.valueHtml || escapeHtml(card.value)}</strong><em>${card.detailHtml || escapeHtml(card.detail)}</em></div>`).join('')}  </div></div>`;
 }
 
 function smartInsightCards(data) {
@@ -934,12 +933,15 @@ function smartInsightCards(data) {
     .sort((a, b) => b.last1000 - a.last1000 || b.picks1000 - a.picks1000)[0];
 
   return {
-    label: 'Member performance',
-    value: career ? career.name : '-',
-    detail: career
-      ? `Career ${pct(career.success)} | Last 500: ${best500 ? `${best500.name} ${pct(best500.last500)}` : '-'} | Last 1,000: ${best1000 ? `${best1000.name} ${pct(best1000.last1000)}` : '-'}`
-      : 'Not enough member data.'
-  };
+  label: 'Member performance',
+  value: '',
+  valueHtml: `
+    <span class="member-metric"><strong>${career ? career.name : '-'}</strong> Career: ${career ? pct(career.success) : '-'}</span>
+    <span class="member-metric"><strong>${best500 ? best500.name : '-'}</strong> Last 500: ${best500 ? pct(best500.last500) : '-'}</span>
+    <span class="member-metric"><strong>${best1000 ? best1000.name : '-'}</strong> Last 1,000: ${best1000 ? pct(best1000.last1000) : '-'}</span>
+  `,
+  detail: ''
+};
 }function currentFormCard(data) {
   const rows = groupBy(data, 'member');
 
@@ -985,10 +987,13 @@ function smartInsightCards(data) {
   const betType = betTypeRows[0];
 
   return {
-    label: 'High-confidence strengths',
-    value: sport ? sport.name : '-',
-    detail: `Sport: ${sport ? `${pct(sport.success)} from ${sport.picks} picks` : 'No high-confidence sport'} | Bet type: ${betType ? `${betType.name} ${pct(betType.success)} from ${betType.picks} picks` : 'No high-confidence bet type'}`
-  };
+  label: 'Best Sports and Bet Type (high confidence)',
+  value: '',
+  valueHtml: `
+    <span><strong>Sport</strong>: ${sport ? `${sport.name} ${pct(sport.success)} from ${sport.picks.toLocaleString()} picks` : 'No high-confidence sport'} | <strong>Bet type</strong>: ${betType ? `${betType.name} ${pct(betType.success)} from ${betType.picks.toLocaleString()} picks` : 'No high-confidence bet type'}</span>
+  `,
+  detail: ''
+};
 }function oddsPerformanceCard(data) {
   const bands = [];
 
