@@ -930,13 +930,13 @@ ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(
     .filter(x => x.picks1000 >= 10)
     .sort((a, b) => b.last1000 - a.last1000 || b.picks1000 - a.picks1000)[0];
 
-      return {
+  return {
     label: 'Member performance',
     value: '',
     valueHtml:
-      '<span><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
-      '<span><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
-      '<span><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
+      '<span class="member-metric"><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
+      '<span class="member-metric"><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
+      '<span class="member-metric"><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
     detail: ''
   };
 }
@@ -987,14 +987,15 @@ function currentFormCard(data) {
   const betType = betTypeRows[0];
 
   return {
-  label: 'Best Sports and Bet Type (high confidence)',
-  value: '',
-  valueHtml: `
-    <span><strong>Sport</strong>: ${sport ? `${sport.name} ${pct(sport.success)} from ${sport.picks.toLocaleString()} picks` : 'No high-confidence sport'} | <strong>Bet type</strong>: ${betType ? `${betType.name} ${pct(betType.success)} from ${betType.picks.toLocaleString()} picks` : 'No high-confidence bet type'}</span>
-  `,
-  detail: ''
-};
-}function oddsPerformanceCard(data) {
+    label: 'Best Sports and Bet Type (high confidence)',
+    value: '',
+    valueHtml: `
+      <span class="metric-line"><strong>Sport</strong>: ${sport ? `${sport.name} ${pct(sport.success)} from ${sport.picks.toLocaleString()} picks` : 'No high-confidence sport'} | <strong>Bet type</strong>: ${betType ? `${betType.name} ${pct(betType.success)} from ${betType.picks.toLocaleString()} picks` : 'No high-confidence bet type'}</span>
+    `,
+    detail: ''
+  };
+}
+function oddsPerformanceCard(data) {
   const bands = [];
 
   for (let start = 1.01; start < 2.00; start += 0.10) {
