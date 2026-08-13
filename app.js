@@ -933,12 +933,11 @@ ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(
   return {
     label: 'Member performance',
     value: '',
-    valueHtml:
-      '<span class="member-metric"><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
+      valueHtml:
+      '<span class="metric-line"><span class="member-metric"><b>' + (career ? career.name : '-') + '</b> Career: ' + (career ? pct(career.success) : '-') + '</span> | ' +
       '<span class="member-metric"><b>' + (best500 ? best500.name : '-') + '</b> Last 500: ' + (best500 ? pct(best500.last500) : '-') + '</span> | ' +
-      '<span class="member-metric"><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span>',
+      '<span class="member-metric"><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span></span>',
     detail: ''
-  };
 }
 
 function currentFormCard(data) {
