@@ -714,8 +714,8 @@ function search(data) {
 }
 function pickAssistant(data) {
   const member = $('memberFilter').value;
-  const currentSeason = currentYear(state.raw);
-
+const currentSeason = currentYear(state.raw);
+  const trendingRows = trendingPool(currentSeason);
   if (!member) {
     return `
       <div class="pa-page">
@@ -836,8 +836,7 @@ function pickAssistant(data) {
 
         <div class="pa-label">Top Members</div>
 
-       <div id="pa-trending-members">${trendingMembersHtml(syndicateRows)}</div>
-
+<div id="pa-trending-members">${trendingMembersHtml(trendingRows)}</div>
         <div class="pa-section">
           <div class="pa-label">Recent form</div>
           <div class="pa-stats">
@@ -851,16 +850,14 @@ function pickAssistant(data) {
 
         <div class="pa-label">Top Sports</div>
 
-        <div id="pa-trending-sports">${trendingSportsHtml(syndicateRows)}</div>
-
+<div id="pa-trending-sports">${trendingSportsHtml(trendingRows)}</div>
     </div>
 
     <div class="pa-section">
 
         <div class="pa-label">Top Competitions</div>
 
-        <div id="pa-trending-competitions">${trendingCompetitionsHtml(syndicateRows)}</div>
-
+<div id="pa-trending-competitions">${trendingCompetitionsHtml(trendingRows)}</div>
     </div>
 
 </div>
@@ -1070,6 +1067,18 @@ function highestWinCard(data, label) {
   const top = data.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
   if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
   return { label, value: oddsFmt(top.odds), detail: `${top.member} - ${top.name || top.sport || 'Unknown pick'} (${top.year || '-'})` };
+function trendingPool(currentSeason) {
+  if (state.seasonScope !== 'current') return state.raw.slice();
+  const currentRows = state.raw.filter(r => seasonEqual(r.year, currentSeason));
+  const currentRoundDates = uniq(currentRows.map(r => r.date));
+  if (currentRoundDates.length >= 16) return currentRows;
+  const priorRows = state.raw.filter(r => !seasonEqual(r.year, currentSeason));
+  const priorDatesChronological = priorRows.slice().sort(comparePickOrder).map(r => r.date);
+  const priorDatesMostRecentFirst = [...new Set(priorDatesChronological)].reverse();
+  const roundsNeeded = 16 - currentRoundDates.length;
+  const fillDates = priorDatesMostRecentFirst.slice(0, roundsNeeded);
+  const fillRows = priorRows.filter(r => fillDates.includes(r.date));
+  return fillRows.concat(currentRows);
 }
 function trendingMembersHtml(rows) {
   const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
