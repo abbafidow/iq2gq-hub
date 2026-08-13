@@ -251,7 +251,9 @@ tr:last-child td { border-bottom: 0; }
   display: inline;
   font-size: inherit;
   margin: 0;
-  word-break: normal;
+ word-break: normal;
+}
+
 .smart-insights .insight span.member-metric {
   display: inline;
   color: inherit;
