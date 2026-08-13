@@ -939,7 +939,7 @@ ${cards.map(card => `<div class="insight ${card.kind || ''}"><span>${escapeHtml(
       '<span class="member-metric"><b>' + (best1000 ? best1000.name : '-') + '</b> Last 1,000: ' + (best1000 ? pct(best1000.last1000) : '-') + '</span></span>',
     detail: ''
   };
-
+}
 function currentFormCard(data) {
     const rows = groupBy(data, 'member');
 
