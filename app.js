@@ -836,9 +836,7 @@ function pickAssistant(data) {
 
         <div class="pa-label">Top Members</div>
 
-        <div id="pa-trending-members" class="pa-placeholder">
-            Loading...
-        </div>
+       <div id="pa-trending-members">${trendingMembersHtml(syndicateRows)}</div>
 
         <div class="pa-section">
           <div class="pa-label">Recent form</div>
@@ -853,9 +851,7 @@ function pickAssistant(data) {
 
         <div class="pa-label">Top Sports</div>
 
-        <div id="pa-trending-sports" class="pa-placeholder">
-            Loading...
-        </div>
+        <div id="pa-trending-sports">${trendingSportsHtml(syndicateRows)}</div>
 
     </div>
 
@@ -863,9 +859,7 @@ function pickAssistant(data) {
 
         <div class="pa-label">Top Competitions</div>
 
-        <div id="pa-trending-competitions" class="pa-placeholder">
-            Loading...
-        </div>
+        <div id="pa-trending-competitions">${trendingCompetitionsHtml(syndicateRows)}</div>
 
     </div>
 
@@ -1077,7 +1071,41 @@ function highestWinCard(data, label) {
   if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
   return { label, value: oddsFmt(top.odds), detail: `${top.member} - ${top.name || top.sport || 'Unknown pick'} (${top.year || '-'})` };
 }
+function trendingMembersHtml(rows) {
+  const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
+  const top = aggregate(rows, 'member')
+    .filter(x => x.picks >= min)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks)
+    .slice(0, 3);
+  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
+  return '<div class="pa-stats">' + top.map((r, i) =>
+    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
+  ).join('') + '</div>';
+}
 
+function trendingSportsHtml(rows) {
+  const min = Math.min(50, Math.max(10, Number($('minPicks').value) || 20));
+  const top = aggregate(rows, 'group')
+    .filter(x => x.picks >= min)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks)
+    .slice(0, 3);
+  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
+  return '<div class="pa-stats">' + top.map((r, i) =>
+    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
+  ).join('') + '</div>';
+}
+
+function trendingCompetitionsHtml(rows) {
+  const min = Math.min(30, Math.max(10, Number($('minPicks').value) || 15));
+  const top = aggregate(rows, 'sport')
+    .filter(x => x.picks >= min)
+    .sort((a, b) => b.success - a.success || b.picks - a.picks)
+    .slice(0, 3);
+  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
+  return '<div class="pa-stats">' + top.map((r, i) =>
+    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
+  ).join('') + '</div>';
+}
 function hotMemberCard(data) {
   const grouped = groupBy(data, 'member');
   const rows = Object.entries(grouped).map(([member, picks]) => {
