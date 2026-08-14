@@ -778,7 +778,7 @@ const currentSeason = currentYear(state.raw);
   const streakText = active.count
     ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
     : '-';
-
+const worthWatching = worthWatchingItems(memberRows, currentSeason);
   const opportunityText = bestSport.value !== '-'
     ? `${bestSport.value} is your strongest sport area based on your historical results.`
     : 'Not enough data yet to identify a strongest sport area.';
@@ -801,28 +801,10 @@ const currentSeason = currentYear(state.raw);
 
         <div class="pa-title">THIS WEEK</div>
 
-        <div class="pa-section">
-          <div class="pa-label">Opportunity</div>
-          <div class="pa-value">
-            ${escapeHtml(opportunityText)}
+       <div class="pa-section">
+            <div class="pa-label">Worth Watching</div>
+            ${worthWatching.length ? worthWatching.map(item => `<div class="pa-watch"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.text)}</div>`).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
           </div>
-        </div>
-
-        <div class="pa-section">
-          <div class="pa-label">Evidence</div>
-          <div class="pa-stats">
-            <span>Your record: ${career.wins} / ${career.picks}</span>
-            <span>Your success: ${pct(memberSuccess)}</span>
-            <span>${escapeHtml(trendText)}</span>
-          </div>
-        </div>
-
-        <div class="pa-section">
-          <div class="pa-label">Consider</div>
-          <div class="pa-watch">
-            ${escapeHtml(considerText)}
-          </div>
-        </div>
 
       </div>
 
@@ -1067,6 +1049,34 @@ function highestWinCard(data, label) {
   const top = data.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
   if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
   return { label, value: oddsFmt(top.odds), detail: `${top.member} - ${top.name || top.sport || 'Unknown pick'} (${top.year || '-'})` };
+}function worthWatchingItems(memberRows, currentSeason) {
+  const minMemberPicks = 8;
+  const minSyndicatePicks = 15;
+
+  function candidatesFrom(rows, minPicks) {
+    return aggregate(rows, 'name').filter(x => x.picks >= minPicks).map(x => ({ ...x, dimension: 'Option' }))
+      .concat(aggregate(rows, 'betType').filter(x => x.picks >= minPicks).map(x => ({ ...x, dimension: 'Bet type' })))
+      .sort((a, b) => b.success - a.success || b.picks - a.picks);
+  }
+
+  const items = [];
+  const used = new Set();
+
+  candidatesFrom(memberRows, minMemberPicks).forEach(c => {
+    if (items.length >= 3 || used.has(c.name)) return;
+    used.add(c.name);
+    items.push({ source: 'Your pattern', text: `${c.name} (${c.dimension}) - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
+  });
+
+  if (items.length < 3) {
+    candidatesFrom(state.raw, minSyndicatePicks).forEach(c => {
+      if (items.length >= 3 || used.has(c.name)) return;
+      used.add(c.name);
+      items.push({ source: 'Syndicate pattern', text: `${c.name} (${c.dimension}) - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
+    });
+  }
+
+  return items;
 }
 function trendingPool(currentSeason) {
   if (state.seasonScope !== 'current') return state.raw.slice();
