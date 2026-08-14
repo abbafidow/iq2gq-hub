@@ -1067,6 +1067,7 @@ function highestWinCard(data, label) {
   const top = data.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
   if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
   return { label, value: oddsFmt(top.odds), detail: `${top.member} - ${top.name || top.sport || 'Unknown pick'} (${top.year || '-'})` };
+}
 function trendingPool(currentSeason) {
   if (state.seasonScope !== 'current') return state.raw.slice();
   const currentRows = state.raw.filter(r => seasonEqual(r.year, currentSeason));
