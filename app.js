@@ -60,6 +60,15 @@ function normalise(row, index) {
   const key = clean(row["Key"]);
 
   const mm = clean(row["MM drop"]);
+  const mmKiller = clean(row["MM Killer?"]);
+
+  const winningMM = clean(row["Winning MM?"]);
+
+  const tierKiller = clean(row["Tier Killer?"]);
+
+  const lonesomeLoser = clean(row["Lonesome Loser?"]);
+
+  const comments = clean(row["Comments"]);
 
   const odds = num(row["Odds"]);
 
@@ -102,6 +111,15 @@ function normalise(row, index) {
     loss: result === "Loss",
 
     mm,
+    mmKiller,
+
+    winningMM,
+
+    tierKiller,
+
+    lonesomeLoser,
+
+    comments,
 
     row
 
