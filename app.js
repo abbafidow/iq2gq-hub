@@ -746,7 +746,37 @@ function losingSeasonRecord(data, minPicks) {
   if (!losing.length) return '';
   return losing.map(x => `${x.name} (${x.wins}-${x.losses})`).join(', ');
 }
+function memberFieldLeaderboard(data, field) {
+  const counts = {};
+  data.forEach(r => { if (r[field]) counts[r[field]] = (counts[r[field]] || 0) + 1; });
+  const entries = Object.entries(counts);
+  if (!entries.length) return { count: 0, members: [] };
+  const best = Math.max(...entries.map(([, c]) => c));
+  return { count: best, members: entries.filter(([, c]) => c === best).map(([m]) => m) };
+}
 
+function fieldEventTotal(data, field) {
+  const counts = {};
+  data.forEach(r => { if (r[field]) counts[r[field]] = (counts[r[field]] || 0) + 1; });
+  const total = Object.values(counts).reduce((s, c) => s + c, 0);
+  const names = Object.entries(counts).map(([m, c]) => c > 1 ? `${m} (x${c})` : m);
+  return { total, names };
+}
+
+function tierCrasherCount(data) {
+  const dates = new Set(data.filter(r => r.tierKiller).map(r => r.date));
+  return dates.size;
+}
+
+function perfectRoundCount(data) {
+  const byDate = groupBy(data, 'date');
+  let count = 0;
+  Object.values(byDate).forEach(picks => {
+    const resulted = picks.filter(p => p.win || p.loss);
+    if (resulted.length && resulted.every(p => p.win)) count += 1;
+  });
+  return count;
+}
 function recordsColumnHtml(title, data, opts) {
   const minPicks = opts.minPicks || 10;
   const highWin = extremeOddsRecord(data, true, 'max');
@@ -766,8 +796,18 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
     const mostWins = mostWinsRecord(data);
     items.push(['Most wins', mostWins ? `${mostWins.name} - ${mostWins.wins.toLocaleString()}` : 'Not enough data yet.']);
   }
-  if (opts.includeLosingSeason) {
+if (opts.includeLosingSeason) {
     items.push(['Member with a losing season', losingSeasonRecord(data, minPicks)]);
+  }
+  if (opts.includeSyndicateEvents) {
+    const mmKillers = memberFieldLeaderboard(data, 'mmKiller');
+    items.push(['Most MM Killers', mmKillers.count ? `${mmKillers.count} - ${mmKillers.members.join(', ')}` : 'Not enough data yet.']);
+    const lonesome = fieldEventTotal(data, 'lonesomeLoser');
+    items.push(['Lonesome Loser(s)', lonesome.total ? `${lonesome.total} - ${lonesome.names.join(', ')}` : 'Not enough data yet.']);
+    const tierCrashers = tierCrasherCount(data);
+    items.push(['Tier Crashers (all members crash)', tierCrashers ? `${tierCrashers}` : 'Not enough data yet.']);
+    const perfectRounds = perfectRoundCount(data);
+    items.push(['Perfect Rounds (all members successful)', perfectRounds ? `${perfectRounds}` : 'Not enough data yet.']);
   }
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
 }
@@ -784,9 +824,9 @@ function records(data) {
   const memberSection = member
     ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true })
     : '';
-const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true })}</section>${memberSection}`;  return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
-    { key: 'rank', label: 'Rank', type: 'num' },
-    { key: 'name', label: 'Member', primary: true },
+const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true })}</section>${memberSection}`;
+  return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
+    { key: 'rank', label: 'Rank', type: 'num' },    { key: 'name', label: 'Member', primary: true },
     { key: 'streak', label: 'Best streak', type: 'num' },
   ])}</div><div class="panel"><h2>Highest winning odds</h2>${table(highWins, 'highWins', [
     { key: 'rank', label: 'Rank', type: 'num' },
