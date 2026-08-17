@@ -668,14 +668,122 @@ function odds(data) {
   });
   return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>`;
 }
+function recordsPool(forceCurrentSeason) {
+  let data = [...state.raw];
+  const group = $('sportGroupFilter').value;
+  const betType = $('betTypeFilter').value;
+  const year = $('yearFilter').value;
+  const odds = $('oddsFilter').value;
+  const result = $('resultFilter').value;
+  const query = lower($('searchInput').value);
+  if (forceCurrentSeason) {
+    const cy = currentYear(state.raw);
+    data = data.filter(r => seasonEqual(r.year, cy));
+  }
+  if (group) data = data.filter(r => r.group === group);
+  if (betType) data = data.filter(r => r.betTypeGroup === betType);
+  if (year) data = data.filter(r => r.year === year);
+  if (result) data = data.filter(r => r.result === result);
+  if (odds) {
+    const band = ODDS.find(x => x[0] === odds);
+    data = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+  }
+  if (query) {
+    data = data.filter(r => [r.member, r.sport, r.group, r.betType, r.name, r.year].join(' ').toLowerCase().includes(query));
+  }
+  return data;
+}
 
+function extremeOddsRecord(data, wantWin, direction) {
+  const rows = data.filter(r => Number.isFinite(r.odds) && (wantWin ? r.win : r.loss));
+  if (!rows.length) return null;
+  const target = direction === 'max' ? Math.max(...rows.map(r => r.odds)) : Math.min(...rows.map(r => r.odds));
+  return { odds: target, matches: rows.filter(r => r.odds === target) };
+}
+
+function formatOddsRecord(rec) {
+  if (!rec) return 'Not enough data yet.';
+  const counts = {};
+  rec.matches.forEach(r => { counts[r.member] = (counts[r.member] || 0) + 1; });
+  const names = Object.entries(counts).map(([m, c]) => c > 1 ? `${m} (x${c})` : m).join(', ');
+  const single = rec.matches.length === 1 ? rec.matches[0] : null;
+  const detail = single ? ` - ${single.name}, ${single.date}` : '';
+  return `${oddsFmt(rec.odds)} - ${names}${detail}`;
+}
+
+function longestStreakRecord(data, wantWin) {
+  const grouped = groupBy(data, 'member');
+  let best = { member: '-', streak: 0 };
+  Object.entries(grouped).forEach(([member, picks]) => {
+    picks.sort(comparePickOrder);
+    let current = 0, top = 0;
+    picks.forEach(p => {
+      const hit = wantWin ? p.win : p.loss;
+      if (hit) { current += 1; top = Math.max(top, current); }
+      else current = 0;
+    });
+    if (top > best.streak) best = { member, streak: top };
+  });
+  return best;
+}
+
+function bestWinPercentRecord(data, minPicks) {
+  const rows = aggregate(data, 'member').filter(x => x.picks >= minPicks).sort((a, b) => b.success - a.success || b.picks - a.picks);
+  return rows[0] || null;
+}
+
+function mostWinsRecord(data) {
+  const rows = aggregate(data, 'member').sort((a, b) => b.wins - a.wins);
+  return rows[0] || null;
+}
+
+function noLosingSeasonCheck(data, minPicks) {
+  const rows = aggregate(data, 'member').filter(x => x.picks >= minPicks);
+  if (!rows.length) return 'Not enough data yet.';
+  const losing = rows.filter(x => x.success <= 0.5);
+  if (!losing.length) return `All ${rows.length} members finished with winning records`;
+  return `${losing.length} of ${rows.length} members currently below 50%: ${losing.map(x => x.name).join(', ')}`;
+}
+
+function recordsColumnHtml(title, data, opts) {
+  const minPicks = opts.minPicks || 10;
+  const highWin = extremeOddsRecord(data, true, 'max');
+  const lowLoss = extremeOddsRecord(data, false, 'min');
+  const winStreak = longestStreakRecord(data, true);
+  const items = [];
+  items.push(['Highest successful odds', formatOddsRecord(highWin)]);
+  items.push(['Lowest unsuccessful odds', formatOddsRecord(lowLoss)]);
+  items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - ${winStreak.member}` : 'Not enough data yet.']);
+  if (opts.includeLosingStreak) {
+    const loseStreak = longestStreakRecord(data, false);
+    items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.member}` : 'Not enough data yet.']);
+  }
+  if (opts.includeWinPercent) {
+    const best = bestWinPercentRecord(data, minPicks);
+    items.push(['Highest winning percentage', best ? `${best.name} - ${pct(best.success)} (${best.wins} wins from ${best.picks.toLocaleString()} picks)` : 'Not enough data yet.']);
+    const mostWins = mostWinsRecord(data);
+    items.push(['Most wins', mostWins ? `${mostWins.name} - ${mostWins.wins.toLocaleString()}` : 'Not enough data yet.']);
+  }
+  if (opts.includeNoLosingSeason) {
+    items.push(['No losing season', noLosingSeasonCheck(data, minPicks)]);
+  }
+  return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
+}
 function records(data) {
   const streaks = bestStreaks(data);
   const highWins = data.filter(r => r.win && Number.isFinite(r.odds))
     .sort((a, b) => b.odds - a.odds)
     .slice(0, 20)
     .map((r, i) => ({ rank: i + 1, name: r.member, bet: r.name, odds: r.odds, year: r.year, sport: r.sport }));
-  return `<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
+  const cy = currentYear(state.raw);
+  const seasonData = recordsPool(true);
+  const allTimeData = recordsPool(false);
+  const member = $('memberFilter').value;
+  const memberSection = member
+    ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true })
+    : '';
+  const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 10, includeWinPercent: true, includeNoLosingSeason: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true })}</section>${memberSection}`;
+  return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
     { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'streak', label: 'Best streak', type: 'num' },
