@@ -991,8 +991,7 @@ const worthWatching = worthWatchingItems(memberRows, currentSeason);
           <div class="pa-stats">
             <span>Last 20: ${escapeHtml(recent.text)}</span>
             <span>${escapeHtml(recent.detail)}</span>
-            <span>${escapeHtml(bestOdds.value)} odds band</span>
-          </div>
+<span>${bestOdds.value === '-' ? 'Not enough odds-band data yet' : escapeHtml(bestOdds.value) + ' odds band'}</span>          </div>
         </div>
 
     <div class="pa-section">
