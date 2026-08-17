@@ -713,7 +713,8 @@ function formatOddsRecord(rec) {
 
 function longestStreakRecord(data, wantWin) {
   const grouped = groupBy(data, 'member');
-  let best = { member: '-', streak: 0 };
+  let best = 0;
+  const perMember = {};
   Object.entries(grouped).forEach(([member, picks]) => {
     picks.sort(comparePickOrder);
     let current = 0, top = 0;
@@ -722,9 +723,11 @@ function longestStreakRecord(data, wantWin) {
       if (hit) { current += 1; top = Math.max(top, current); }
       else current = 0;
     });
-    if (top > best.streak) best = { member, streak: top };
+    perMember[member] = top;
+    if (top > best) best = top;
   });
-  return best;
+  const members = Object.entries(perMember).filter(([, v]) => v === best && best > 0).map(([m]) => m);
+  return { streak: best, members };
 }
 
 function bestWinPercentRecord(data, minPicks) {
@@ -737,12 +740,11 @@ function mostWinsRecord(data) {
   return rows[0] || null;
 }
 
-function noLosingSeasonCheck(data, minPicks) {
+function losingSeasonRecord(data, minPicks) {
   const rows = aggregate(data, 'member').filter(x => x.picks >= minPicks);
-  if (!rows.length) return 'Not enough data yet.';
-  const losing = rows.filter(x => x.success <= 0.5);
-  if (!losing.length) return `All ${rows.length} members finished with winning records`;
-  return `${losing.length} of ${rows.length} members currently below 50%: ${losing.map(x => x.name).join(', ')}`;
+  const losing = rows.filter(x => x.losses > x.wins);
+  if (!losing.length) return '';
+  return losing.map(x => `${x.name} (${x.wins}-${x.losses})`).join(', ');
 }
 
 function recordsColumnHtml(title, data, opts) {
@@ -753,10 +755,10 @@ function recordsColumnHtml(title, data, opts) {
   const items = [];
   items.push(['Highest successful odds', formatOddsRecord(highWin)]);
   items.push(['Lowest unsuccessful odds', formatOddsRecord(lowLoss)]);
-  items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - ${winStreak.member}` : 'Not enough data yet.']);
+items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - ${winStreak.members.join(', ')}` : 'Not enough data yet.']);
   if (opts.includeLosingStreak) {
     const loseStreak = longestStreakRecord(data, false);
-    items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.member}` : 'Not enough data yet.']);
+    items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.members.join(', ')}` : 'Not enough data yet.']);
   }
   if (opts.includeWinPercent) {
     const best = bestWinPercentRecord(data, minPicks);
@@ -764,8 +766,8 @@ function recordsColumnHtml(title, data, opts) {
     const mostWins = mostWinsRecord(data);
     items.push(['Most wins', mostWins ? `${mostWins.name} - ${mostWins.wins.toLocaleString()}` : 'Not enough data yet.']);
   }
-  if (opts.includeNoLosingSeason) {
-    items.push(['No losing season', noLosingSeasonCheck(data, minPicks)]);
+  if (opts.includeLosingSeason) {
+    items.push(['Member with a losing season', losingSeasonRecord(data, minPicks)]);
   }
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
 }
@@ -782,8 +784,7 @@ function records(data) {
   const memberSection = member
     ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true })
     : '';
-  const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 10, includeWinPercent: true, includeNoLosingSeason: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true })}</section>${memberSection}`;
-  return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
+const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true })}</section>${memberSection}`;  return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
     { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'streak', label: 'Best streak', type: 'num' },
