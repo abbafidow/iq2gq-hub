@@ -777,6 +777,22 @@ function perfectRoundCount(data) {
   });
   return count;
 }
+function bestAnnualWinPercentRecord(data, minPicks) {
+  const groups = {};
+  data.forEach(r => {
+    if (!r.member) return;
+    const season = normalisedSeason(r.year);
+    const key = `${r.member}||${season}`;
+    if (!groups[key]) groups[key] = { member: r.member, season, wins: 0, picks: 0 };
+    groups[key].picks += 1;
+    if (r.win) groups[key].wins += 1;
+  });
+  const rows = Object.values(groups)
+    .filter(g => g.picks >= minPicks)
+    .map(g => ({ ...g, success: g.wins / g.picks }))
+    .sort((a, b) => b.success - a.success || b.picks - a.picks);
+  return rows[0] || null;
+}
 function recordsColumnHtml(title, data, opts) {
   const minPicks = opts.minPicks || 10;
   const highWin = extremeOddsRecord(data, true, 'max');
@@ -799,7 +815,7 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
 if (opts.includeLosingSeason) {
     items.push(['Member with a losing season', losingSeasonRecord(data, minPicks)]);
   }
-  if (opts.includeSyndicateEvents) {
+ if (opts.includeSyndicateEvents) {
     const mmKillers = memberFieldLeaderboard(data, 'mmKiller');
     items.push(['Most MM Killers', mmKillers.count ? `${mmKillers.count} - ${mmKillers.members.join(', ')}` : 'Not enough data yet.']);
     const lonesome = fieldEventTotal(data, 'lonesomeLoser');
@@ -808,6 +824,10 @@ if (opts.includeLosingSeason) {
     items.push(['Tier Crashers (all members crash)', tierCrashers ? `${tierCrashers}` : 'Not enough data yet.']);
     const perfectRounds = perfectRoundCount(data);
     items.push(['Perfect Rounds (all members successful)', perfectRounds ? `${perfectRounds}` : 'Not enough data yet.']);
+  }
+  if (opts.includeAnnualBest) {
+    const bestAnnual = bestAnnualWinPercentRecord(data, minPicks);
+    items.push(['Highest annual winning percentage', bestAnnual ? `${bestAnnual.member} - ${pct(bestAnnual.success)} (${bestAnnual.wins} of ${bestAnnual.picks}) - ${bestAnnual.season}` : 'Not enough data yet.']);
   }
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
 }
@@ -824,7 +844,7 @@ function records(data) {
   const memberSection = member
     ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true })
     : '';
-const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true })}</section>${memberSection}`;
+const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true })}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true })}</section>${memberSection}`;
   return `${officialRecords}<section class="two"><div class="panel"><h2>Best winning streaks</h2>${table(streaks, 'streaks', [
     { key: 'rank', label: 'Rank', type: 'num' },    { key: 'name', label: 'Member', primary: true },
     { key: 'streak', label: 'Best streak', type: 'num' },
