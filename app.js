@@ -965,10 +965,8 @@ const currentSeason = currentYear(state.raw);
   const streakText = active.count
     ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
     : '-';
-  const newCompetitions = newlyStartedCompetitions(currentSeason);
-  const excludeSports = newCompetitions.map(c => c.sport);
-  const yourPatterns = buildYourPatterns(memberRows, allMemberRows, excludeSports);
-  const syndicatePatterns = buildSyndicatePatterns(currentSeason, excludeSports);
+  const yourPatterns = buildYourPatterns(memberRows, allMemberRows);
+  const syndicatePatterns = buildSyndicatePatterns();
   const opportunityText = bestSport.value !== '-'
     ? `${bestSport.value} is your strongest sport area based on your historical results.`
     : 'Not enough data yet to identify a strongest sport area.';
@@ -1000,12 +998,6 @@ const currentSeason = currentYear(state.raw);
             <div class="pa-label">Worth Watching - Syndicate patterns to consider</div>
             ${syndicatePatterns.length ? syndicatePatterns.map(item => `<div class="pa-watch pa-watch-syndicate"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.text)}</div>`).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
           </div>
-
-          ${newCompetitions.length ? `
-          <div class="pa-section">
-            <div class="pa-label">New this season</div>
-            ${newCompetitions.map(c => `<div class="pa-watch pa-watch-alert">${escapeHtml(c.sport)} has just started this season (${c.rounds} round${c.rounds === 1 ? '' : 's'} in, ${c.picks.toLocaleString()} pick${c.picks === 1 ? '' : 's'} so far) - patterns above are excluding this competition until there's a bigger sample.</div>`).join('')}
-          </div>` : ''}
 
       </div>
 
@@ -1262,6 +1254,23 @@ function parsePointValue(betType) {
   return match ? Number(match[1]) : null;
 }
 
+// Wilson lower-bound score: a statistically sound way to rank success
+// rates without an arbitrary minimum-picks cutoff. A small sample gets
+// pulled back toward 50% (so a lucky 1-from-1 can't outrank a proven
+// 45-from-50), while a large reliable sample scores close to its raw
+// success rate. Nothing is excluded - everything is just ranked fairly.
+function wilsonLowerBound(wins, picks, z = 1.96) {
+  if (!picks) return 0;
+  const phat = wins / picks;
+  const denominator = 1 + (z * z) / picks;
+  const numerator = phat + (z * z) / (2 * picks) - z * Math.sqrt((phat * (1 - phat) + (z * z) / (4 * picks)) / picks);
+  return numerator / denominator;
+}
+
+function byBestStory(a, b) {
+  return wilsonLowerBound(b.wins, b.picks) - wilsonLowerBound(a.wins, a.picks);
+}
+
 // Groups rows by an arbitrary composite key and returns picks/wins/success
 // per group, alongside a human-readable label for each group.
 function aggregateComposite(rows, keyFn, labelFn) {
@@ -1281,18 +1290,17 @@ function aggregateComposite(rows, keyFn, labelFn) {
 }
 
 // Team + exact bet type combos, e.g. "Gold Coast Titans (12.5 point start)".
-function comboCandidates(rows, minPicks) {
+function comboCandidates(rows) {
   return aggregateComposite(
     rows,
     r => (r.name && r.betType) ? `${r.name}||${r.betType}` : null,
     r => `${r.name} (${r.betType})`
-  ).filter(c => c.picks >= minPicks);
+  );
 }
 
 // "X point start or higher" thresholds, optionally scoped to one team.
-// Tests every point value actually present in the data as a threshold and
-// keeps the ones that clear the minimum sample size.
-function pointThresholdCandidates(rows, minPicks, teamName) {
+// Tests every point value actually present in the data as a threshold.
+function pointThresholdCandidates(rows, teamName) {
   const pool = rows.filter(r =>
     r.betTypeGroup === 'Point Starts' &&
     parsePointValue(r.betType) !== null &&
@@ -1310,62 +1318,49 @@ function pointThresholdCandidates(rows, minPicks, teamName) {
       key: `points||${teamName || 'all'}||${t}`,
       label,
       picks: subset.length,
+      wins,
       success: subset.length ? wins / subset.length : 0,
     };
-  }).filter(c => c.picks >= minPicks);
+  });
 }
 
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
-// thresholds (overall and per team), and single-dimension fallbacks.
-function patternCandidatePool(rows, minPicks) {
+// thresholds (overall and per team), and single-dimension fallbacks. No
+// minimum-picks or time-window restriction - every combination the data
+// actually contains is a candidate, ranked by Wilson score.
+function patternCandidatePool(rows) {
   const teams = uniq(rows.map(r => r.name)).filter(Boolean);
-  const perTeamThresholds = teams.flatMap(team => pointThresholdCandidates(rows, minPicks, team));
+  const perTeamThresholds = teams.flatMap(team => pointThresholdCandidates(rows, team));
 
-  const fallback = aggregate(rows, 'name').filter(x => x.picks >= minPicks)
-    .map(x => ({ key: `name||${x.name}`, label: `${x.name} (all bet types)`, picks: x.picks, success: x.success }))
-    .concat(aggregate(rows, 'betType').filter(x => x.picks >= minPicks)
-      .map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, success: x.success })));
+  const fallback = aggregate(rows, 'name')
+    .map(x => ({ key: `name||${x.name}`, label: `${x.name} (all bet types)`, picks: x.picks, wins: x.wins, success: x.success }))
+    .concat(aggregate(rows, 'betType')
+      .map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, wins: x.wins, success: x.success })));
 
-  return comboCandidates(rows, minPicks)
-    .concat(pointThresholdCandidates(rows, minPicks))
+  return comboCandidates(rows)
+    .concat(pointThresholdCandidates(rows))
     .concat(perTeamThresholds)
     .concat(fallback)
-    .sort((a, b) => b.success - a.success || b.picks - a.picks);
+    .sort(byBestStory);
 }
 
-// Which sports/competitions have only just started this season (few rounds
-// of data so far). Used to avoid basing a headline pattern on a tiny,
-// early-season sample, and to power the "New this season" callout.
-function newlyStartedCompetitions(currentSeason, roundThreshold = 2) {
-  const currentRows = state.raw.filter(r => seasonEqual(r.year, currentSeason));
-  const bySport = groupBy(currentRows, 'sport');
-  return Object.entries(bySport)
-    .map(([sport, rows]) => ({ sport, rounds: uniq(rows.map(r => r.date)).length, picks: rows.length }))
-    .filter(x => x.sport && x.sport !== 'Unknown' && x.rounds > 0 && x.rounds <= roundThreshold)
-    .sort((a, b) => a.rounds - b.rounds);
-}
-
-// Best pattern from a member's most recent picks (last N), independent of
-// all-time success rate - surfaces "what's working right now".
-function recencyPattern(memberRowsSorted, excludeSports, usedKeys, windowSize = 15, minPicks = 5) {
-  const pool = memberRowsSorted
-    .filter(r => !excludeSports.includes(r.sport))
-    .slice(-windowSize);
-  const candidates = comboCandidates(pool, minPicks)
-    .concat(pointThresholdCandidates(pool, minPicks))
-    .concat(aggregate(pool, 'betType').filter(x => x.picks >= minPicks).map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, success: x.success })))
+// Best pattern from a member's most recent picks (last N) - surfaces
+// "what's working right now" as one of the 3 "Your pattern" slots.
+function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
+  const pool = memberRowsSorted.slice(-windowSize);
+  const candidates = comboCandidates(pool)
+    .concat(pointThresholdCandidates(pool))
+    .concat(aggregate(pool, 'betType').map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, wins: x.wins, success: x.success })))
     .filter(c => !usedKeys.has(c.key))
-    .sort((a, b) => b.success - a.success || b.picks - a.picks);
+    .sort(byBestStory);
   const top = candidates[0];
   if (!top) return null;
   return { text: `${top.label} - ${pct(top.success)} over your last ${top.picks.toLocaleString()} picks` };
 }
 
 // Up to 3 detailed "Your pattern" items for the given member.
-function buildYourPatterns(memberRows, allMemberRowsSorted, excludeSports) {
-  const minPicks = 5;
-  const scopedRows = memberRows.filter(r => !excludeSports.includes(r.sport));
-  const pool = patternCandidatePool(scopedRows, minPicks);
+function buildYourPatterns(memberRows, allMemberRowsSorted) {
+  const pool = patternCandidatePool(memberRows);
 
   const items = [];
   const usedKeys = new Set();
@@ -1376,7 +1371,7 @@ function buildYourPatterns(memberRows, allMemberRowsSorted, excludeSports) {
     items.push({ source: 'Your pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
   });
 
-  const recent = recencyPattern(allMemberRowsSorted, excludeSports, usedKeys);
+  const recent = recencyPattern(allMemberRowsSorted, usedKeys);
   if (recent) {
     items.push({ source: 'Your pattern', text: recent.text });
   } else {
@@ -1387,23 +1382,16 @@ function buildYourPatterns(memberRows, allMemberRowsSorted, excludeSports) {
   return items.slice(0, 3);
 }
 
-// Up to 3 detailed "Syndicate pattern" items, scoped to the last two
-// syndicate seasons (falls back to all-time if there isn't two seasons yet).
-function buildSyndicatePatterns(currentSeason, excludeSports) {
-  const minPicks = 12;
-  const seasons = uniq(state.raw.map(r => normalisedSeason(r.year))).filter(Boolean)
-    .sort((a, b) => seasonStart(a) - seasonStart(b));
-  const lastTwo = seasons.slice(-2);
-  const scoped = state.raw.filter(r => lastTwo.includes(normalisedSeason(r.year)) && !excludeSports.includes(r.sport));
-  const periodLabel = lastTwo.length >= 2 ? 'over last two years' : 'all-time';
-
-  const pool = patternCandidatePool(scoped, minPicks);
+// Up to 3 detailed "Syndicate pattern" items, drawn from all-time,
+// syndicate-wide data. No minimum-picks or season-window restriction.
+function buildSyndicatePatterns() {
+  const pool = patternCandidatePool(state.raw);
   const usedKeys = new Set();
   const items = [];
   pool.forEach(c => {
     if (items.length >= 3 || usedKeys.has(c.key)) return;
     usedKeys.add(c.key);
-    items.push({ source: 'Syndicate pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks ${periodLabel}` });
+    items.push({ source: 'Syndicate pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
   });
   return items;
 }
