@@ -497,6 +497,20 @@ border: 1px solid rgba(255,255,255,0.10);
   line-height: 1.4;
 }
 
+.pa-watch + .pa-watch {
+  margin-top: 8px;
+}
+
+.pa-watch-syndicate {
+  border-left-color: #4a8bd8;
+}
+
+.pa-watch-alert {
+  border-left-color: #d8a24a;
+  background: rgba(216, 162, 74, 0.08);
+  font-size: 13px;
+}
+
 .pa-placeholder {
   padding: 12px;
   border: 1px dashed #c9ced4;
