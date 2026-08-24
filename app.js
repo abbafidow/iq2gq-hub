@@ -967,6 +967,15 @@ const currentSeason = currentYear(state.raw);
     : '-';
   const yourPatterns = buildYourPatterns(memberRows, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns();
+
+  const yourPool = patternCandidatePool(memberRows);
+  const syndicatePool = patternCandidatePool(state.raw);
+  const yourFadePool = fadeCandidatePool(memberRows);
+  const syndicateFadePool = fadeCandidatePool(state.raw);
+  const corroboration = corroborationNotes(yourPool, syndicatePool, yourFadePool, syndicateFadePool);
+  const yourFades = buildFadeAlerts(memberRows, 'Your fade');
+  const syndicateFades = buildFadeAlerts(state.raw, 'Syndicate fade');
+  const streak = streakContinuationPatterns(allMemberRows);
   const opportunityText = bestSport.value !== '-'
     ? `${bestSport.value} is your strongest sport area based on your historical results.`
     : 'Not enough data yet to identify a strongest sport area.';
@@ -999,7 +1008,50 @@ const currentSeason = currentYear(state.raw);
             ${syndicatePatterns.length ? syndicatePatterns.map(item => `<div class="pa-watch pa-watch-syndicate"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.text)}</div>`).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
           </div>
 
+          ${corroboration.length ? `
+          <div class="pa-section">
+            <div class="pa-label">Corroboration</div>
+            <div class="pa-graphic-row">
+              ${corroboration.map(note => `
+                <div class="pa-graphic-item pa-graphic-venn">
+                  ${svgVenn(note.kind)}
+                  <div class="pa-graphic-caption"><strong>${escapeHtml(note.team)}</strong><span>${note.kind === 'corroborated' ? 'You + syndicate agree' : 'Signals disagree'}</span></div>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+
       </div>
+
+      ${(yourFades.length || syndicateFades.length) ? `
+      <div class="pa-card">
+        <div class="pa-title">FADE ALERTS</div>
+        <div class="pa-section">
+          <div class="pa-label">Patterns to avoid</div>
+          <div class="pa-graphic-list">
+            ${yourFades.concat(syndicateFades).map(item => `
+              <div class="pa-graphic-item pa-graphic-bar">
+                ${svgStatBar(item.success, '#d84a4a')}
+                <div class="pa-graphic-caption"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.label)} - ${pct(item.success)} from ${item.picks.toLocaleString()} picks</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>` : ''}
+
+      ${streak ? `
+      <div class="pa-card">
+        <div class="pa-title">STREAK WATCH</div>
+        <div class="pa-section">
+          <div class="pa-label">You're on a ${streak.active.count}-pick ${streak.active.type.toLowerCase()} streak</div>
+          ${svgStreakPips(streak.active.count, streak.active.type)}
+          <div class="pa-value" style="margin-top: 10px;">When others have been in this position, the strongest continuations have been:</div>
+          <div class="pa-graphic-list">
+            ${streak.items.map(item => `
+              <div class="pa-graphic-item pa-graphic-bar">
+                ${svgStatBar(item.success, '#7a4ad8')}
+                <div class="pa-graphic-caption"><strong>${escapeHtml(item.label)}</strong> - ${pct(item.success)} from ${item.picks.toLocaleString()} picks</div>
+              </div>`).join('')}
+          </div>
+      </div>` : ''}
 
       <div class="pa-card">
 
@@ -1295,7 +1347,7 @@ function comboCandidates(rows) {
     rows,
     r => (r.name && r.betType) ? `${r.name}||${r.betType}` : null,
     r => `${r.name} (${r.betType})`
-  );
+  ).map(c => ({ ...c, team: c.label.split(' (')[0] }));
 }
 
 // "X point start or higher" thresholds, optionally scoped to one team.
@@ -1317,6 +1369,7 @@ function pointThresholdCandidates(rows, teamName) {
     return {
       key: `points||${teamName || 'all'}||${t}`,
       label,
+      team: teamName || null,
       picks: subset.length,
       wins,
       success: subset.length ? wins / subset.length : 0,
@@ -1333,9 +1386,9 @@ function patternCandidatePool(rows) {
   const perTeamThresholds = teams.flatMap(team => pointThresholdCandidates(rows, team));
 
   const fallback = aggregate(rows, 'name')
-    .map(x => ({ key: `name||${x.name}`, label: `${x.name} (all bet types)`, picks: x.picks, wins: x.wins, success: x.success }))
+    .map(x => ({ key: `name||${x.name}`, label: `${x.name} (all bet types)`, team: x.name, picks: x.picks, wins: x.wins, success: x.success }))
     .concat(aggregate(rows, 'betType')
-      .map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, wins: x.wins, success: x.success })));
+      .map(x => ({ key: `betType||${x.name}`, label: x.name, team: null, picks: x.picks, wins: x.wins, success: x.success })));
 
   return comboCandidates(rows)
     .concat(pointThresholdCandidates(rows))
@@ -1394,6 +1447,153 @@ function buildSyndicatePatterns() {
     items.push({ source: 'Syndicate pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
   });
   return items;
+}
+
+// ----------------------------------------------------------------------
+// Small inline SVG visuals for Corroboration/Conflict, Fade Alerts, and
+// Streak Watch, so those read as graphics rather than lines of text.
+// ----------------------------------------------------------------------
+
+function svgStatBar(success, color) {
+  const width = Math.max(2, Math.round(Math.min(1, Math.max(0, success)) * 100));
+  return `<svg class="pa-bar" viewBox="0 0 100 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="100" height="10" rx="5" fill="rgba(255,255,255,0.10)"></rect>
+    <rect x="0" y="0" width="${width}" height="10" rx="5" fill="${color}"></rect>
+  </svg>`;
+}
+
+function svgVenn(kind) {
+  const isConflict = kind === 'conflict';
+  const leftColor = isConflict ? '#d84a4a' : '#4a8bd8';
+  const rightColor = isConflict ? '#4a8bd8' : '#d8a24a';
+  const overlapColor = isConflict ? '#d8c14a' : '#4ad87e';
+  return `<svg class="pa-venn" viewBox="0 0 90 56" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="33" cy="28" r="21" fill="${leftColor}" fill-opacity="0.55"></circle>
+    <circle cx="57" cy="28" r="21" fill="${rightColor}" fill-opacity="0.55"></circle>
+    <ellipse cx="45" cy="28" rx="11" ry="18" fill="${overlapColor}" fill-opacity="0.85"></ellipse>
+    <text x="33" y="52" text-anchor="middle" class="pa-venn-label">You</text>
+    <text x="57" y="52" text-anchor="middle" class="pa-venn-label">Synd.</text>
+  </svg>`;
+}
+
+function svgStreakPips(count, type) {
+  const color = type === 'Win' ? '#4ad87e' : '#d84a4a';
+  const spacing = 20;
+  let dots = '';
+  for (let i = 0; i < count; i++) {
+    dots += `<circle cx="${9 + i * spacing}" cy="10" r="7" fill="${color}"></circle>`;
+  }
+  const width = count * spacing + 4;
+  return `<svg class="pa-pips" viewBox="0 0 ${width} 20" xmlns="http://www.w3.org/2000/svg">${dots}</svg>`;
+}
+
+// ----------------------------------------------------------------------
+// Fade alerts - the mirror of Worth Watching. Ranks the same candidate
+// pool by how confidently BAD a pattern has been (Wilson lower bound on
+// the loss rate), so a reliably cold pattern surfaces even though nothing
+// about the ranking is inverted or hand-tuned.
+// ----------------------------------------------------------------------
+
+function fadeCandidatePool(rows) {
+  return patternCandidatePool(rows)
+    .map(c => ({ ...c, fadeScore: wilsonLowerBound(c.picks - c.wins, c.picks) }))
+    .filter(c => c.picks - c.wins > 0)
+    .sort((a, b) => b.fadeScore - a.fadeScore);
+}
+
+function buildFadeAlerts(rows, source, count = 2) {
+  const pool = fadeCandidatePool(rows);
+  const usedKeys = new Set();
+  const items = [];
+  pool.forEach(c => {
+    if (items.length >= count || usedKeys.has(c.key)) return;
+    usedKeys.add(c.key);
+    items.push({ source, label: c.label, picks: c.picks, success: c.success });
+  });
+  return items;
+}
+
+// ----------------------------------------------------------------------
+// Corroboration / conflict - flags when a member's own top patterns and
+// the syndicate's top patterns point at the same team (extra confidence),
+// or when one side's strong pattern is the other side's fade candidate
+// (a signal worth double-checking before trusting either alone).
+// ----------------------------------------------------------------------
+
+function topTeams(pool, n, predicate) {
+  return pool.filter(c => predicate(c.success)).slice(0, n).map(c => c.team).filter(Boolean);
+}
+
+function corroborationNotes(yourPool, syndicatePool, yourFadePool, syndicateFadePool) {
+  const notes = [];
+  const yourTop = new Set(topTeams(yourPool, 8, s => s >= 0.55));
+  const syndTop = new Set(topTeams(syndicatePool, 8, s => s >= 0.55));
+  const yourFadeTeams = new Set(topTeams(yourFadePool, 8, s => s <= 0.5));
+  const syndFadeTeams = new Set(topTeams(syndicateFadePool, 8, s => s <= 0.5));
+
+  const corroborated = [...yourTop].filter(t => syndTop.has(t));
+  corroborated.slice(0, 2).forEach(team => {
+    notes.push({ kind: 'corroborated', team });
+  });
+
+  const conflicts = new Set([
+    ...[...yourTop].filter(t => syndFadeTeams.has(t)),
+    ...[...syndTop].filter(t => yourFadeTeams.has(t)),
+  ]);
+  [...conflicts].slice(0, 2).forEach(team => {
+    notes.push({ kind: 'conflict', team });
+  });
+
+  return notes;
+}
+
+// ----------------------------------------------------------------------
+// Streak continuation - when a member is currently on a win/loss streak,
+// looks at every syndicate member's picks made immediately after a streak
+// of that type and length (or longer), and surfaces the strongest pattern
+// within that specific situation.
+// ----------------------------------------------------------------------
+
+function picksAfterStreak(rows, type, threshold) {
+  if (!type || threshold < 1) return [];
+  const grouped = groupBy(rows, 'member');
+  const results = [];
+  Object.values(grouped).forEach(picks => {
+    const sorted = picks.slice().sort(comparePickOrder);
+    let runType = '';
+    let runCount = 0;
+    sorted.forEach(pick => {
+      if (runType === type && runCount >= threshold) results.push(pick);
+      const result = pick.win ? 'Win' : pick.loss ? 'Loss' : '';
+      if (result === runType) runCount += 1;
+      else { runType = result; runCount = result ? 1 : 0; }
+    });
+  });
+  return results;
+}
+
+function oddsBandCandidates(rows) {
+  return ODDS.map(band => {
+    const picks = rows.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+    const wins = picks.filter(r => r.win).length;
+    return { key: `odds||${band[0]}`, label: `Odds ${band[1]}`, picks: picks.length, wins, success: picks.length ? wins / picks.length : 0 };
+  }).filter(c => c.picks > 0);
+}
+
+function streakContinuationPatterns(allMemberRowsSorted) {
+  const active = activeStreak(allMemberRowsSorted);
+  if (!active.type || active.count < 2) return null;
+  const afterRows = picksAfterStreak(state.raw, active.type, active.count);
+  if (!afterRows.length) return null;
+  const candidates = patternCandidatePool(afterRows)
+    .concat(oddsBandCandidates(afterRows))
+    .sort(byBestStory);
+  const top = candidates.slice(0, 2);
+  if (!top.length) return null;
+  return {
+    active,
+    items: top.map(c => ({ label: c.label, picks: c.picks, success: c.success })),
+  };
 }
 function trendingPool(currentSeason) {
   if (state.seasonScope !== 'current') return state.raw.slice();
