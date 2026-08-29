@@ -7,7 +7,6 @@ const state = {
   sort: {},
   sportDrilldown: false,
   seasonScope: 'all', // 'all' | 'current'
-  mmSuccess: new Map(),
 };
 
 const FILTER_IDS = ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput'];
@@ -191,7 +190,6 @@ async function init() {
 
     state.apiCount = Number(json.count || 0);
     state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
-    state.mmSuccess = buildMMSuccess(state.raw);
 
     buildFilters();
     bind();
@@ -203,21 +201,42 @@ async function init() {
   }
 }
 
-function mmKey(row) {
-  return row.mm ? `${row.date}||${row.mm}` : '';
+function isRealPick(row) {
+  // Excludes admin/non-pick rows (e.g. Stand Down) from team-MM detection,
+  // so a standing-down member doesn't get silently counted as part of a drop.
+  const name = lower(row.name);
+  const betType = lower(row.betType);
+  return name !== 'stand down' && betType !== 'stand down';
 }
 
-function buildMMSuccess(rows) {
-  const groups = new Map();
+// A team's weekly MM is "dropped" when all three of that team's members have
+// a real pick recorded for the same date (columns H/I/J/K all filled in per
+// member), and "successful" when all three of those picks won (column L =
+// Yes for everyone). There is no dedicated flag column for this on the
+// Sheet - it's derived purely from team membership + date, confirmed against
+// how the Sheet's own Team Race table works.
+function computeTeamMM(rows) {
+  const perTeamDate = new Map();
   rows.forEach(row => {
-    const key = mmKey(row);
-    if (!key) return;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(row);
+    const team = teamOf(row.member);
+    if (!team || !isRealPick(row)) return;
+    if (!perTeamDate.has(team)) perTeamDate.set(team, new Map());
+    const byDate = perTeamDate.get(team);
+    if (!byDate.has(row.date)) byDate.set(row.date, []);
+    byDate.get(row.date).push(row);
   });
-  const success = new Map();
-  groups.forEach((legs, key) => success.set(key, legs.length > 0 && legs.every(r => r.win)));
-  return success;
+  const result = new Map();
+  perTeamDate.forEach((byDate, team) => {
+    const teamMembers = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team);
+    byDate.forEach((memberRows, date) => {
+      const membersPresent = uniq(memberRows.map(r => r.member));
+      const dropped = teamMembers.length > 0 && teamMembers.every(m => membersPresent.includes(m));
+      if (!dropped) return;
+      const successful = memberRows.every(r => r.win);
+      result.set(`${date}||${team}`, { team, date, successful, memberRows });
+    });
+  });
+  return result;
 }
 
 function uniq(values) {
@@ -296,6 +315,7 @@ const result = $('resultFilter').value;
 }
 
 function presidentialRace(data) {
+  const teamMM = computeTeamMM(data);
   const map = new Map();
   data.forEach(row => {
     if (!row.member) return;
@@ -306,8 +326,9 @@ function presidentialRace(data) {
     m.picks += 1;
     if (row.win) { m.points += 0.5; m.wins += 1; }
     if (row.loss) { m.points -= 1; m.losses += 1; }
-    const key = mmKey(row);
-    if (key && state.mmSuccess.get(key)) { m.points += 1.5; m.mmBonus += 1; }
+    const team = teamOf(row.member);
+    const entry = team ? teamMM.get(`${row.date}||${team}`) : null;
+    if (entry && entry.successful) { m.points += 1.5; m.mmBonus += 1; }
     if (row.win && Number.isFinite(row.odds) && row.odds >= 2) { m.points += 3; m.bigWins += 1; }
     if (row.loss && Number.isFinite(row.odds) && row.odds >= 2) { m.points -= 3; m.bigLosses += 1; }
   });
@@ -503,8 +524,7 @@ function seasonMetrics(rows) {
   const successRate = (wins.length + losses.length) ? wins.length / (wins.length + losses.length) : 0;
   const winnings = rows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
   const avgWinOdds = wins.length ? wins.reduce((s, r) => s + (r.odds || 0), 0) / wins.length : 0;
-  const mmKeys = new Set(rows.map(mmKey).filter(Boolean));
-  const winningMMs = [...mmKeys].filter(k => state.mmSuccess.get(k)).length;
+  const winningMMs = [...computeTeamMM(rows).values()].filter(e => e.successful).length;
   return { winCount: wins.length, successRate, winnings, avgWinOdds, winningMMs };
 }
 
@@ -537,25 +557,27 @@ function teamOf(member) {
 
 function teamStats(rows) {
   const winnings = new Map(TEAM_ORDER.map(t => [t, 0]));
-  const mmKeys = new Map(TEAM_ORDER.map(t => [t, new Set()]));
   rows.forEach(r => {
     const team = teamOf(r.member);
     if (!team) return;
     winnings.set(team, winnings.get(team) + (r.mmReturn || 0));
-    const key = mmKey(r);
-    if (key) mmKeys.get(team).add(key);
+  });
+  const teamMM = computeTeamMM(rows);
+  const dropped = new Map(TEAM_ORDER.map(t => [t, 0]));
+  const won = new Map(TEAM_ORDER.map(t => [t, 0]));
+  teamMM.forEach(entry => {
+    dropped.set(entry.team, dropped.get(entry.team) + 1);
+    if (entry.successful) won.set(entry.team, won.get(entry.team) + 1);
   });
   return TEAM_ORDER.map(name => {
     const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === name);
-    const keys = [...mmKeys.get(name)];
-    const won = keys.filter(k => state.mmSuccess.get(k)).length;
     return {
       name,
       members,
       winnings: winnings.get(name),
-      mmDropped: keys.length,
-      mmWon: won,
-      successRate: keys.length ? won / keys.length : null,
+      mmDropped: dropped.get(name),
+      mmWon: won.get(name),
+      successRate: dropped.get(name) ? won.get(name) / dropped.get(name) : null,
     };
   });
 }
@@ -635,7 +657,10 @@ function presidentialTeamsSection(currentSeasonRows) {
 
   return `<section class="two standings-row">
     <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Pts</th></tr></thead><tbody>${presTable}</tbody></table></div></div>
-    <div class="panel standings-panel"><h3>Teams competition</h3><div class="table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
+    <div class="standings-col">
+      <div class="panel standings-panel"><h3>Teams competition</h3><div class="table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
+      ${teamQuarterFormPanel()}
+    </div>
   </section>`;
 }
 
@@ -689,21 +714,16 @@ function render() {
 }
 
 function dashboard(data) {
-  const min = Number($('minPicks').value) || 1;
   const cy = currentYear(state.raw);
   const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
   const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
-  const sportGroups = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
-  const betTypeGroups = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'dashboardBetTypes').slice(0, 20));
   const recent = data.slice().sort(comparePickOrder).slice(-10).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
   return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
-${teamQuarterFormPanel()}
 ${yearInsightStrip(currentSeasonRows)}
-<section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section>
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
