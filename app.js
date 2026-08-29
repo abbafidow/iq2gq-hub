@@ -21,6 +21,18 @@ const ODDS = [
   ['2plus', '2.00+', 2, 999],
 ];
 
+// Team membership, Aug 2026 AGM decision. Captain is the first-named member
+// of each team. This is hardcoded here as a first cut - the agreed long-term
+// source of truth is a Member -> Team lookup on the Lists tab, once that
+// column exists and the Hub API (Code.gs) exposes it.
+const TEAM_MAP = {
+  MA: 'Team One', AA: 'Team One', SB: 'Team One',
+  AF: 'Team Two', LS: 'Team Two', SF: 'Team Two',
+  AT: 'Team Three', PN: 'Team Three', TP: 'Team Three',
+  MV: 'Team Four', JF: 'Team Four', TF: 'Team Four',
+};
+const TEAM_ORDER = ['Team One', 'Team Two', 'Team Three', 'Team Four'];
+
 const $ = id => document.getElementById(id);
 const clean = value => String(value ?? '').trim();
 const lower = value => clean(value).toLowerCase();
@@ -72,6 +84,8 @@ function normalise(row, index) {
 
   const odds = num(row["Odds"]);
 
+  const mmReturn = num(row["MM Return"]) || 0;
+
   const resultRaw = lower(row["Result"]);
 
   let result = "";
@@ -103,6 +117,8 @@ function normalise(row, index) {
     name,
 
     odds,
+
+    mmReturn,
 
     result,
 
@@ -423,17 +439,238 @@ function currentYear(data) {
   return seasons.sort((a, b) => seasonStart(a) - seasonStart(b)).pop() || '';
 }
 
-function kpis(data) {
-  const wins = data.filter(r => r.win).length;
-  const losses = data.filter(r => r.loss).length;
-  const avg = data.reduce((sum, row) => sum + (row.odds || 0), 0) / (data.length || 1);
-  const excluded = Math.max(0, state.apiCount - state.raw.length);
-  return `<section class="grid">
-    <div class="kpi"><div class="label">Resulted picks</div><div class="value">${data.length.toLocaleString()}</div><div class="hint">${state.raw.length.toLocaleString()} valid picks in database</div></div>
-    <div class="kpi"><div class="label">Success rate</div><div class="value">${pct(wins / (wins + losses || 1))}</div><div class="hint">${wins.toLocaleString()} wins / ${losses.toLocaleString()} losses</div></div>
-    <div class="kpi"><div class="label">Average odds</div><div class="value">${oddsFmt(avg)}</div><div class="hint">Known odds only</div></div>
-    <div class="kpi"><div class="label">Source rows</div><div class="value">${state.apiCount.toLocaleString()}</div><div class="hint">${excluded.toLocaleString()} admin/non-pick rows excluded</div></div>
+// ---------- Date helpers (Sheet dates are DD/MM/YYYY - not safe to rely on
+// the browser's ambiguous Date.parse for these) ----------
+
+function parseDMY(str) {
+  const s = clean(str);
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!m) return null;
+  const d = Number(m[1]);
+  const mo = Number(m[2]);
+  let y = Number(m[3]);
+  if (y < 100) y += 2000;
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function fmtMoney(n) {
+  const v = Number.isFinite(n) ? n : 0;
+  return `${v < 0 ? '-' : ''}$${Math.abs(v).toFixed(2)}`;
+}
+
+// ---------- Season-to-date comparison (this season vs the same elapsed
+// window last season, not a straight calendar-quarter match) ----------
+
+function seasonList() {
+  return uniq(state.raw.map(r => normalisedSeason(r.year))).filter(Boolean).sort((a, b) => seasonStart(a) - seasonStart(b));
+}
+
+function previousSeasonOf(season) {
+  const seasons = seasonList();
+  const idx = seasons.indexOf(season);
+  return idx > 0 ? seasons[idx - 1] : null;
+}
+
+function roundDatesSorted(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const parsed = parseDMY(r.date);
+    if (parsed && !map.has(r.date)) map.set(r.date, parsed);
+  });
+  return [...map.entries()].sort((a, b) => a[1] - b[1]).map(([raw]) => raw);
+}
+
+function seasonToDateComparison(currentSeason) {
+  const current = state.raw.filter(r => seasonEqual(r.year, currentSeason));
+  const currentRoundDates = roundDatesSorted(current);
+  const roundCount = currentRoundDates.length;
+  const prevSeason = previousSeasonOf(currentSeason);
+  if (!prevSeason) return { current, previous: null, roundCount };
+  const prevAll = state.raw.filter(r => seasonEqual(r.year, prevSeason));
+  const previousRoundDates = roundDatesSorted(prevAll);
+  if (!roundCount || !previousRoundDates.length) return { current, previous: null, roundCount };
+  // Compare the same number of completed rounds (distinct dates), not elapsed
+  // calendar time - season starts, byes etc. don't line up year to year.
+  const matchedDates = new Set(previousRoundDates.slice(0, roundCount));
+  const previous = prevAll.filter(r => matchedDates.has(r.date));
+  return { current, previous, roundCount };
+}
+
+function seasonMetrics(rows) {
+  const wins = rows.filter(r => r.win);
+  const losses = rows.filter(r => r.loss);
+  const successRate = (wins.length + losses.length) ? wins.length / (wins.length + losses.length) : 0;
+  const winnings = rows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+  const avgWinOdds = wins.length ? wins.reduce((s, r) => s + (r.odds || 0), 0) / wins.length : 0;
+  const mmKeys = new Set(rows.map(mmKey).filter(Boolean));
+  const winningMMs = [...mmKeys].filter(k => state.mmSuccess.get(k)).length;
+  return { winCount: wins.length, successRate, winnings, avgWinOdds, winningMMs };
+}
+
+function extremeOddsPick(rows, wantWin) {
+  const pool = rows.filter(r => (wantWin ? r.win : r.loss) && Number.isFinite(r.odds));
+  if (!pool.length) return null;
+  return pool.reduce((best, r) => (!best || (wantWin ? r.odds > best.odds : r.odds < best.odds)) ? r : best, null);
+}
+
+function topSuccessRateTile(rows) {
+  const aggRows = aggregate(rows, 'member').filter(x => x.picks > 0);
+  if (!aggRows.length) return { names: '-', detail: '' };
+  const maxSuccess = Math.max(...aggRows.map(x => x.success));
+  const tied = aggRows.filter(x => Math.abs(x.success - maxSuccess) < 1e-9);
+  const order = presidentialRace(rows).map(r => r.name);
+  tied.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  const sameSample = tied.every(x => x.wins === tied[0].wins && x.picks === tied[0].picks);
+  const names = tied.map(x => x.name).join(', ');
+  const detail = sameSample
+    ? `${tied[0].wins} from ${tied[0].picks}`
+    : tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(' \u00b7 ');
+  return { names, detail };
+}
+
+// ---------- Teams competition (Team One-Four, agreed at AGM) ----------
+
+function teamOf(member) {
+  return TEAM_MAP[member] || null;
+}
+
+function teamStats(rows) {
+  const winnings = new Map(TEAM_ORDER.map(t => [t, 0]));
+  const mmKeys = new Map(TEAM_ORDER.map(t => [t, new Set()]));
+  rows.forEach(r => {
+    const team = teamOf(r.member);
+    if (!team) return;
+    winnings.set(team, winnings.get(team) + (r.mmReturn || 0));
+    const key = mmKey(r);
+    if (key) mmKeys.get(team).add(key);
+  });
+  return TEAM_ORDER.map(name => {
+    const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === name);
+    const keys = [...mmKeys.get(name)];
+    const won = keys.filter(k => state.mmSuccess.get(k)).length;
+    return {
+      name,
+      members,
+      winnings: winnings.get(name),
+      mmDropped: keys.length,
+      mmWon: won,
+      successRate: keys.length ? won / keys.length : null,
+    };
+  });
+}
+
+function currentQuarterRange(today = new Date()) {
+  const q = Math.floor(today.getUTCMonth() / 3);
+  const start = new Date(Date.UTC(today.getUTCFullYear(), q * 3, 1));
+  const end = new Date(Date.UTC(today.getUTCFullYear(), q * 3 + 3, 0));
+  return { start, end };
+}
+
+function currentQuarterLabel(today = new Date()) {
+  const { start, end } = currentQuarterRange(today);
+  const fmt = d => d.toLocaleDateString('en-NZ', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  return `${fmt(start)} \u2013 ${fmt(end)}`;
+}
+
+function teamQuarterForm(today = new Date()) {
+  const { start, end } = currentQuarterRange(today);
+  const rows = state.raw.filter(r => {
+    const d = parseDMY(r.date);
+    return d && d >= start && d <= end;
+  });
+  return teamStats(rows);
+}
+
+// ---------- Dashboard tiles (12, grouped: wins & losses / money & people /
+// odds - AGM-agreed layout, Aug 2026) ----------
+
+function dashboardTiles(current, previous, roundCount) {
+  const cur = seasonMetrics(current);
+  const prev = previous ? seasonMetrics(previous) : null;
+  const kills = memberFieldLeaderboard(current, 'mmKiller');
+  const topSuccess = topSuccessRateTile(current);
+  const highOdds = extremeOddsPick(current, true);
+  const lowOdds = extremeOddsPick(current, false);
+
+  const tile = (cls, label, value, hint) =>
+    `<div class="tile ${cls}"><div class="tile-label">${escapeHtml(label)}</div><div class="tile-value">${value}</div>${hint ? `<div class="tile-hint">${hint}</div>` : ''}</div>`;
+
+  const roundLabel = `after ${roundCount} round${roundCount === 1 ? '' : 's'} last year`;
+  const vsLastYear = (fmt, curVal, prevVal) => prev ? `vs ${fmt(prevVal)} ${roundLabel}` : '';
+
+  const winsLosses = [
+    tile('tile-teal', 'Success rate', pct(cur.successRate), vsLastYear(pct, cur.successRate, prev?.successRate)),
+    tile('tile-teal', 'Successful picks', cur.winCount.toLocaleString(), vsLastYear(v => v.toLocaleString(), cur.winCount, prev?.winCount)),
+    tile('tile-teal', 'Winning MMs YTD', cur.winningMMs.toLocaleString(), vsLastYear(v => v.toLocaleString(), cur.winningMMs, prev?.winningMMs)),
+  ].join('');
+
+  const moneyPeople = [
+    tile('tile-coral', 'Winnings to date', fmtMoney(cur.winnings), vsLastYear(fmtMoney, cur.winnings, prev?.winnings)),
+    tile('tile-coral', 'Highest success rate', escapeHtml(topSuccess.names), escapeHtml(topSuccess.detail)),
+    tile('tile-coral', 'Most MM kills', kills.count ? escapeHtml(kills.members.join(', ')) : '-', kills.count ? `${kills.count} MM Kill${kills.count === 1 ? '' : 's'}` : ''),
+  ].join('');
+
+  const odds = [
+    tile('tile-purple', 'Avg winning odds', fmtMoney(cur.avgWinOdds), vsLastYear(fmtMoney, cur.avgWinOdds, prev?.avgWinOdds)),
+    tile('tile-purple', 'Highest winning odds', highOdds ? fmtMoney(highOdds.odds) : '-', highOdds ? `${escapeHtml(highOdds.member)} \u00b7 ${escapeHtml(highOdds.name)}` : ''),
+    tile('tile-purple', 'Lowest losing odds', lowOdds ? fmtMoney(lowOdds.odds) : '-', lowOdds ? `${escapeHtml(lowOdds.member)} \u00b7 ${escapeHtml(lowOdds.name)}` : ''),
+  ].join('');
+
+  return `<div class="tile-group-label">Wins &amp; losses</div><div class="tile-row">${winsLosses}</div>
+<div class="tile-group-label">Money &amp; people</div><div class="tile-row">${moneyPeople}</div>
+<div class="tile-group-label">Odds</div><div class="tile-row">${odds}</div>`;
+}
+
+function presidentialTeamsSection(currentSeasonRows) {
+  const presidentialRows = presidentialRace(currentSeasonRows);
+  const presTable = presidentialRows.map(r =>
+    `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}</td><td class="num">${r.points.toFixed(1)}</td></tr>`
+  ).join('');
+
+  const teams = teamStats(currentSeasonRows);
+  const teamTable = teams.map(t =>
+    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`
+  ).join('');
+
+  return `<section class="two standings-row">
+    <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Pts</th></tr></thead><tbody>${presTable}</tbody></table></div></div>
+    <div class="panel standings-panel"><h3>Teams competition</h3><div class="table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
   </section>`;
+}
+
+function teamQuarterFormPanel() {
+  const teams = teamQuarterForm();
+  const withData = teams.filter(t => t.mmDropped > 0);
+  const ranked = withData.slice().sort((a, b) => b.winnings - a.winnings);
+  const bestName = ranked[0]?.name;
+  const worstName = ranked.length > 1 ? ranked[ranked.length - 1]?.name : null;
+  const rows = teams.map(t => {
+    const cls = withData.length > 1 && t.name === bestName ? 'row-best' : withData.length > 1 && t.name === worstName ? 'row-worst' : '';
+    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`;
+  }).join('');
+  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window, independent of each team's own AC captaincy cycle</p><div class="table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
+}
+
+// ---------- "Insights this year" strip (top sport / bet option / pick
+// option, weighted by a minimum-picks confidence floor) ----------
+
+function yearInsightStrip(currentSeasonRows) {
+  const MIN_PICKS = 5;
+  const topBy = key => {
+    const rows = aggregate(currentSeasonRows, key).filter(x => x.picks >= MIN_PICKS);
+    if (!rows.length) return null;
+    return rows.slice().sort((a, b) => b.success - a.success || b.picks - a.picks)[0];
+  };
+  const topSport = topBy('group');
+  const topBetType = topBy('betTypeGroup');
+  const topPick = topBy('name');
+
+  const card = (cls, label, item) => item
+    ? `<div class="insight-mini ${cls}"><div class="insight-mini-label">${escapeHtml(label)}</div><div class="insight-mini-value">${escapeHtml(item.name)} ${pct(item.success)}</div></div>`
+    : `<div class="insight-mini ${cls}"><div class="insight-mini-label">${escapeHtml(label)}</div><div class="insight-mini-value muted">Not enough data yet (min ${MIN_PICKS} picks)</div></div>`;
+
+  return `<div class="panel"><h3>Insights this year</h3><div class="insight-mini-row">${card('insight-accent', 'Top sport', topSport)}${card('insight-good', 'Top bet option', topBetType)}${card('insight-warn', 'Top pick option', topPick)}</div></div>`;
 }
 
 function render() {
@@ -455,14 +692,19 @@ function dashboard(data) {
   const min = Number($('minPicks').value) || 1;
   const cy = currentYear(state.raw);
   const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
-  const presidentialRows = state.raw.filter(r => seasonEqual(r.year, cy));
-  const presidential = sortRows(presidentialRace(presidentialRows), 'presidentialRace', 'points');
+  const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
   const sportGroups = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sports').slice(0, 20));
   const betTypeGroups = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'dashboardBetTypes').slice(0, 20));
   const recent = data.slice().sort(comparePickOrder).slice(-10).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>${kpis(data)}${insights(data)}<div class="panel"><h2>Presidential Race</h2><p class="muted">${escapeHtml(cy || 'Current season')} only - always the full current season, independent of the filters and season toggle above. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p>${table(presidential, 'presidentialRace', presidentialCols())}</div><section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section><div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
+  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>
+${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
+${presidentialTeamsSection(currentSeasonRows)}
+${teamQuarterFormPanel()}
+${yearInsightStrip(currentSeasonRows)}
+<section class="two"><div class="panel"><h2>Sport group performance</h2>${table(sportGroups, 'sports', sportCols('Sport group'))}</div><div class="panel"><h2>Bet type performance</h2>${table(betTypeGroups, 'dashboardBetTypes', sportCols('Bet type group'))}</div></section>
+<div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'bet', label: 'Bet' },
@@ -911,6 +1153,8 @@ const currentSeason = currentYear(state.raw);
           <p>Select your name in the Member filter to see your personalised insights.</p>
         </div>
 
+        ${insights(data)}
+
         <div class="pa-card">
           <div class="pa-title">THIS WEEK</div>
           <div class="pa-section">
@@ -993,6 +1237,8 @@ const currentSeason = currentYear(state.raw);
         <h1>Pick Assistant - ${escapeHtml(member)}</h1>
         <p>Personalised insights based on your betting history.</p>
       </div>
+
+      ${insights(data)}
 
       <div class="pa-card">
 

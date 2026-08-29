@@ -268,6 +268,54 @@ tr:last-child td { border-bottom: 0; }
   margin: 0;
   word-break: normal;
 }
+/* ---------- Dashboard tiles & standings (Aug 2026 redesign) ---------- */
+
+.small { font-size: 12px; }
+
+.tile-group-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 4px 0 8px;
+}
+.tile-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.tile { border-radius: 14px; padding: 14px; }
+.tile-label { font-size: 12px; opacity: .85; }
+.tile-value { font-size: 22px; font-weight: 800; margin: 6px 0 4px; color: #fff; }
+.tile-hint { font-size: 12px; opacity: .75; }
+
+.tile-teal   { background: #0e3630; border: 1px solid #1c6e5f; color: #b7f0e2; }
+.tile-coral  { background: #3a1f14; border: 1px solid #8a4326; color: #f4c8ac; }
+.tile-purple { background: #241a40; border: 1px solid #55408f; color: #d6c9f5; }
+
+.standings-row { margin-bottom: 18px; }
+.standings-panel h3 { margin-bottom: 4px; }
+.mini-table th, .mini-table td { padding: 6px 10px; font-size: 13px; }
+.row-best td { background: rgba(121, 242, 163, 0.12); }
+.row-worst td { background: rgba(255, 146, 146, 0.12); }
+
+.form-panel p.small:last-of-type { margin-top: 8px; margin-bottom: 0; }
+
+.insight-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.insight-mini { border-radius: 12px; padding: 12px; }
+.insight-mini-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .85; }
+.insight-mini-value { font-size: 14px; font-weight: 700; margin-top: 6px; color: #fff; }
+.insight-mini-value.muted { font-weight: 400; color: inherit; opacity: .85; }
+.insight-accent { background: rgba(123, 211, 255, 0.12); border: 1px solid rgba(123, 211, 255, 0.35); color: #cdeeff; }
+.insight-good   { background: rgba(121, 242, 163, 0.12); border: 1px solid rgba(121, 242, 163, 0.35); color: #cdf6d9; }
+.insight-warn   { background: rgba(255, 213, 107, 0.12); border: 1px solid rgba(255, 213, 107, 0.35); color: #ffe9b3; }
+
+@media (max-width: 900px) {
+  .tile-row { grid-template-columns: 1fr 1fr; }
+  .insight-mini-row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 520px) {
+  .tile-row { grid-template-columns: 1fr; }
+  .insight-mini-row { grid-template-columns: 1fr; }
+}
+
 /* ---------- Member Intelligence Centre ---------- */
 
 .profile-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
