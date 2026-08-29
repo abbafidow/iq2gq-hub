@@ -456,11 +456,27 @@ function cardContent(columns, row) {
   const titleKey = columns.find(c => c.primary)?.key || columns[1]?.key || columns[0].key;
   const rank = row.rank ? `#${row.rank}` : '';
   const preferred = ['picks', 'success', 'avgOdds', 'confidence', 'streak', 'wins', 'losses'];
-  const visible = preferred
-    .map(key => columns.find(c => c.key === key))
-    .filter(Boolean)
-    .filter(col => !col.primary && col.key !== 'rank')
-    .slice(0, 4);
+  const eligible = columns.filter(col => !col.primary && col.key !== 'rank');
+  const preferredMatches = preferred
+    .map(key => eligible.find(col => col.key === key))
+    .filter(Boolean);
+  // Tables whose columns aren't in the preferred list (e.g. Recent picks:
+  // bet/betType/sport/odds/result) previously showed nothing on mobile
+  // beyond the title and rank - fall back to the table's own column order.
+  // Tables whose columns aren't in the preferred list (e.g. Recent picks:
+  // bet/betType/sport/odds/result) previously showed nothing on mobile
+  // beyond the title and rank - fall back to the table's own columns,
+  // prioritising the fields most worth seeing at a glance on a small card.
+  const mobilePriority = ['result', 'odds', 'sport', 'bet', 'betType', 'year'];
+  const fallback = eligible.slice().sort((a, b) => {
+    const ai = mobilePriority.indexOf(a.key);
+    const bi = mobilePriority.indexOf(b.key);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+  const visible = (preferredMatches.length ? preferredMatches : fallback).slice(0, 4);
   const stats = visible.map(col => `<div><span class="muted">${col.label}</span><strong>${format(col, row[col.key], row)}</strong></div>`).join('');
   return `<div class="mini-title"><span>${escapeHtml(row[titleKey])}</span><span>${rank}</span></div><div class="mini-stats">${stats}</div>`;
 }
@@ -752,7 +768,7 @@ function dashboard(data) {
   const cy = currentYear(state.raw);
   const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
   const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
-  const recent = data.slice().sort(comparePickOrder).slice(-10).reverse().map((r, i) => ({
+  const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
   return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>
