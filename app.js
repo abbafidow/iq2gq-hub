@@ -630,7 +630,9 @@ function currentQuarterLabel(today = new Date()) {
 
 function teamQuarterForm(today = new Date()) {
   const { start, end } = currentQuarterRange(today);
+  const cy = currentYear(state.raw);
   const rows = state.raw.filter(r => {
+    if (!seasonEqual(r.year, cy)) return false;
     const d = parseDMY(r.date);
     return d && d >= start && d <= end;
   });
