@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IQ2GQ Hub</title>
-  <link rel="stylesheet" href="styles.css">
+  <!-- Cache-busting: bump ?v=X.X on styles.css, app.js and pickAssistant.js
+       (and the footer below) every time any of those files change, or
+       browsers may keep serving a stale cached copy after an update. -->
+  <link rel="stylesheet" href="styles.css?v=1.6">
 </head>
 <body>
   <header class="topbar">
@@ -56,7 +59,7 @@
 
   <footer class="footer">IQ2GQ Hub v1.6 - live from Google Sheets</footer>
 
-  <script src="app.js"></script>
-  <script src="pickAssistant.js"></script>
+  <script src="app.js?v=1.6"></script>
+  <script src="pickAssistant.js?v=1.6"></script>
 </body>
 </html>
