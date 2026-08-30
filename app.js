@@ -13,7 +13,7 @@ const state = {
 const FILTER_IDS = ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput'];
 
 const ODDS = [
-  ['under1.20', 'Under 1.20', 0, 1.199999],
+  ['under1.20', 'Under 1.20', 1, 1.199999],
   ['1.20-1.39', '1.20-1.39', 1.2, 1.399999],
   ['1.40-1.59', '1.40-1.59', 1.4, 1.599999],
   ['1.60-1.89', '1.60-1.89', 1.6, 1.899999],
@@ -1027,8 +1027,9 @@ function betTypes(data) {
 }
 
 function odds(data) {
+  const realPicks = data.filter(isRealPick);
   const rows = ODDS.map(band => {
-    const bandRows = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+    const bandRows = realPicks.filter(r => r.odds >= band[2] && r.odds <= band[3]);
     const wins = bandRows.filter(r => r.win).length;
     const losses = bandRows.filter(r => r.loss).length;
     const avgOdds = bandRows.reduce((sum, r) => sum + r.odds, 0) / (bandRows.length || 1);
@@ -1042,18 +1043,37 @@ function odds(data) {
       confidence: bandRows.length >= 50 ? 'High' : bandRows.length >= 20 ? 'Moderate' : 'Low',
     };
   });
-  const topFive = rows
+
+  // Top 5 by exact odds value (e.g. 1.20, 1.25), not band - naturally smaller
+  // sample sizes per value than a whole band, so fewer may clear "High".
+  const byExactOdds = new Map();
+  realPicks.forEach(r => {
+    if (!Number.isFinite(r.odds)) return;
+    const key = r.odds.toFixed(2);
+    if (!byExactOdds.has(key)) byExactOdds.set(key, []);
+    byExactOdds.get(key).push(r);
+  });
+  const exactOddsRows = [...byExactOdds.entries()].map(([key, oddsRows]) => {
+    const wins = oddsRows.filter(r => r.win).length;
+    return {
+      name: oddsFmt(Number(key)),
+      picks: oddsRows.length,
+      success: oddsRows.length ? wins / oddsRows.length : 0,
+      confidence: oddsRows.length >= 50 ? 'High' : oddsRows.length >= 20 ? 'Moderate' : 'Low',
+    };
+  });
+  const topFive = exactOddsRows
     .filter(r => r.confidence === 'High')
-    .slice()
     .sort((a, b) => b.success - a.success)
     .slice(0, 5);
   const topFiveRows = topFive.map((r, i) =>
     `<tr><td>${i + 1}</td><td>${escapeHtml(r.name)}</td><td class="num">${pct(r.success)}</td><td class="num">${r.picks.toLocaleString()}</td></tr>`
   ).join('');
   const topFivePanel = topFive.length
-    ? `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">High confidence = 50+ picks in that band.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Odds band</th><th class="num">Success</th><th class="num">Picks</th></tr></thead><tbody>${topFiveRows}</tbody></table></div></div>`
-    : `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">Not enough high-confidence bands yet (need 50+ picks in a band).</p></div>`;
-  return `${topFivePanel}<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>`;
+    ? `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">Specific odds values, not bands. High confidence = 50+ picks at that exact price.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Odds</th><th class="num">Success</th><th class="num">Picks</th></tr></thead><tbody>${topFiveRows}</tbody></table></div></div>`
+    : `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">No individual odds value has 50+ picks yet - try again once more data's in, or ask to lower the confidence bar.</p></div>`;
+
+  return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>${topFivePanel}`;
 }
 function recordsPool(forceCurrentSeason) {
   let data = [...state.raw];
