@@ -7,6 +7,7 @@ const state = {
   sort: {},
   sportDrilldown: false,
   seasonScope: 'all', // 'all' | 'current'
+  statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
 };
 
 const FILTER_IDS = ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput'];
@@ -286,7 +287,7 @@ function updateFiltersSummary() {
   $('filtersSummary').innerHTML = `Filters${active ? ` (${active} active)` : ''} <span class="chev">&#9662;</span>`;
 }
 
-function filtered() {
+function filtered(ignoreSeasonScope) {
   let data = [...state.raw];
   const member = $('memberFilter').value;
   const group = $('sportGroupFilter').value;
@@ -295,7 +296,7 @@ function filtered() {
   const odds = $('oddsFilter').value;
 const result = $('resultFilter').value;
   const query = lower($('searchInput').value);
-  if (!year && state.seasonScope === 'current') {
+  if (!ignoreSeasonScope && !year && state.seasonScope === 'current') {
     const cy = currentYear(state.raw);
     data = data.filter(r => seasonEqual(r.year, cy));
   }
@@ -751,14 +752,13 @@ function yearInsightStrip(currentSeasonRows) {
 
 function render() {
   updateFiltersSummary();
-  const data = filtered();
   const page = state.page;
+  const data = filtered(page === 'stats');
   const app = $('app');
+  const seasonToggle = document.getElementById('seasonToggle');
+  if (seasonToggle) seasonToggle.style.display = page === 'stats' ? 'none' : '';
   if (page === 'dashboard') app.innerHTML = dashboard(data);
-  if (page === 'members') app.innerHTML = members(data);
-  if (page === 'sports') app.innerHTML = sports(data);
-  if (page === 'bettypes') app.innerHTML = betTypes(data);
-  if (page === 'odds') app.innerHTML = odds(data);
+  if (page === 'stats') app.innerHTML = statsPage(data);
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
@@ -784,6 +784,67 @@ ${yearInsightStrip(currentSeasonRows)}
     { key: 'odds', label: 'Odds', type: 'odds' },
     { key: 'result', label: 'Result' },
   ])}</div>`;
+}
+
+function statsBallSelector() {
+  return `<div class="stats-ball-page">
+    <p class="stats-ball-prompt">What are you interested in?</p>
+    <svg id="statsBall" viewBox="0 0 300 180" class="stats-ball-svg">
+      <path data-stats-tab="members" d="M150,90 L150,15 A145,75 0 0 1 295,90 Z" fill="#8a5a34"></path>
+      <path data-stats-tab="sports" d="M150,90 L295,90 A145,75 0 0 1 150,165 Z" fill="#7c4f2c"></path>
+      <path data-stats-tab="bettypes" d="M150,90 L150,165 A145,75 0 0 1 5,90 Z" fill="#8a5a34"></path>
+      <path data-stats-tab="odds" d="M150,90 L5,90 A145,75 0 0 1 150,15 Z" fill="#7c4f2c"></path>
+      <path d="M150,15 Q170,90 150,165" fill="none" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></path>
+      <path d="M5,90 Q150,72 295,90" fill="none" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></path>
+      <path d="M5,90 Q150,108 295,90" fill="none" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></path>
+      <line x1="146" y1="55" x2="154" y2="53" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></line>
+      <line x1="146" y1="65" x2="154" y2="63" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></line>
+      <line x1="146" y1="75" x2="154" y2="73" stroke="#f4ede0" stroke-width="2" style="pointer-events:none;"></line>
+      <line x1="147" y1="60" x2="147" y2="68" stroke="#f4ede0" stroke-width="1.5" style="pointer-events:none;"></line>
+      <path d="M150,78 L152.4,85.2 L160,85.2 L153.8,89.8 L156.2,97 L150,92.4 L143.8,97 L146.2,89.8 L140,85.2 L147.6,85.2 Z" fill="#f4ede0" style="pointer-events:none;"></path>
+      <text x="215" y="50" text-anchor="middle" class="stats-ball-label">Members</text>
+      <text x="215" y="130" text-anchor="middle" class="stats-ball-label">Sports</text>
+      <text x="85" y="130" text-anchor="middle" class="stats-ball-label">Bet types</text>
+      <text x="85" y="50" text-anchor="middle" class="stats-ball-label">Odds</text>
+    </svg>
+  </div>`;
+}
+
+function statsPage(data) {
+  const tabs = [
+    { key: 'members', label: 'Members' },
+    { key: 'sports', label: 'Sports' },
+    { key: 'bettypes', label: 'Bet types' },
+    { key: 'odds', label: 'Odds' },
+  ];
+  if (!state.statsTab) {
+    setTimeout(() => {
+      document.querySelectorAll('#statsBall path[data-stats-tab]').forEach(p => {
+        p.onclick = () => {
+          state.statsTab = p.dataset.statsTab;
+          render();
+        };
+      });
+    }, 0);
+    return statsBallSelector();
+  }
+  const active = state.statsTab;
+  const nav = tabs.map(t =>
+    `<button class="stats-tab${t.key === active ? ' active' : ''}" data-stats-tab="${t.key}">${t.label}</button>`
+  ).join('');
+  const content = active === 'members' ? members(data)
+    : active === 'sports' ? sports(data)
+    : active === 'bettypes' ? betTypes(data)
+    : odds(data);
+  setTimeout(() => {
+    document.querySelectorAll('.stats-tab').forEach(btn => {
+      btn.onclick = () => {
+        state.statsTab = btn.dataset.statsTab;
+        render();
+      };
+    });
+  }, 0);
+  return `<div class="stats-subnav">${nav}</div>${content}`;
 }
 
 function members(data) {
@@ -951,15 +1012,17 @@ function memberOddsBands(data) {
 
 function sports(data) {
   const min = Number($('minPicks').value) || 1;
-  const groupedRows = rank(sortRows(aggregate(data, 'group').filter(x => x.picks >= min), 'sportsPage'));
-  const competitionRows = rank(sortRows(aggregate(data, 'sport').filter(x => x.picks >= min), 'competitionsPage'));
+  const realPicks = data.filter(isRealPick);
+  const groupedRows = rank(sortRows(aggregate(realPicks, 'group').filter(x => x.picks >= min), 'sportsPage'));
+  const competitionRows = rank(sortRows(aggregate(realPicks, 'sport').filter(x => x.picks >= min), 'competitionsPage'));
   return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use the Sport group filter to narrow a code, or review competitions below.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'))}</div>`;
 }
 
 function betTypes(data) {
   const min = Number($('minPicks').value) || 1;
-  const groupedRows = rank(sortRows(aggregate(data, 'betTypeGroup').filter(x => x.picks >= min), 'betTypesGrouped'));
-  const specificRows = rank(sortRows(aggregate(data, 'betType').filter(x => x.picks >= min), 'betTypesSpecific'));
+  const realPicks = data.filter(isRealPick);
+  const groupedRows = rank(sortRows(aggregate(realPicks, 'betTypeGroup').filter(x => x.picks >= min), 'betTypesGrouped'));
+  const specificRows = rank(sortRows(aggregate(realPicks, 'betType').filter(x => x.picks >= min), 'betTypesSpecific'));
   return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use the Bet type filter to narrow a category, or search for a specific market below.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'))}</div>`;
 }
 
@@ -979,7 +1042,18 @@ function odds(data) {
       confidence: bandRows.length >= 50 ? 'High' : bandRows.length >= 20 ? 'Moderate' : 'Low',
     };
   });
-  return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>`;
+  const topFive = rows
+    .filter(r => r.confidence === 'High')
+    .slice()
+    .sort((a, b) => b.success - a.success)
+    .slice(0, 5);
+  const topFiveRows = topFive.map((r, i) =>
+    `<tr><td>${i + 1}</td><td>${escapeHtml(r.name)}</td><td class="num">${pct(r.success)}</td><td class="num">${r.picks.toLocaleString()}</td></tr>`
+  ).join('');
+  const topFivePanel = topFive.length
+    ? `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">High confidence = 50+ picks in that band.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Odds band</th><th class="num">Success</th><th class="num">Picks</th></tr></thead><tbody>${topFiveRows}</tbody></table></div></div>`
+    : `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">Not enough high-confidence bands yet (need 50+ picks in a band).</p></div>`;
+  return `${topFivePanel}<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>`;
 }
 function recordsPool(forceCurrentSeason) {
   let data = [...state.raw];
