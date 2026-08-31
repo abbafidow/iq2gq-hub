@@ -1,26 +1,25 @@
-v1.6 changes
-Dashboard redesign. Top-row KPIs are now 12 tiles grouped into three colour-coded sections:
-Wins & losses - Success rate, Successful picks, Winning MMs YTD
-Money & people - Winnings to date, Highest success rate (ties shown together), Most MM kills
-Odds - Avg winning odds, Highest winning odds, Lowest losing odds
-Every tile compares against the same number of completed rounds last year (distinct dates, not elapsed calendar time), so a comparison after 3 rounds this season is measured against the first 3 rounds last season, not a date-matched window.
-Teams competition, new. Team One-Four (captain listed first) shown side by side with Presidential Race, with Win $ and team success rate. Team membership is currently hardcoded in app.js - the agreed long-term home is a Member -> Team lookup on the Lists tab once that's added.
-Team form this quarter, new panel nested under Teams competition. Compares all four teams' Win $ and success rate within the current calendar quarter (independent of each team's own AC captaincy cycle), best/worst highlighted.
-"Insights this year" strip, new. Top sport / top bet option / top pick option by success rate, with a minimum-picks confidence floor so early-season noise doesn't surface as a "top" result.
-Smart Insights moved from Dashboard to Pick Assistant. Same panel (Member performance, Current form, Best sport/bet type, Odds performance), just relocated - it's syndicate-wide info, not really a "dashboard KPI."
-Removed the duplicate Sport group performance / Bet type performance tables from the Dashboard. Both already exist in full (plus a drilldown) on the Sports and Bet types tabs - the dashboard copies were pure duplication.
-Fixed: "Winning MMs" and the Presidential Race's +1.5 MM bonus were silently broken all along, not just this season. The original logic grouped picks by a MM drop column - but that column doesn't exist on the Sheet, so it was silently matching nothing, for every season, since it was built. The README previously claimed this was "verified against your spreadsheet"; that verification was wrong, or against something that's since changed.
-Real rule, now implemented correctly: a team's weekly MM is dropped when all three of that team's members have a real pick recorded for the same date, and successful when all three of those picks won. No dedicated flag column involved - it's derived purely from team membership + date, confirmed against your actual week-two data (Teams One, Two and Four each landing a paying MM; Team Three landing none).
-This fixes three things at once: the Winning MMs YTD tile, the Team success rate in Teams competition, and the Presidential Race +1.5 MM bonus (this was quietly wrong for every member, every season, until now).
-Stand Down and other admin rows are explicitly excluded from counting as part of a team's drop, so a standing-down member doesn't get silently treated as part of a completed multi.
-MM Return is now parsed into the data model. It previously wasn't read into any pick's data at all - "Winnings to date" and Teams competition's "Win $" both depend on it.
-Known separate issue, not yet fixed: TP's Presidential Race points are currently ~3.5 too high compared to the sheet - the opposite direction from the MM bonus bug, so it's a different problem (likely a duplicate row or a stray $2.00+ win somewhere in TP's picks this season). Still needs the raw data checked.
-Housekeeping: two stray duplicate files (app (2).js, app (4).js) that had accumulated in the repo from upload conflicts have been deleted - app.js is the only file the site actually loads.
+## v2.0 changes
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `README.md`
-- `assets/iq2gq-logo.png`
+**Stats tab**
+- **Members, Sports, Bet types and Odds combined into a single "Stats" tab.** Nav bar now has one Stats button instead of four separate ones.
+- **New rugby-ball wedge selector.** First visit to Stats shows "What are you interested in?" with a rugby-ball shape split into four pressable wedges (Members / Sports / Bet types / Odds), seams and lacing styled to look like a real ball, plus a small star badge in the centre. Picking a wedge opens that section; a pill sub-nav then handles switching between sections for the rest of the session, so you're not forced back through the ball every time.
+- **Stats is now always all-time.** The All-time/Current season toggle is hidden while on this tab (and on Records) since everything there already shows both scopes explicitly - it no longer has any effect on data shown, everywhere else it still works as before.
+- **STAND DOWN removed from Sports, Bet types and Odds.** These admin/non-pick rows were showing up as a fake "sport" or "bet type" category with a 0% success rate. Same fix extended to Records (was quietly deflating win/loss streaks and the general records pool too).
+- **Odds page:** reordered (Odds bands table first, then a new **Top 5 most successful (high confidence)** panel below it, by *specific* odds value rather than a whole band - e.g. "1.20" rather than "1.20-1.39"). Fixed the "Under 1.20" band's lower bound, which was 0 - letting blank/zero odds rows drag its average down towards $1.00 instead of reflecting genuine low-odds picks.
 
-No Google Sheet or Apps Script changes are required.
+**Records page**
+- **Best winning streaks and Highest winning odds** each split into explicit **All-time** and **Current season** pairs (four panels total) instead of one toggle-dependent table, since the toggle is no longer shown on this page.
+- **Record tiles restyled** as shield/medal shapes (matching the trophy-case feel of the page), colour-coded by scope: **bronze for current season, gold for all-time**.
+- **Fixed: "Perfect Round" was checking against the current 12-member roster**, which wrongly excluded genuine early-era Perfect Rounds from when the syndicate only had ~6 members. Now derives the active roster per season instead of hardcoding it.
+- **Fixed: ties were being silently dropped.** "Most wins" and "Highest winning percentage" only ever showed the first name after sorting - if two members were tied, the second was invisible. Both now list every tied member.
+- **Fixed: a Stand Down week was breaking win streaks**, since it was being treated like a loss (resetting the streak to 0) rather than being skipped entirely.
+- **Fixed: "This season" streaks were being truncated at the season boundary.** A live streak that started at the end of last season and carried into this one now correctly shows its full length, instead of resetting to 0 on the season flip.
+- **Empty syndicate-event tiles (Tier Crashers, Perfect Rounds, Member with a losing season, etc.) no longer render at all until they've actually occurred**, instead of cluttering the shield grid with "Not enough data yet." placeholders.
+
+**Under the hood - the big one**
+- **The entire "Winning MM" / MM-success mechanism was silently broken, every season, since it was built.** It relied on grouping picks by an `MM drop` column - which doesn't exist on the Sheet, and never has. This meant the Presidential Race's +1.5 MM bonus, the "Winning MMs YTD" tile, and Team success rate were all quietly wrong for everyone, every season. Replaced with the real rule: a team's weekly MM is *dropped* when all three team members have a real pick recorded for the same date, and *successful* when all three won - derived purely from team membership + date, with no dependent column at all.
+- Separately (Sheet-side, not a Hub bug): a broken master-cell reference (`Dashboard!J12`) was causing TP's Presidency Race row to read the wrong data entirely. Fixed on the Sheet by re-entering TP in the master cell.
+
+**Housekeeping**
+- Cache-busting version markers (`?v=X.X`) added to `styles.css`, `app.js` and `pickAssistant.js` in `index.html` - bump this number on every future update, or browsers may keep serving a stale cached copy.
+- Two stray duplicate files (`app (2).js`, `app (4).js`) that had accumulated from upload conflicts have been deleted.
