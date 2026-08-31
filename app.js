@@ -6,11 +6,32 @@ const state = {
   page: 'dashboard',
   sort: {},
   sportDrilldown: false,
-  seasonScope: 'all', // 'all' | 'current'
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
+  selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
+  filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
 };
 
-const FILTER_IDS = ['memberFilter', 'sportGroupFilter', 'betTypeFilter', 'yearFilter', 'oddsFilter', 'resultFilter', 'searchInput'];
+const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
+
+function memberPickerHtml(promptText) {
+  const members = Object.keys(TEAM_MAP).slice().sort();
+  const buttons = members.map(m => {
+    const nick = MEMBER_NICKNAMES[m];
+    return `<button class="member-pick-btn" data-member="${m}"><span class="member-pick-code">${m}</span>${nick ? `<span class="member-pick-nick">${escapeHtml(nick)}</span>` : ''}</button>`;
+  }).join('');
+  return `<p class="member-pick-prompt">${escapeHtml(promptText || 'Select your name below to personalise for you.')}</p><div class="member-pick-grid">${buttons}</div>`;
+}
+
+function bindMemberPicker() {
+  setTimeout(() => {
+    document.querySelectorAll('.member-pick-btn').forEach(btn => {
+      btn.onclick = () => {
+        state.selectedMember = btn.dataset.member;
+        render();
+      };
+    });
+  }, 0);
+}
 
 const ODDS = [
   ['under1.20', 'Under 1.20', 1, 1.199999],
@@ -192,7 +213,6 @@ async function init() {
     state.apiCount = Number(json.count || 0);
     state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
 
-    buildFilters();
     bind();
     render();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
@@ -244,19 +264,6 @@ function uniq(values) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
 }
 
-function fill(id, values, all = 'All') {
-  $(id).innerHTML = `<option value="">${all}</option>` + values.map(v => `<option>${escapeHtml(v)}</option>`).join('');
-}
-
-function buildFilters() {
-  fill('memberFilter', uniq(state.raw.map(r => r.member)));
-  fill('sportGroupFilter', uniq(state.raw.map(r => r.group)));
-  fill('betTypeFilter', uniq(state.raw.map(r => r.betTypeGroup)));
-  fill('yearFilter', uniq(state.raw.map(r => r.year)));
-  $('oddsFilter').innerHTML = '<option value="">All</option>' + ODDS.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
-  $('resultFilter').innerHTML = '<option value="">All</option><option>Win</option><option>Loss</option>';
-}
-
 function bind() {
   document.querySelectorAll('.tab').forEach(button => {
     button.onclick = () => {
@@ -266,40 +273,11 @@ function bind() {
       render();
     };
   });
-  document.querySelectorAll('.season-btn').forEach(button => {
-    button.onclick = () => {
-      state.seasonScope = button.dataset.season;
-      document.querySelectorAll('.season-btn').forEach(x => x.classList.remove('active'));
-      button.classList.add('active');
-      render();
-    };
-  });
-  [...FILTER_IDS, 'minPicks'].forEach(id => $(id).addEventListener('input', render));
-  $('resetBtn').onclick = () => {
-    FILTER_IDS.forEach(id => $(id).value = '');
-    $('minPicks').value = 10;
-    render();
-  };
 }
 
-function updateFiltersSummary() {
-  const active = FILTER_IDS.filter(id => $(id).value).length;
-  $('filtersSummary').innerHTML = `Filters${active ? ` (${active} active)` : ''} <span class="chev">&#9662;</span>`;
-}
-
-function filtered(ignoreSeasonScope) {
+function filtered() {
   let data = [...state.raw];
-  const member = $('memberFilter').value;
-  const group = $('sportGroupFilter').value;
-  const betType = $('betTypeFilter').value;
-  const year = $('yearFilter').value;
-  const odds = $('oddsFilter').value;
-const result = $('resultFilter').value;
-  const query = lower($('searchInput').value);
-  if (!ignoreSeasonScope && !year && state.seasonScope === 'current') {
-    const cy = currentYear(state.raw);
-    data = data.filter(r => seasonEqual(r.year, cy));
-  }
+  const { member, group, betType, year, odds, result, query } = state.filters;
   if (member) data = data.filter(r => r.member === member);
   if (group) data = data.filter(r => r.group === group);
   if (betType) data = data.filter(r => r.betTypeGroup === betType);
@@ -307,10 +285,11 @@ const result = $('resultFilter').value;
   if (result) data = data.filter(r => r.result === result);
   if (odds) {
     const band = ODDS.find(x => x[0] === odds);
-    data = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
+    if (band) data = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
   }
   if (query) {
-    data = data.filter(r => [r.member, r.sport, r.group, r.betType, r.name, r.year].join(' ').toLowerCase().includes(query));
+    const q = lower(query);
+    data = data.filter(r => [r.member, r.sport, r.group, r.betType, r.name, r.year].join(' ').toLowerCase().includes(q));
   }
   return data;
 }
@@ -751,12 +730,9 @@ function yearInsightStrip(currentSeasonRows) {
 }
 
 function render() {
-  updateFiltersSummary();
   const page = state.page;
-  const data = filtered(page === 'stats');
   const app = $('app');
-  const seasonToggle = document.getElementById('seasonToggle');
-  if (seasonToggle) seasonToggle.style.display = (page === 'stats' || page === 'records') ? 'none' : '';
+  const data = page === 'search' ? filtered() : state.raw;
   if (page === 'dashboard') app.innerHTML = dashboard(data);
   if (page === 'stats') app.innerHTML = statsPage(data);
   if (page === 'records') app.innerHTML = records(data);
@@ -766,13 +742,11 @@ function render() {
 
 function dashboard(data) {
   const cy = currentYear(state.raw);
-  const scopeLabel = state.seasonScope === 'current' ? `${cy || 'Current season'} (current season)` : 'All-time';
   const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
   const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `<p class="muted scope-line">Showing: ${escapeHtml(scopeLabel)}</p>
-${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
+  return `${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
@@ -848,11 +822,11 @@ function statsPage(data) {
 }
 
 function members(data) {
-  const selected = $('memberFilter').value;
+  const selected = state.selectedMember;
   if (selected) return memberIntelligence(selected, data);
-  const min = Number($('minPicks').value) || 1;
-  const rows = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= min), 'membersPage'));
-  return `<div class="panel"><h2>Members</h2><p class="muted">Select a member from the Member filter to open their Member Intelligence Centre.</p>${table(rows, 'membersPage', memberCols())}</div>`;
+  bindMemberPicker();
+  const rows = rank(sortRows(enrichMembers(aggregate(data, 'member'), data).filter(x => x.picks >= 1), 'membersPage'));
+  return `${memberPickerHtml()}<div class="panel"><h2>All members</h2>${table(rows, 'membersPage', memberCols())}</div>`;
 }
 
 
@@ -886,12 +860,23 @@ function memberIntelligence(member, data) {
   const oddsRows = rank(sortRows(memberOddsBands(profileData), `memberOdds-${member}`, 'success'));
   const worstSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberWorstSports-${member}`, 'success').reverse().slice(0, 5));
 
+  setTimeout(() => {
+    const changeLink = document.querySelector('.change-member-link');
+    if (changeLink) {
+      changeLink.onclick = (e) => {
+        e.preventDefault();
+        state.selectedMember = null;
+        render();
+      };
+    }
+  }, 0);
+
   return `<section class="member-profile">
     <div class="panel profile-hero">
       <div>
         <p class="eyebrow">Member Intelligence Centre</p>
-        <h2>${escapeHtml(member)}</h2>
-        <p class="muted">This view uses the current filters where possible. Clear filters for full-career analysis.</p>
+        <h2>${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h2>
+        <p class="muted">Full career analysis. <a href="#" class="change-member-link">Not you?</a></p>
       </div>
       <div class="profile-badges">
         <span>${career.picks.toLocaleString()} filtered picks</span>
@@ -1011,19 +996,19 @@ function memberOddsBands(data) {
 }
 
 function sports(data) {
-  const min = Number($('minPicks').value) || 1;
+  const min = 10;
   const realPicks = data.filter(isRealPick);
   const groupedRows = rank(sortRows(aggregate(realPicks, 'group').filter(x => x.picks >= min), 'sportsPage'));
   const competitionRows = rank(sortRows(aggregate(realPicks, 'sport').filter(x => x.picks >= min), 'competitionsPage'));
-  return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use the Sport group filter to narrow a code, or review competitions below.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'))}</div>`;
+  return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use Search to narrow to a specific sport or competition.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'))}</div>`;
 }
 
 function betTypes(data) {
-  const min = Number($('minPicks').value) || 1;
+  const min = 10;
   const realPicks = data.filter(isRealPick);
   const groupedRows = rank(sortRows(aggregate(realPicks, 'betTypeGroup').filter(x => x.picks >= min), 'betTypesGrouped'));
   const specificRows = rank(sortRows(aggregate(realPicks, 'betType').filter(x => x.picks >= min), 'betTypesSpecific'));
-  return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use the Bet type filter to narrow a category, or search for a specific market below.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'))}</div>`;
+  return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use Search to narrow to a specific market.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'))}</div>`;
 }
 
 function odds(data) {
@@ -1077,26 +1062,9 @@ function odds(data) {
 }
 function recordsPool(forceCurrentSeason) {
   let data = [...state.raw].filter(isRealPick);
-  const group = $('sportGroupFilter').value;
-  const betType = $('betTypeFilter').value;
-  const year = $('yearFilter').value;
-  const odds = $('oddsFilter').value;
-  const result = $('resultFilter').value;
-  const query = lower($('searchInput').value);
   if (forceCurrentSeason) {
     const cy = currentYear(state.raw);
     data = data.filter(r => seasonEqual(r.year, cy));
-  }
-  if (group) data = data.filter(r => r.group === group);
-  if (betType) data = data.filter(r => r.betTypeGroup === betType);
-  if (year) data = data.filter(r => r.year === year);
-  if (result) data = data.filter(r => r.result === result);
-  if (odds) {
-    const band = ODDS.find(x => x[0] === odds);
-    data = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
-  }
-  if (query) {
-    data = data.filter(r => [r.member, r.sport, r.group, r.betType, r.name, r.year].join(' ').toLowerCase().includes(query));
   }
   return data;
 }
@@ -1302,7 +1270,7 @@ function records(data) {
   const cy = currentYear(state.raw);
   const seasonData = recordsPool(true);
   const allTimeData = recordsPool(false);
-  const member = $('memberFilter').value;
+  const member = state.selectedMember;
   const memberSection = member
     ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true }, 'alltime')
     : '';
@@ -1389,6 +1357,40 @@ function bestStreaks(data) {
 }
 
 function search(data) {
+  const f = state.filters;
+  const memberOptions = uniq(state.raw.map(r => r.member));
+  const groupOptions = uniq(state.raw.map(r => r.group));
+  const betTypeOptions = uniq(state.raw.map(r => r.betTypeGroup));
+  const yearOptions = uniq(state.raw.map(r => r.year));
+
+  const selectHtml = (key, label, options, current) =>
+    `<label>${escapeHtml(label)}<select data-filter-key="${key}"><option value="">All</option>${options.map(o => `<option value="${escapeHtml(o)}"${o === current ? ' selected' : ''}>${escapeHtml(o)}</option>`).join('')}</select></label>`;
+
+  const oddsSelectHtml = () =>
+    `<label>Odds<select data-filter-key="odds"><option value="">All</option>${ODDS.map(o => `<option value="${o[0]}"${o[0] === f.odds ? ' selected' : ''}>${o[1]}</option>`).join('')}</select></label>`;
+
+  const resultSelectHtml = () =>
+    `<label>Result<select data-filter-key="result"><option value="">All</option><option${f.result === 'Win' ? ' selected' : ''}>Win</option><option${f.result === 'Loss' ? ' selected' : ''}>Loss</option></select></label>`;
+
+  const activeCount = ['member', 'group', 'betType', 'year', 'odds', 'result', 'query'].filter(k => f[k]).length;
+
+  const filtersHtml = `<div class="panel search-filters">
+    <h2>Search</h2>
+    <div class="search-filters-grid">
+      ${selectHtml('member', 'Member', memberOptions, f.member)}
+      ${selectHtml('group', 'Sport group', groupOptions, f.group)}
+      ${selectHtml('betType', 'Bet type', betTypeOptions, f.betType)}
+      ${selectHtml('year', 'Year', yearOptions, f.year)}
+      ${oddsSelectHtml()}
+      ${resultSelectHtml()}
+      <label class="search-text-label">Search text<input data-filter-key="query" type="text" value="${escapeHtml(f.query)}" placeholder="Warriors, Bunnings, McCaw..."></label>
+    </div>
+    <div class="search-filters-actions">
+      <span class="muted">${activeCount ? `${activeCount} filter${activeCount === 1 ? '' : 's'} active` : 'No filters active - showing everything, all-time'}</span>
+      <button type="button" id="searchResetBtn">Reset</button>
+    </div>
+  </div>`;
+
   const rows = data.slice(0, 500).map((r, i) => ({
     rank: i + 1,
     name: r.member,
@@ -1399,7 +1401,8 @@ function search(data) {
     result: r.result,
     year: r.year,
   }));
-  return `<div class="panel"><h2>Search results</h2>${table(rows, 'search', [
+
+  const resultsHtml = `<div class="panel"><h2>Results</h2><p class="muted">${data.length.toLocaleString()} matching pick${data.length === 1 ? '' : 's'}${data.length > 500 ? ' (showing first 500)' : ''}.</p>${table(rows, 'search', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'bet', label: 'Bet' },
@@ -1409,30 +1412,41 @@ function search(data) {
     { key: 'result', label: 'Result' },
     { key: 'year', label: 'Year' },
   ])}</div>`;
+
+  setTimeout(() => {
+    document.querySelectorAll('[data-filter-key]').forEach(el => {
+      const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(evt, () => {
+        state.filters[el.dataset.filterKey] = el.value;
+        render();
+      });
+    });
+    const resetBtn = document.getElementById('searchResetBtn');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        state.filters = { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' };
+        render();
+      };
+    }
+  }, 0);
+
+  return `${filtersHtml}${resultsHtml}`;
 }
 function pickAssistant(data) {
-  const member = $('memberFilter').value;
+  const member = state.selectedMember;
 const currentSeason = currentYear(state.raw);
   const trendingRows = trendingPool(currentSeason);
   if (!member) {
+    bindMemberPicker();
     return `
       <div class="pa-page">
         <div class="pa-header">
           <h1>Pick Assistant</h1>
-          <p>Select your name in the Member filter to see your personalised insights.</p>
         </div>
+
+        ${memberPickerHtml()}
 
         ${insights(data)}
-
-        <div class="pa-card">
-          <div class="pa-title">THIS WEEK</div>
-          <div class="pa-section">
-            <div class="pa-label">Member</div>
-            <div class="pa-value">
-              Select your member from the Member filter above.
-            </div>
-          </div>
-        </div>
       </div>
     `;
   }
@@ -1499,12 +1513,23 @@ const currentSeason = currentYear(state.raw);
       ? `You are currently on a ${active.count}-pick winning streak.`
       : 'Your recent form does not show a strong current streak.';
 
+  setTimeout(() => {
+    const changeLink = document.querySelector('.change-member-link');
+    if (changeLink) {
+      changeLink.onclick = (e) => {
+        e.preventDefault();
+        state.selectedMember = null;
+        render();
+      };
+    }
+  }, 0);
+
   return `
     <div class="pa-page">
 
       <div class="pa-header">
-        <h1>Pick Assistant - ${escapeHtml(member)}</h1>
-        <p>Personalised insights based on your betting history.</p>
+        <h1>Pick Assistant - ${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h1>
+        <p>Personalised insights based on your betting history. <a href="#" class="change-member-link">Not you?</a></p>
       </div>
 
       ${insights(data)}
@@ -1786,7 +1811,7 @@ function oddsPerformanceCard(data) {
   };
 }
 function bestDimensionCard(data, key, label, noun) {
-  const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
+  const min = 10;
   const rows = aggregate(data, key).filter(x => x.picks >= min).sort((a, b) => b.success - a.success || b.picks - a.picks);
   const top = rows[0];
   if (!top) return { label, value: '-', detail: `No ${noun.toLowerCase()} meets the ${min}-pick threshold.` };
@@ -2111,7 +2136,6 @@ function streakContinuationPatterns(allMemberRowsSorted) {
   };
 }
 function trendingPool(currentSeason) {
-  if (state.seasonScope !== 'current') return state.raw.slice();
   const currentRows = state.raw.filter(r => seasonEqual(r.year, currentSeason));
   const currentRoundDates = uniq(currentRows.map(r => r.date));
   if (currentRoundDates.length >= 16) return currentRows;
@@ -2124,7 +2148,7 @@ function trendingPool(currentSeason) {
   return fillRows.concat(currentRows);
 }
 function trendingMembersHtml(rows) {
-  const min = Math.min(20, Math.max(5, Number($('minPicks').value) || 10));
+  const min = 10;
   const top = aggregate(rows, 'member')
     .filter(x => x.picks >= min)
     .sort((a, b) => b.success - a.success || b.picks - a.picks)
@@ -2136,7 +2160,7 @@ function trendingMembersHtml(rows) {
 }
 
 function trendingSportsHtml(rows) {
-  const min = Math.min(50, Math.max(10, Number($('minPicks').value) || 20));
+  const min = 20;
   const top = aggregate(rows, 'group')
     .filter(x => x.picks >= min)
     .sort((a, b) => b.success - a.success || b.picks - a.picks)
@@ -2148,7 +2172,7 @@ function trendingSportsHtml(rows) {
 }
 
 function trendingCompetitionsHtml(rows) {
-  const min = Math.min(30, Math.max(10, Number($('minPicks').value) || 15));
+  const min = 15;
   const top = aggregate(rows, 'sport')
     .filter(x => x.picks >= min)
     .sort((a, b) => b.success - a.success || b.picks - a.picks)
@@ -2294,23 +2318,7 @@ function enrichMembers(rows, data) {
 }
 
 function insightScopeLabel() {
-  const parts = [];
-  const year = $('yearFilter').value;
-  if (!year && state.seasonScope === 'current') parts.push(`Season: ${currentYear(state.raw) || 'Current season'}`);
-  const member = $('memberFilter').value;
-  const group = $('sportGroupFilter').value;
-  const betType = $('betTypeFilter').value;
-  const odds = $('oddsFilter').value;
-  const result = $('resultFilter').value;
-  const query = $('searchInput').value;
-  if (member) parts.push(`Member: ${member}`);
-  if (group) parts.push(`Sport group: ${group}`);
-  if (betType) parts.push(`Bet type: ${betType}`);
-  if (year) parts.push(`Year: ${year}`);
-  if (odds) parts.push(`Odds: ${ODDS.find(o => o[0] === odds)?.[1] || odds}`);
-  if (result) parts.push(`Result: ${result}`);
-  if (query) parts.push(`Search: ${query}`);
-  return parts.length ? `Insights based on current filters - ${parts.join(' | ')}` : 'Overall intelligence across all resulted picks.';
+  return 'Overall intelligence across all resulted picks.';
 }
 
 function groupBy(data, key) {
