@@ -526,6 +526,7 @@ function previousSeasonOf(season) {
 function roundDatesSorted(rows) {
   const map = new Map();
   rows.forEach(r => {
+    if (!r.win && !r.loss) return; // not resulted yet - round isn't complete
     const parsed = parseDMY(r.date);
     if (parsed && !map.has(r.date)) map.set(r.date, parsed);
   });
@@ -744,10 +745,14 @@ function render() {
 function dashboard(data) {
   const cy = currentYear(state.raw);
   const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
+  const presRows = presidentialRace(currentSeasonRows);
+  const presidents = presRows.filter(r => r.rank === 1).map(r => r.name);
+  const seasonHeading = `<p class="dashboard-season-heading">${escapeHtml(cy || 'Current season')}${presidents.length ? ` | President: ${escapeHtml(presidents.join(', '))}` : ''}</p>`;
   const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
+  return `${seasonHeading}
+${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
