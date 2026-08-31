@@ -1130,8 +1130,11 @@ function currentTrailingStreakRecord(allData, wantWin) {
     let current = 0;
     for (let i = picks.length - 1; i >= 0; i--) {
       const hit = wantWin ? picks[i].win : picks[i].loss;
+      const breaks = wantWin ? picks[i].loss : picks[i].win;
       if (hit) current += 1;
-      else break;
+      else if (breaks) break;
+      // else: skip N/A rows (e.g. immunity-protected results) without
+      // breaking the streak.
     }
     perMember[member] = current;
     if (current > best) best = current;
@@ -1149,8 +1152,11 @@ function longestStreakRecord(data, wantWin) {
     let current = 0, top = 0;
     picks.forEach(p => {
       const hit = wantWin ? p.win : p.loss;
+      const breaks = wantWin ? p.loss : p.win;
       if (hit) { current += 1; top = Math.max(top, current); }
-      else current = 0;
+      else if (breaks) { current = 0; }
+      // else: neither a hit nor a genuine break (e.g. an immunity-protected
+      // N/A result) - skip it, don't reset the streak.
     });
     perMember[member] = top;
     if (top > best) best = top;
@@ -1303,29 +1309,62 @@ function records(data) {
   const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
 
   const streakMiniTable = (rows) => {
-    const body = rows.map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td class="num">${r.streak}</td></tr>`).join('');
+    const body = rows.slice(0, 6).map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td class="num">${r.streak}</td></tr>`).join('');
     return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Best streak</th></tr></thead><tbody>${body}</tbody></table>`;
   };
-  const highOddsTop5 = (rows) => rows
+  const highOddsTop6 = (rows) => rows
     .filter(r => r.win && Number.isFinite(r.odds))
     .sort((a, b) => b.odds - a.odds)
-    .slice(0, 5)
+    .slice(0, 6)
     .map((r, i) => ({ rank: i + 1, name: r.member, bet: r.name, odds: r.odds, year: r.year }));
   const oddsMiniTable = (rows) => {
     const body = rows.map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.bet)}</td><td class="num">${oddsFmt(r.odds)}</td><td class="num">${escapeHtml(r.year)}</td></tr>`).join('');
     return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th>Bet</th><th class="num">Odds</th><th class="num">Year</th></tr></thead><tbody>${body}</tbody></table>`;
   };
 
-  const streaksSection = `<div class="standings-col">
-    <div class="panel standings-panel"><h3>Best winning streaks - All-time</h3><div class="mini-table-wrap">${streakMiniTable(bestStreaks(allTimeData))}</div></div>
-    <div class="panel standings-panel"><h3>Best winning streaks - ${escapeHtml(cy || 'Current season')}</h3><div class="mini-table-wrap">${streakMiniTable(bestStreaks(seasonData))}</div></div>
+  const streaksSection = `<div class="panel standings-panel">
+    <h3>Best winning streaks</h3>
+    <div class="odds-scope-subnav">
+      <button class="streak-scope-tab active" data-streak-scope="alltime">All-time</button>
+      <button class="streak-scope-tab" data-streak-scope="current">${escapeHtml(cy || 'Current season')}</button>
+    </div>
+    <div class="mini-table-wrap" data-streak-scope-panel="alltime">${streakMiniTable(bestStreaks(allTimeData))}</div>
+    <div class="mini-table-wrap" data-streak-scope-panel="current" style="display:none;">${streakMiniTable(bestStreaks(seasonData))}</div>
   </div>`;
-  const oddsSection = `<div class="standings-col">
-    <div class="panel standings-panel"><h3>Highest winning odds - All-time</h3><div class="mini-table-wrap">${oddsMiniTable(highOddsTop5(allTimeData))}</div></div>
-    <div class="panel standings-panel"><h3>Highest winning odds - ${escapeHtml(cy || 'Current season')}</h3><div class="mini-table-wrap">${oddsMiniTable(highOddsTop5(seasonData))}</div></div>
+  const oddsSection = `<div class="panel standings-panel">
+    <h3>Highest winning odds</h3>
+    <div class="odds-scope-subnav">
+      <button class="odds-scope-tab active" data-odds-scope="alltime">All-time</button>
+      <button class="odds-scope-tab" data-odds-scope="current">${escapeHtml(cy || 'Current season')}</button>
+    </div>
+    <div class="mini-table-wrap" data-odds-scope-panel="alltime">${oddsMiniTable(highOddsTop6(allTimeData))}</div>
+    <div class="mini-table-wrap" data-odds-scope-panel="current" style="display:none;">${oddsMiniTable(highOddsTop6(seasonData))}</div>
   </div>`;
 
-  return `${officialRecords}<section class="two standings-row">${streaksSection}${oddsSection}</section>`;
+  setTimeout(() => {
+    document.querySelectorAll('.odds-scope-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.odds-scope-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const scope = btn.dataset.oddsScope;
+        document.querySelectorAll('[data-odds-scope-panel]').forEach(panel => {
+          panel.style.display = panel.dataset.oddsScopePanel === scope ? '' : 'none';
+        });
+      };
+    });
+    document.querySelectorAll('.streak-scope-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.streak-scope-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const scope = btn.dataset.streakScope;
+        document.querySelectorAll('[data-streak-scope-panel]').forEach(panel => {
+          panel.style.display = panel.dataset.streakScopePanel === scope ? '' : 'none';
+        });
+      };
+    });
+  }, 0);
+
+  return `${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section>`;
 }
 
 function bestStreaks(data) {
@@ -1338,9 +1377,10 @@ function bestStreaks(data) {
       if (pick.win) {
         current += 1;
         best = Math.max(best, current);
-      } else {
+      } else if (pick.loss) {
         current = 0;
       }
+      // else: N/A result (e.g. immunity-protected) - skip, don't break the streak.
     });
     return { name: member, streak: best };
   }).sort((a, b) => b.streak - a.streak || a.name.localeCompare(b.name));
