@@ -138,7 +138,7 @@ h1, h2, h3 { margin: 0; }
 .stats-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
 .stats-tab + .stats-tab { border-left: 1px solid var(--line); }
 
-.odds-scope-subnav {
+.scope-toggle {
   display: flex;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -146,7 +146,7 @@ h1, h2, h3 { margin: 0; }
   width: fit-content;
   margin-bottom: 10px;
 }
-.odds-scope-tab {
+.scope-toggle-btn {
   border: none;
   background: #142044;
   color: var(--muted);
@@ -155,8 +155,8 @@ h1, h2, h3 { margin: 0; }
   cursor: pointer;
   white-space: nowrap;
 }
-.odds-scope-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
-.odds-scope-tab + .odds-scope-tab { border-left: 1px solid var(--line); }
+.scope-toggle-btn.active { background: var(--accent); color: #061022; font-weight: 700; }
+.scope-toggle-btn + .scope-toggle-btn { border-left: 1px solid var(--line); }
 
 .stats-ball-page { text-align: center; padding: 24px 0 8px; }
 .stats-ball-prompt { font-size: 17px; font-weight: 700; margin: 0 0 20px; }
