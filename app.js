@@ -1322,43 +1322,44 @@ function records(data) {
     return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th>Bet</th><th class="num">Odds</th><th class="num">Year</th></tr></thead><tbody>${body}</tbody></table>`;
   };
 
+  // Generic reusable scope toggle: pass tabs as [{ key, label }] and panels
+  // as { key: htmlString }. Self-contained per instance (via closest()), so
+  // any number of these can sit on one page without interfering.
+  const scopeToggle = (tabs, panels) => {
+    const nav = tabs.map((t, i) =>
+      `<button class="scope-toggle-btn${i === 0 ? ' active' : ''}" data-scope="${t.key}">${escapeHtml(t.label)}</button>`
+    ).join('');
+    const panelHtml = tabs.map((t, i) =>
+      `<div class="mini-table-wrap" data-scope-panel="${t.key}"${i === 0 ? '' : ' style="display:none;"'}>${panels[t.key]}</div>`
+    ).join('');
+    return `<div class="scope-toggle-group"><div class="scope-toggle">${nav}</div>${panelHtml}</div>`;
+  };
+
   const streaksSection = `<div class="panel standings-panel">
     <h3>Best winning streaks</h3>
-    <div class="odds-scope-subnav">
-      <button class="streak-scope-tab active" data-streak-scope="alltime">All-time</button>
-      <button class="streak-scope-tab" data-streak-scope="current">${escapeHtml(cy || 'Current season')}</button>
-    </div>
-    <div class="mini-table-wrap" data-streak-scope-panel="alltime">${streakMiniTable(bestStreaks(allTimeData))}</div>
-    <div class="mini-table-wrap" data-streak-scope-panel="current" style="display:none;">${streakMiniTable(bestStreaks(seasonData))}</div>
+    ${scopeToggle(
+      [{ key: 'alltime', label: 'All-time' }, { key: 'current', label: cy || 'Current season' }],
+      { alltime: streakMiniTable(bestStreaks(allTimeData)), current: streakMiniTable(bestStreaks(seasonData)) }
+    )}
   </div>`;
   const oddsSection = `<div class="panel standings-panel">
     <h3>Highest winning odds</h3>
-    <div class="odds-scope-subnav">
-      <button class="odds-scope-tab active" data-odds-scope="alltime">All-time</button>
-      <button class="odds-scope-tab" data-odds-scope="current">${escapeHtml(cy || 'Current season')}</button>
-    </div>
-    <div class="mini-table-wrap" data-odds-scope-panel="alltime">${oddsMiniTable(highOddsTop6(allTimeData))}</div>
-    <div class="mini-table-wrap" data-odds-scope-panel="current" style="display:none;">${oddsMiniTable(highOddsTop6(seasonData))}</div>
+    ${scopeToggle(
+      [{ key: 'alltime', label: 'All-time' }, { key: 'current', label: cy || 'Current season' }],
+      { alltime: oddsMiniTable(highOddsTop6(allTimeData)), current: oddsMiniTable(highOddsTop6(seasonData)) }
+    )}
   </div>`;
 
   setTimeout(() => {
-    document.querySelectorAll('.odds-scope-tab').forEach(btn => {
+    document.querySelectorAll('.scope-toggle-btn').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.odds-scope-tab').forEach(b => b.classList.remove('active'));
+        const group = btn.closest('.scope-toggle-group');
+        if (!group) return;
+        group.querySelectorAll('.scope-toggle-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const scope = btn.dataset.oddsScope;
-        document.querySelectorAll('[data-odds-scope-panel]').forEach(panel => {
-          panel.style.display = panel.dataset.oddsScopePanel === scope ? '' : 'none';
-        });
-      };
-    });
-    document.querySelectorAll('.streak-scope-tab').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.streak-scope-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const scope = btn.dataset.streakScope;
-        document.querySelectorAll('[data-streak-scope-panel]').forEach(panel => {
-          panel.style.display = panel.dataset.streakScopePanel === scope ? '' : 'none';
+        const scope = btn.dataset.scope;
+        group.querySelectorAll('[data-scope-panel]').forEach(panel => {
+          panel.style.display = panel.dataset.scopePanel === scope ? '' : 'none';
         });
       };
     });
