@@ -118,6 +118,33 @@ h1, h2, h3 { margin: 0; }
 }
 .season-btn.active { background: var(--good); color: #061022; font-weight: 700; }
 
+.stats-subnav {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+.stats-tab {
+  border: none;
+  background: #142044;
+  color: var(--muted);
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.stats-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
+.stats-tab + .stats-tab { border-left: 1px solid var(--line); }
+
+.stats-ball-page { text-align: center; padding: 24px 0 8px; }
+.stats-ball-prompt { font-size: 17px; font-weight: 700; margin: 0 0 20px; }
+.stats-ball-svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; }
+.stats-ball-svg path[data-stats-tab] { cursor: pointer; transition: fill .15s; }
+.stats-ball-svg path[data-stats-tab]:hover { fill: #c98a4f !important; }
+.stats-ball-label { font-size: 13px; font-weight: 600; fill: #f4ede0; pointer-events: none; }
+
 /* Collapsible filters */
 .filters-toggle { flex-shrink: 0; position: relative; }
 .filters-toggle summary {
@@ -339,8 +366,18 @@ tr:last-child td { border-bottom: 0; }
 .form-card strong { display: block; font-size: 24px; margin: 6px 0; color: var(--text); }
 .form-card em { display: block; font-style: normal; color: var(--muted); font-size: 12px; }
 
-.record-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.record-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
 .record-list div { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.record-shield {
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+  padding: 14px 14px 26px !important;
+  border: none !important;
+  text-align: center;
+}
+.record-gold-current { background: #3d2313; border: 1px solid #cd7f32; }
+.record-gold-alltime { background: #3a2f0a; border: 1px solid #d4af37; }
+.record-list .record-gold-current { background: #3d2313; }
+.record-list .record-gold-alltime { background: #3a2f0a; }
 .record-list strong { display: block; font-size: 22px; margin-top: 6px; color: var(--text); }
 
 /* ---------- Responsive ---------- */
@@ -371,6 +408,8 @@ tr:last-child td { border-bottom: 0; }
 }
 
 @media (max-width: 520px) {
+  .stats-subnav { width: 100%; overflow-x: auto; }
+
     .toolbar-row {
     flex-direction: column;
     align-items: stretch;
