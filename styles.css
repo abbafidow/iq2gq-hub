@@ -520,11 +520,16 @@ tr:last-child td { border-bottom: 0; }
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.pa-pattern-col .pa-label { margin-bottom: 10px; }
+.pa-pattern-col .pa-label { margin-bottom: 10px; grid-column: 1 / -1; }
+.pa-pattern-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-content: start;
+}
 .pa-pattern-card {
   border-radius: 10px;
   padding: 10px 12px;
-  margin-bottom: 8px;
   border: 1px solid var(--line);
 }
 .pa-pattern-card:last-child { margin-bottom: 0; }
@@ -553,6 +558,7 @@ tr:last-child td { border-bottom: 0; }
 
 @media (max-width: 640px) {
   .pa-pattern-columns { grid-template-columns: 1fr; }
+  .pa-pattern-col { grid-template-columns: 1fr; }
 }
 
 .pa-placeholder {
