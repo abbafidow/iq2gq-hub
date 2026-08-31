@@ -138,6 +138,26 @@ h1, h2, h3 { margin: 0; }
 .stats-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
 .stats-tab + .stats-tab { border-left: 1px solid var(--line); }
 
+.odds-scope-subnav {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  width: fit-content;
+  margin-bottom: 10px;
+}
+.odds-scope-tab {
+  border: none;
+  background: #142044;
+  color: var(--muted);
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.odds-scope-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
+.odds-scope-tab + .odds-scope-tab { border-left: 1px solid var(--line); }
+
 .stats-ball-page { text-align: center; padding: 24px 0 8px; }
 .stats-ball-prompt { font-size: 17px; font-weight: 700; margin: 0 0 20px; }
 .stats-ball-svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; }
@@ -374,11 +394,12 @@ tr:last-child td { border-bottom: 0; }
   border: none !important;
   text-align: center;
 }
-.record-gold-current { background: #3d2313; border: 1px solid #cd7f32; }
-.record-gold-alltime { background: #3a2f0a; border: 1px solid #d4af37; }
-.record-list .record-gold-current { background: #3d2313; }
-.record-list .record-gold-alltime { background: #3a2f0a; }
-.record-list strong { display: block; font-size: 22px; margin-top: 6px; color: var(--text); }
+.record-gold-current { background: #1a5c34; border: 1px solid #4ade80; }
+.record-gold-alltime { background: #4a3908; border: 1px solid #ffd700; }
+.record-list .record-gold-current { background: #1a5c34; }
+.record-list .record-gold-alltime { background: #4a3908; }
+.record-list span { font-size: 10px; }
+.record-list strong { display: block; font-size: 15px; line-height: 1.3; margin-top: 6px; color: var(--text); }
 
 /* ---------- Responsive ---------- */
 
