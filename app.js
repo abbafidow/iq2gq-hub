@@ -1533,17 +1533,18 @@ const currentSeason = currentYear(state.raw);
 
       <div class="pa-card">
 
-        <div class="pa-title">THIS WEEK</div>
+        <div class="pa-title">THIS WEEK - WORTH WATCHING</div>
 
-       <div class="pa-section">
-            <div class="pa-label">Worth Watching - Your patterns</div>
-            ${yourPatterns.length ? yourPatterns.map(item => `<div class="pa-watch"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.text)}</div>`).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
+        <div class="pa-pattern-columns">
+          <div class="pa-pattern-col">
+            <div class="pa-label">Your patterns</div>
+            ${yourPatterns.length ? yourPatterns.map(item => patternCardHtml(item, 'pa-pattern-you')).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
           </div>
-
-       <div class="pa-section">
-            <div class="pa-label">Worth Watching - Syndicate patterns to consider</div>
-            ${syndicatePatterns.length ? syndicatePatterns.map(item => `<div class="pa-watch pa-watch-syndicate"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.text)}</div>`).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
+          <div class="pa-pattern-col">
+            <div class="pa-label">Syndicate patterns to consider</div>
+            ${syndicatePatterns.length ? syndicatePatterns.map(item => patternCardHtml(item, 'pa-pattern-syndicate')).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
           </div>
+        </div>
 
           ${corroboration.length ? `
           <div class="pa-section">
@@ -1861,77 +1862,115 @@ function byBestStory(a, b) {
 }
 
 // Groups rows by an arbitrary composite key and returns picks/wins/success
-// per group, alongside a human-readable label for each group.
+// per group, alongside a human-readable label for each group. Also tracks
+// the most recent pick date and average odds per group, so callers can
+// filter stale patterns and show value context.
 function aggregateComposite(rows, keyFn, labelFn) {
   const map = new Map();
   rows.forEach(row => {
     const key = keyFn(row);
     if (!key) return;
-    if (!map.has(key)) map.set(key, { key, label: labelFn(row), picks: 0, wins: 0 });
+    if (!map.has(key)) map.set(key, { key, label: labelFn(row), picks: 0, wins: 0, oddsSum: 0, lastDate: null, firstDate: null });
     const item = map.get(key);
     item.picks += 1;
     if (row.win) item.wins += 1;
+    if (Number.isFinite(row.odds)) item.oddsSum += row.odds;
+    const d = parseDMY(row.date);
+    if (d && (!item.lastDate || d > item.lastDate)) item.lastDate = d;
+    if (d && (!item.firstDate || d < item.firstDate)) item.firstDate = d;
   });
   return [...map.values()].map(item => ({
     ...item,
     success: item.picks ? item.wins / item.picks : 0,
+    avgOdds: item.picks ? item.oddsSum / item.picks : 0,
   }));
 }
 
+// A pattern is only shown if it's active within the current season or the
+// one immediately before it - anchored to real season boundaries (not an
+// arbitrary day count), so we're not leaning on a pattern that's gone
+// completely quiet for a full season or more.
+function isPatternRecentEnough(lastDate) {
+  if (!lastDate) return false;
+  const cy = currentYear(state.raw);
+  const prevSeason = previousSeasonOf(cy);
+  const cutoffSeason = prevSeason || cy;
+  const cutoffYear = seasonStart(cutoffSeason);
+  if (!Number.isFinite(cutoffYear) || cutoffYear < 0) return true;
+  const cutoffDate = new Date(Date.UTC(cutoffYear, 0, 1));
+  return lastDate.getTime() >= cutoffDate.getTime();
+}
+
 // Team + exact bet type combos, e.g. "Gold Coast Titans (12.5 point start)".
+// Scoped by sport group too, not just name - the same name can exist across
+// different sports (e.g. "Ireland" in rugby vs football), and without this
+// their results would silently blend into one misleading number.
 function comboCandidates(rows) {
   return aggregateComposite(
     rows,
-    r => (r.name && r.betType) ? `${r.name}||${r.betType}` : null,
-    r => `${r.name} (${r.betType})`
+    r => (r.name && r.betType && r.group) ? `${r.name}||${r.group}||${r.betType}` : null,
+    r => `${r.name} (${r.group}) - ${r.betType}`
   ).map(c => ({ ...c, team: c.label.split(' (')[0] }));
 }
 
-// "X point start or higher" thresholds, optionally scoped to one team.
-// Tests every point value actually present in the data as a threshold.
-function pointThresholdCandidates(rows, teamName) {
+// "X point start or higher" thresholds, optionally scoped to one team (and,
+// when scoped to a team, its sport group too - see comboCandidates for why).
+function pointThresholdCandidates(rows, teamName, sportGroupName) {
   const pool = rows.filter(r =>
     r.betTypeGroup === 'Point Starts' &&
     parsePointValue(r.betType) !== null &&
-    (!teamName || r.name === teamName)
+    (!teamName || r.name === teamName) &&
+    (!sportGroupName || r.group === sportGroupName)
   );
   if (!pool.length) return [];
   const thresholds = uniq(pool.map(r => parsePointValue(r.betType))).sort((a, b) => a - b);
   return thresholds.map(t => {
     const subset = pool.filter(r => parsePointValue(r.betType) >= t);
     const wins = subset.filter(r => r.win).length;
+    const dates = subset.map(r => parseDMY(r.date)).filter(Boolean);
+    const lastDate = dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
+    const firstDate = dates.length ? new Date(Math.min(...dates.map(d => d.getTime()))) : null;
+    const avgOdds = subset.reduce((s, r) => s + (r.odds || 0), 0) / (subset.length || 1);
     const label = teamName
-      ? `${teamName} (${t} point start or higher)`
+      ? `${teamName} (${sportGroupName ? sportGroupName + ' - ' : ''}${t} point start or higher)`
       : `Point start of ${t} or higher`;
     return {
-      key: `points||${teamName || 'all'}||${t}`,
+      key: `points||${teamName || 'all'}||${sportGroupName || 'all'}||${t}`,
       label,
       team: teamName || null,
       picks: subset.length,
       wins,
       success: subset.length ? wins / subset.length : 0,
+      avgOdds,
+      firstDate,
+      lastDate,
     };
   });
 }
 
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
-// thresholds (overall and per team), and single-dimension fallbacks. No
-// minimum-picks or time-window restriction - every combination the data
-// actually contains is a candidate, ranked by Wilson score.
+// thresholds (overall and per team+sport), and single-dimension fallbacks.
+// No minimum-picks restriction, but patterns whose most recent pick is more
+// than ~2 years old are dropped - a team/market can change enough over that
+// time that an old pattern isn't something to act on this week.
 function patternCandidatePool(rows) {
   rows = rows.filter(isRealPick);
-  const teams = uniq(rows.map(r => r.name)).filter(Boolean);
-  const perTeamThresholds = teams.flatMap(team => pointThresholdCandidates(rows, team));
+  const teamGroups = uniq(rows.map(r => (r.name && r.group) ? `${r.name}||${r.group}` : null)).filter(Boolean);
+  const perTeamThresholds = teamGroups.flatMap(tg => {
+    const [team, group] = tg.split('||');
+    return pointThresholdCandidates(rows, team, group);
+  });
 
-  const fallback = aggregate(rows, 'name')
-    .map(x => ({ key: `name||${x.name}`, label: `${x.name} (all bet types)`, team: x.name, picks: x.picks, wins: x.wins, success: x.success }))
-    .concat(aggregate(rows, 'betType')
-      .map(x => ({ key: `betType||${x.name}`, label: x.name, team: null, picks: x.picks, wins: x.wins, success: x.success })));
+  const fallback = aggregateComposite(rows, r => r.name && r.group ? `${r.name}||${r.group}` : null, r => `${r.name} (${r.group}) - all bet types`)
+    .map(x => ({ ...x, team: x.label.split(' (')[0] }))
+    .concat(aggregateComposite(rows, r => r.betType || null, r => r.betType)
+      .map(x => ({ ...x, team: null })));
 
   return comboCandidates(rows)
     .concat(pointThresholdCandidates(rows))
     .concat(perTeamThresholds)
     .concat(fallback)
+    .filter(c => isPatternRecentEnough(c.lastDate))
     .sort(byBestStory);
 }
 
@@ -1941,12 +1980,12 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
   const pool = memberRowsSorted.filter(isRealPick).slice(-windowSize);
   const candidates = comboCandidates(pool)
     .concat(pointThresholdCandidates(pool))
-    .concat(aggregate(pool, 'betType').map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, wins: x.wins, success: x.success })))
+    .concat(aggregateComposite(pool, r => r.betType || null, r => r.betType))
     .filter(c => !usedKeys.has(c.key))
     .sort(byBestStory);
   const top = candidates[0];
   if (!top) return null;
-  return { text: `${top.label} - ${pct(top.success)} over your last ${top.picks.toLocaleString()} picks` };
+  return { label: top.label, success: top.success, picks: top.picks, avgOdds: top.avgOdds, lastDate: top.lastDate, firstDate: top.firstDate };
 }
 
 // Up to 3 detailed "Your pattern" items for the given member.
@@ -1957,20 +1996,20 @@ function buildYourPatterns(memberRows, allMemberRowsSorted) {
   const usedKeys = new Set();
 
   pool.forEach(c => {
-    if (items.length >= 2 || usedKeys.has(c.key)) return;
+    if (items.length >= 4 || usedKeys.has(c.key)) return;
     usedKeys.add(c.key);
-    items.push({ source: 'Your pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
+    items.push({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate });
   });
 
   const recent = recencyPattern(allMemberRowsSorted, usedKeys);
   if (recent) {
-    items.push({ source: 'Your pattern', text: recent.text });
+    items.push({ source: 'Your pattern', label: recent.label, success: recent.success, picks: recent.picks, avgOdds: recent.avgOdds, lastDate: recent.lastDate, firstDate: recent.firstDate, isRecent: true });
   } else {
     const extra = pool.find(c => !usedKeys.has(c.key));
-    if (extra) items.push({ source: 'Your pattern', text: `${extra.label} - ${pct(extra.success)} from ${extra.picks.toLocaleString()} picks` });
+    if (extra) items.push({ source: 'Your pattern', label: extra.label, success: extra.success, picks: extra.picks, avgOdds: extra.avgOdds, lastDate: extra.lastDate, firstDate: extra.firstDate });
   }
 
-  return items.slice(0, 3);
+  return items.slice(0, 5);
 }
 
 // Up to 3 detailed "Syndicate pattern" items, drawn from all-time,
@@ -1980,9 +2019,9 @@ function buildSyndicatePatterns() {
   const usedKeys = new Set();
   const items = [];
   pool.forEach(c => {
-    if (items.length >= 3 || usedKeys.has(c.key)) return;
+    if (items.length >= 5 || usedKeys.has(c.key)) return;
     usedKeys.add(c.key);
-    items.push({ source: 'Syndicate pattern', text: `${c.label} - ${pct(c.success)} from ${c.picks.toLocaleString()} picks` });
+    items.push({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate });
   });
   return items;
 }
@@ -1991,6 +2030,15 @@ function buildSyndicatePatterns() {
 // Small inline SVG visuals for Corroboration/Conflict, Fade Alerts, and
 // Streak Watch, so those read as graphics rather than lines of text.
 // ----------------------------------------------------------------------
+
+function patternCardHtml(item, colorClass) {
+  const sinceYear = item.firstDate ? item.firstDate.getFullYear() : null;
+  return `<div class="pa-pattern-card ${colorClass}">
+    <div class="pa-pattern-top"><span class="pa-pattern-label">${escapeHtml(item.label)}</span><span class="pa-pattern-success">${pct(item.success)}</span></div>
+    ${svgStatBar(item.success, '#4ade80')}
+    <div class="pa-pattern-meta"><span>Based on ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}</span><span>Avg ${fmtMoney(item.avgOdds)}</span></div>
+  </div>`;
+}
 
 function svgStatBar(success, color) {
   const width = Math.max(2, Math.round(Math.min(1, Math.max(0, success)) * 100));
