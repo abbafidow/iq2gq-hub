@@ -1076,7 +1076,7 @@ function odds(data) {
   return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>${topFivePanel}`;
 }
 function recordsPool(forceCurrentSeason) {
-  let data = [...state.raw];
+  let data = [...state.raw].filter(isRealPick);
   const group = $('sportGroupFilter').value;
   const betType = $('betTypeFilter').value;
   const year = $('yearFilter').value;
@@ -1176,11 +1176,25 @@ function tierCrasherCount(data) {
 }
 
 function perfectRoundCount(data) {
+  // Active roster has grown over time (from ~6 members to 12) - derive it
+  // per season from who actually picked that season, rather than hardcoding
+  // the current 12, so early-season Perfect Rounds aren't wrongly excluded.
+  const rosterBySeason = {};
+  data.forEach(r => {
+    const season = normalisedSeason(r.year);
+    if (!rosterBySeason[season]) rosterBySeason[season] = new Set();
+    rosterBySeason[season].add(r.member);
+  });
   const byDate = groupBy(data, 'date');
   let count = 0;
   Object.values(byDate).forEach(picks => {
     const resulted = picks.filter(p => p.win || p.loss);
-    if (resulted.length && resulted.every(p => p.win)) count += 1;
+    if (!resulted.length) return;
+    const season = normalisedSeason(resulted[0].year);
+    const roster = rosterBySeason[season] || new Set();
+    const membersWithResult = uniq(resulted.map(p => p.member));
+    const allRosterPlayed = [...roster].every(m => membersWithResult.includes(m));
+    if (allRosterPlayed && resulted.every(p => p.win)) count += 1;
   });
   return count;
 }
@@ -1239,8 +1253,9 @@ if (opts.includeLosingSeason) {
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
 }
 function records(data) {
-  const streaks = bestStreaks(data);
-  const highWins = data.filter(r => r.win && Number.isFinite(r.odds))
+  const realData = data.filter(isRealPick);
+  const streaks = bestStreaks(realData);
+  const highWins = realData.filter(r => r.win && Number.isFinite(r.odds))
     .sort((a, b) => b.odds - a.odds)
     .slice(0, 20)
     .map((r, i) => ({ rank: i + 1, name: r.member, bet: r.name, odds: r.odds, year: r.year, sport: r.sport }));
