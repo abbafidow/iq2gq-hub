@@ -1496,16 +1496,16 @@ const currentSeason = currentYear(state.raw);
   const streakText = active.count
     ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
     : '-';
-  const yourPatterns = buildYourPatterns(memberRows, allMemberRows);
-  const syndicatePatterns = buildSyndicatePatterns();
-
   const yourPool = patternCandidatePool(memberRows);
   const syndicatePool = patternCandidatePool(state.raw);
-  const yourFadePool = fadeCandidatePool(memberRows);
-  const syndicateFadePool = fadeCandidatePool(state.raw);
+  const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
+  const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
+
+  const yourFadePool = fadeScoreFromPool(yourPool);
+  const syndicateFadePool = fadeScoreFromPool(syndicatePool);
   const corroboration = corroborationNotes(yourPool, syndicatePool, yourFadePool, syndicateFadePool);
-  const yourFades = buildFadeAlerts(memberRows, 'Your fade');
-  const syndicateFades = buildFadeAlerts(state.raw, 'Syndicate fade');
+  const yourFades = buildFadeAlertsFromPool(yourPool, 'Your fade');
+  const syndicateFades = buildFadeAlertsFromPool(syndicatePool, 'Syndicate fade');
   const streak = streakContinuationPatterns(allMemberRows);
   const opportunityText = bestSport.value !== '-'
     ? `${bestSport.value} is your strongest sport area based on your historical results.`
@@ -1895,14 +1895,18 @@ function aggregateComposite(rows, keyFn, labelFn) {
 // one immediately before it - anchored to real season boundaries (not an
 // arbitrary day count), so we're not leaning on a pattern that's gone
 // completely quiet for a full season or more.
-function isPatternRecentEnough(lastDate) {
-  if (!lastDate) return false;
+function recencyCutoffDate() {
   const cy = currentYear(state.raw);
   const prevSeason = previousSeasonOf(cy);
   const cutoffSeason = prevSeason || cy;
   const cutoffYear = seasonStart(cutoffSeason);
-  if (!Number.isFinite(cutoffYear) || cutoffYear < 0) return true;
-  const cutoffDate = new Date(Date.UTC(cutoffYear, 0, 1));
+  if (!Number.isFinite(cutoffYear) || cutoffYear < 0) return null;
+  return new Date(Date.UTC(cutoffYear, 0, 1));
+}
+
+function isPatternRecentEnough(lastDate, cutoffDate) {
+  if (!lastDate) return false;
+  if (!cutoffDate) return true;
   return lastDate.getTime() >= cutoffDate.getTime();
 }
 
@@ -1920,13 +1924,7 @@ function comboCandidates(rows) {
 
 // "X point start or higher" thresholds, optionally scoped to one team (and,
 // when scoped to a team, its sport group too - see comboCandidates for why).
-function pointThresholdCandidates(rows, teamName, sportGroupName) {
-  const pool = rows.filter(r =>
-    r.betTypeGroup === 'Point Starts' &&
-    parsePointValue(r.betType) !== null &&
-    (!teamName || r.name === teamName) &&
-    (!sportGroupName || r.group === sportGroupName)
-  );
+function thresholdsFromPool(pool, teamName, sportGroupName) {
   if (!pool.length) return [];
   const thresholds = uniq(pool.map(r => parsePointValue(r.betType))).sort((a, b) => a - b);
   return thresholds.map(t => {
@@ -1953,6 +1951,21 @@ function pointThresholdCandidates(rows, teamName, sportGroupName) {
   });
 }
 
+// Convenience wrapper for callers with an already-small dataset (a recent
+// picks window, a post-streak subset) where filtering from raw rows each
+// call is cheap. patternCandidatePool below avoids this path for its
+// per-team+sport loop, since that would mean re-scanning the full row set
+// once per distinct team+sport combination.
+function pointThresholdCandidates(rows, teamName, sportGroupName) {
+  const pool = rows.filter(r =>
+    r.betTypeGroup === 'Point Starts' &&
+    parsePointValue(r.betType) !== null &&
+    (!teamName || r.name === teamName) &&
+    (!sportGroupName || r.group === sportGroupName)
+  );
+  return thresholdsFromPool(pool, teamName, sportGroupName);
+}
+
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
 // thresholds (overall and per team+sport), and single-dimension fallbacks.
 // No minimum-picks restriction, but patterns whose most recent pick is more
@@ -1960,22 +1973,34 @@ function pointThresholdCandidates(rows, teamName, sportGroupName) {
 // time that an old pattern isn't something to act on this week.
 function patternCandidatePool(rows) {
   rows = rows.filter(isRealPick);
-  const teamGroups = uniq(rows.map(r => (r.name && r.group) ? `${r.name}||${r.group}` : null)).filter(Boolean);
-  const perTeamThresholds = teamGroups.flatMap(tg => {
-    const [team, group] = tg.split('||');
-    return pointThresholdCandidates(rows, team, group);
+
+  // Point-Starts rows filtered and grouped by team+sport in one pass each,
+  // rather than re-scanning the full row set once per distinct combination.
+  const pointStartRows = rows.filter(r => r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null);
+  const byTeamGroup = new Map();
+  pointStartRows.forEach(r => {
+    if (!r.name || !r.group) return;
+    const key = `${r.name}||${r.group}`;
+    if (!byTeamGroup.has(key)) byTeamGroup.set(key, []);
+    byTeamGroup.get(key).push(r);
   });
+  const perTeamThresholds = [...byTeamGroup.entries()].flatMap(([key, teamRows]) => {
+    const [team, group] = key.split('||');
+    return thresholdsFromPool(teamRows, team, group);
+  });
+  const overallThresholds = thresholdsFromPool(pointStartRows, null, null);
 
   const fallback = aggregateComposite(rows, r => r.name && r.group ? `${r.name}||${r.group}` : null, r => `${r.name} (${r.group}) - all bet types`)
     .map(x => ({ ...x, team: x.label.split(' (')[0] }))
     .concat(aggregateComposite(rows, r => r.betType || null, r => r.betType)
       .map(x => ({ ...x, team: null })));
 
+  const cutoffDate = recencyCutoffDate();
   return comboCandidates(rows)
-    .concat(pointThresholdCandidates(rows))
+    .concat(overallThresholds)
     .concat(perTeamThresholds)
     .concat(fallback)
-    .filter(c => isPatternRecentEnough(c.lastDate))
+    .filter(c => isPatternRecentEnough(c.lastDate, cutoffDate))
     .sort(byBestStory);
 }
 
@@ -1994,9 +2019,7 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
 }
 
 // Up to 3 detailed "Your pattern" items for the given member.
-function buildYourPatterns(memberRows, allMemberRowsSorted) {
-  const pool = patternCandidatePool(memberRows);
-
+function buildYourPatterns(pool, allMemberRowsSorted) {
   const items = [];
   const usedKeys = new Set();
 
@@ -2019,8 +2042,7 @@ function buildYourPatterns(memberRows, allMemberRowsSorted) {
 
 // Up to 3 detailed "Syndicate pattern" items, drawn from all-time,
 // syndicate-wide data. No minimum-picks or season-window restriction.
-function buildSyndicatePatterns() {
-  const pool = patternCandidatePool(state.raw);
+function buildSyndicatePatterns(pool) {
   const usedKeys = new Set();
   const items = [];
   pool.forEach(c => {
@@ -2085,11 +2107,27 @@ function svgStreakPips(count, type) {
 // about the ranking is inverted or hand-tuned.
 // ----------------------------------------------------------------------
 
-function fadeCandidatePool(rows) {
-  return patternCandidatePool(rows)
+function fadeScoreFromPool(pool) {
+  return pool
     .map(c => ({ ...c, fadeScore: wilsonLowerBound(c.picks - c.wins, c.picks) }))
     .filter(c => c.picks - c.wins > 0)
     .sort((a, b) => b.fadeScore - a.fadeScore);
+}
+
+function fadeCandidatePool(rows) {
+  return fadeScoreFromPool(patternCandidatePool(rows));
+}
+
+function buildFadeAlertsFromPool(pool, source, count = 2) {
+  const fadePool = fadeScoreFromPool(pool);
+  const usedKeys = new Set();
+  const items = [];
+  fadePool.forEach(c => {
+    if (items.length >= count || usedKeys.has(c.key)) return;
+    usedKeys.add(c.key);
+    items.push({ source, label: c.label, picks: c.picks, success: c.success });
+  });
+  return items;
 }
 
 function buildFadeAlerts(rows, source, count = 2) {
