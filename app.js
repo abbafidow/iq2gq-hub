@@ -1446,8 +1446,6 @@ const currentSeason = currentYear(state.raw);
         </div>
 
         ${memberPickerHtml()}
-
-        ${insights(data)}
       </div>
     `;
   }
@@ -1532,8 +1530,6 @@ const currentSeason = currentYear(state.raw);
         <h1>Pick Assistant - ${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h1>
         <p>Personalised insights based on your betting history. <a href="#" class="change-member-link">Not you?</a></p>
       </div>
-
-      ${insights(data)}
 
       <div class="pa-card">
 
@@ -1923,6 +1919,7 @@ function pointThresholdCandidates(rows, teamName) {
 // minimum-picks or time-window restriction - every combination the data
 // actually contains is a candidate, ranked by Wilson score.
 function patternCandidatePool(rows) {
+  rows = rows.filter(isRealPick);
   const teams = uniq(rows.map(r => r.name)).filter(Boolean);
   const perTeamThresholds = teams.flatMap(team => pointThresholdCandidates(rows, team));
 
@@ -1941,7 +1938,7 @@ function patternCandidatePool(rows) {
 // Best pattern from a member's most recent picks (last N) - surfaces
 // "what's working right now" as one of the 3 "Your pattern" slots.
 function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
-  const pool = memberRowsSorted.slice(-windowSize);
+  const pool = memberRowsSorted.filter(isRealPick).slice(-windowSize);
   const candidates = comboCandidates(pool)
     .concat(pointThresholdCandidates(pool))
     .concat(aggregate(pool, 'betType').map(x => ({ key: `betType||${x.name}`, label: x.name, picks: x.picks, wins: x.wins, success: x.success })))
