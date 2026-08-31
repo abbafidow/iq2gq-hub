@@ -184,6 +184,7 @@ function betTypeGroup(betType) {
   if (x.includes('margin')) return 'Winning Margins';
   if (x.includes('scorer') || x.includes('anytime') || x.includes('try scorer') || x.includes('goal scorer')) return 'Anytime Scorers';
   if (x.includes('total') || x.includes('over') || x.includes('under')) return 'Totals (Over/Under)';
+  if (x.includes('half/full') || (x.includes('half time') && x.includes('full time'))) return 'Half Time/Full Time';
   if (x.includes('multi') || x.includes('parlay') || x.includes('accumulator')) return 'Multis';
   if (x.includes('future') || x.includes('outright') || x.includes('premiership') || x.includes('winner')) return 'Futures/Outrights';
   return betType || 'Other';
