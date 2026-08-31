@@ -2281,9 +2281,9 @@ function groupBy(data, key) {
 }
 
 function comparePickOrder(a, b) {
-  const dateA = Date.parse(a.date);
-  const dateB = Date.parse(b.date);
-  if (Number.isFinite(dateA) && Number.isFinite(dateB) && dateA !== dateB) return dateA - dateB;
+  const dateA = parseDMY(a.date);
+  const dateB = parseDMY(b.date);
+  if (dateA && dateB && dateA.getTime() !== dateB.getTime()) return dateA - dateB;
   return String(a.key).localeCompare(String(b.key), undefined, { numeric: true });
 }
 
