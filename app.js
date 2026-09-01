@@ -1440,8 +1440,6 @@ function search(data) {
 }
 function pickAssistant(data) {
   const member = state.selectedMember;
-const currentSeason = currentYear(state.raw);
-  const trendingRows = trendingPool(currentSeason);
   if (!member) {
     bindMemberPicker();
     return `
@@ -1460,63 +1458,15 @@ const currentSeason = currentYear(state.raw);
     .filter(r => r.member === member)
     .sort(comparePickOrder);
 
-  const career = summary(allMemberRows);
-  const recent = recentRecord(allMemberRows, 20);
-  const active = activeStreak(allMemberRows);
-
-  const bestSport = bestDimensionCard(
-    memberRows,
-    'group',
-    'Best sport',
-    'sport group'
-  );
-
-  const bestOdds = bestOddsBandCard(
-    memberRows,
-    'Best odds band'
-  );
-
-  const memberSuccess = career.success;
-
-  const syndicateRows = state.raw.filter(r =>
-    seasonEqual(r.year, currentSeason)
-  );
-
-  const syndicateWins = syndicateRows.filter(r => r.win).length;
-  const syndicateSuccess = syndicateRows.length
-    ? syndicateWins / syndicateRows.length
-    : 0;
-
-  const trendText = memberSuccess > syndicateSuccess
-    ? 'Above syndicate rate'
-    : memberSuccess < syndicateSuccess
-      ? 'Below syndicate rate'
-      : 'At syndicate rate';
-
-  const streakText = active.count
-    ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
-    : '-';
   const yourPool = patternCandidatePool(memberRows);
   const otherMembersRows = state.raw.filter(r => r.member !== member);
   const syndicatePool = patternCandidatePool(otherMembersRows);
   const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
 
-  const yourFadePool = fadeScoreFromPool(yourPool);
-  const syndicateFadePool = fadeScoreFromPool(syndicatePool);
-  const corroboration = corroborationNotes(yourPool, syndicatePool, yourFadePool, syndicateFadePool);
-  const yourFades = buildFadeAlertsFromPool(yourPool, 'Your fade');
-  const syndicateFades = buildFadeAlertsFromPool(syndicatePool, 'Syndicate fade');
-  const streak = streakContinuationPatterns(allMemberRows);
-  const opportunityText = bestSport.value !== '-'
-    ? `${bestSport.value} is your strongest sport area based on your historical results.`
-    : 'Not enough data yet to identify a strongest sport area.';
-
-  const considerText = active.type === 'Loss' && active.count >= 2
-    ? `You are currently on a ${active.count}-pick losing streak.`
-    : active.type === 'Win' && active.count >= 2
-      ? `You are currently on a ${active.count}-pick winning streak.`
-      : 'Your recent form does not show a strong current streak.';
+  const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
+  const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
+  const sportOptions = uniq(state.raw.map(r => r.sport)).filter(Boolean);
 
   setTimeout(() => {
     const changeLink = document.querySelector('.change-member-link');
@@ -1525,6 +1475,28 @@ const currentSeason = currentYear(state.raw);
         e.preventDefault();
         state.selectedMember = null;
         render();
+      };
+    }
+    const rateBtn = document.getElementById('rateAPickBtn');
+    if (rateBtn) {
+      rateBtn.onclick = () => {
+        const name = clean($('rateAPickName').value);
+        const betType = clean($('rateAPickBetType').value);
+        const sport = clean($('rateAPickSport').value);
+        const odds = Number($('rateAPickOdds').value);
+        const resultsEl = document.getElementById('rateAPickResults');
+        if (!name || !betType || !sport || !Number.isFinite(odds) || odds <= 1) {
+          resultsEl.innerHTML = '<p class="muted small">Fill in a selection, bet type, sport and odds (e.g. 1.35) to get a rating.</p>';
+          return;
+        }
+        const result = ratePotentialPick(name, betType, sport, odds);
+        resultsEl.innerHTML = `
+          <div class="pa-rating-signals">
+            ${result.signals.map(s => `<p class="pa-rating-signal">${escapeHtml(s.text)}</p>`).join('')}
+          </div>
+          ${ratingFlamesHtml(result.rating)}
+          ${result.lowConfidence ? '<p class="muted small">Small sample size - treat this rating as indicative, not certain.</p>' : ''}
+        `;
       };
     }
   }, 0);
@@ -1552,87 +1524,20 @@ const currentSeason = currentYear(state.raw);
           </div>
         </div>
 
-          ${corroboration.length ? `
-          <div class="pa-section">
-            <div class="pa-label">Corroboration</div>
-            <div class="pa-graphic-row">
-              ${corroboration.map(note => `
-                <div class="pa-graphic-item pa-graphic-venn">
-                  ${svgVenn(note.kind)}
-                  <div class="pa-graphic-caption"><strong>${escapeHtml(note.team)}</strong><span>${note.kind === 'corroborated' ? 'You + syndicate agree' : 'Signals disagree'}</span></div>
-                </div>`).join('')}
-            </div>
-          </div>` : ''}
-
       </div>
 
-      ${(yourFades.length || syndicateFades.length) ? `
       <div class="pa-card">
-        <div class="pa-title">FADE ALERTS</div>
-        <div class="pa-section">
-          <div class="pa-label">Patterns to avoid</div>
-          <div class="pa-graphic-list">
-            ${yourFades.concat(syndicateFades).map(item => `
-              <div class="pa-graphic-item pa-graphic-bar">
-                ${svgStatBar(item.success, '#d84a4a')}
-                <div class="pa-graphic-caption"><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.label)} - ${pct(item.success)} from ${item.picks.toLocaleString()} picks</div>
-              </div>`).join('')}
-          </div>
+        <div class="pa-title">RATE A PICK</div>
+        <p class="muted small">Type in a pick you're considering and see how it's checked out historically. Nothing here is saved or shared - it's just a lookup.</p>
+        <div class="pa-rate-form">
+          <label>Selection<input list="rateAPickNameList" id="rateAPickName" placeholder="NZ Warriors"><datalist id="rateAPickNameList">${nameOptions.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist></label>
+          <label>Bet type<input list="rateAPickBetTypeList" id="rateAPickBetType" placeholder="H2H"><datalist id="rateAPickBetTypeList">${betTypeOptions.map(b => `<option value="${escapeHtml(b)}">`).join('')}</datalist></label>
+          <label>Sport<input list="rateAPickSportList" id="rateAPickSport" placeholder="Rugby League (NRL)"><datalist id="rateAPickSportList">${sportOptions.map(s => `<option value="${escapeHtml(s)}">`).join('')}</datalist></label>
+          <label>Odds<input type="number" step="0.01" min="1.01" id="rateAPickOdds" placeholder="1.35"></label>
+          <button type="button" id="rateAPickBtn">Rate this pick</button>
         </div>
-      </div>` : ''}
-
-      ${streak ? `
-      <div class="pa-card">
-        <div class="pa-title">STREAK WATCH</div>
-        <div class="pa-section">
-          <div class="pa-label">You're on a ${streak.active.count}-pick ${streak.active.type.toLowerCase()} streak</div>
-          ${svgStreakPips(streak.active.count, streak.active.type)}
-          <div class="pa-value" style="margin-top: 10px;">When others have been in this position, the strongest continuations have been:</div>
-          <div class="pa-graphic-list">
-            ${streak.items.map(item => `
-              <div class="pa-graphic-item pa-graphic-bar">
-                ${svgStatBar(item.success, '#7a4ad8')}
-                <div class="pa-graphic-caption"><strong>${escapeHtml(item.label)}</strong> - ${pct(item.success)} from ${item.picks.toLocaleString()} picks</div>
-              </div>`).join('')}
-          </div>
-      </div>` : ''}
-
-      <div class="pa-card">
-
-       <div class="pa-card">
-
-    <div class="pa-title">TRENDING</div>
-
-    <div class="pa-section">
-
-        <div class="pa-label">Top Members</div>
-
-<div id="pa-trending-members">${trendingMembersHtml(trendingRows)}</div>
-        <div class="pa-section">
-          <div class="pa-label">Recent form</div>
-          <div class="pa-stats">
-            <span>Last 20: ${escapeHtml(recent.text)}</span>
-            <span>${escapeHtml(recent.detail)}</span>
-<span>${bestOdds.value === '-' ? 'Not enough odds-band data yet' : escapeHtml(bestOdds.value) + ' odds band'}</span>          </div>
-        </div>
-
-    <div class="pa-section">
-
-        <div class="pa-label">Top Sports</div>
-
-<div id="pa-trending-sports">${trendingSportsHtml(trendingRows)}</div>
-    </div>
-
-    <div class="pa-section">
-
-        <div class="pa-label">Top Competitions</div>
-
-<div id="pa-trending-competitions">${trendingCompetitionsHtml(trendingRows)}</div>
-    </div>
-
-</div>
-
-</div>
+        <div id="rateAPickResults" class="pa-rating-results"></div>
+      </div>
 
 `;
 }
@@ -1814,25 +1719,6 @@ function oddsPerformanceCard(data) {
     detail: `${pct(top.success)} actual | ${pct(top.implied)} implied | ${points >= 0 ? '+' : ''}${points} pts | ${top.picks} picks`
   };
 }
-function bestDimensionCard(data, key, label, noun) {
-  const min = 10;
-  const rows = aggregate(data, key).filter(x => x.picks >= min).sort((a, b) => b.success - a.success || b.picks - a.picks);
-  const top = rows[0];
-  if (!top) return { label, value: '-', detail: `No ${noun.toLowerCase()} meets the ${min}-pick threshold.` };
-  return { label, value: top.name, detail: `${pct(top.success)} from ${top.picks.toLocaleString()} picks | ${confidence(top.picks)} confidence` };
-}
-
-function bestOddsBandCard(data, label) {
-  const rows = ODDS.map(band => {
-    const picks = data.filter(r => r.odds >= band[2] && r.odds <= band[3]);
-    const wins = picks.filter(r => r.win).length;
-    return { label: band[1], picks: picks.length, wins, success: picks.length ? wins / picks.length : 0 };
-  }).filter(x => x.picks >= 5).sort((a, b) => b.success - a.success || b.picks - a.picks);
-  const top = rows[0];
-  if (!top) return { label, value: '-', detail: 'Not enough odds-band data in this filter.' };
-  return { label, value: top.label, detail: `${pct(top.success)} from ${top.picks.toLocaleString()} picks | ${confidence(top.picks)} confidence` };
-}
-
 function highestWinCard(data, label) {
   const top = data.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
   if (!top) return { label, value: '-', detail: 'No winning pick in this filter.' };
@@ -1876,7 +1762,7 @@ function aggregateComposite(rows, keyFn, labelFn) {
   rows.forEach(row => {
     const key = keyFn(row);
     if (!key) return;
-    if (!map.has(key)) map.set(key, { key, label: labelFn(row), picks: 0, wins: 0, oddsSum: 0, lastDate: null, firstDate: null });
+    if (!map.has(key)) map.set(key, { key, label: labelFn(row), picks: 0, wins: 0, oddsSum: 0, lastDate: null, firstDate: null, group: row.group || null, betTypeGroup: row.betTypeGroup || null });
     const item = map.get(key);
     item.picks += 1;
     if (row.win) item.wins += 1;
@@ -1920,7 +1806,11 @@ function comboCandidates(rows) {
     rows,
     r => (r.name && r.betType && r.group) ? `${r.name}||${r.group}||${r.betType}` : null,
     r => `${r.name} (${r.group}) - ${r.betType}`
-  ).map(c => ({ ...c, team: c.label.split(' (')[0] }));
+  ).map(c => ({
+    ...c,
+    team: c.label.split(' (')[0],
+    family: c.betTypeGroup === 'Point Starts' ? `points||${c.label.split(' (')[0]}||${c.group}` : c.key,
+  }));
 }
 
 // "X point start or higher" thresholds, optionally scoped to one team (and,
@@ -1938,12 +1828,19 @@ function thresholdsFromPool(pool, teamName, sportGroupName) {
     const label = teamName
       ? `${teamName} (${sportGroupName ? sportGroupName + ' - ' : ''}${t} point start or higher)`
       : sportGroupName
-        ? `Point start of ${t} or higher (${sportGroupName})`
-        : `Point start of ${t} or higher`;
+        ? `${t} point start or higher (${sportGroupName})`
+        : `${t} point start or higher`;
     return {
       key: `points||${teamName || 'all'}||${sportGroupName || 'all'}||${t}`,
+      // Every threshold for the same team+sport (or the same sport overall)
+      // is really one underlying pattern viewed at different cutoffs, not
+      // several independent ones - "6.5+", "9.5+" and "12.5+" overlap
+      // heavily. Grouped under one family so only the best-scoring
+      // threshold in each family survives deduplication.
+      family: `points||${teamName || 'all'}||${sportGroupName || 'all'}`,
       label,
       team: teamName || null,
+      group: sportGroupName || null,
       picks: subset.length,
       wins,
       success: subset.length ? wins / subset.length : 0,
@@ -2008,12 +1905,52 @@ function patternCandidatePool(rows) {
       .map(x => ({ ...x, team: null })));
 
   const cutoffDate = recencyCutoffDate();
-  return comboCandidates(rows)
+  const allCandidates = comboCandidates(rows)
     .concat(overallThresholds)
     .concat(perTeamThresholds)
     .concat(fallback)
     .filter(c => isPatternRecentEnough(c.lastDate, cutoffDate))
     .sort(byBestStory);
+
+  // Keep only the single best-scoring candidate per family - drops the
+  // overlapping "6.5+", "9.5+", "12.5+" nested variants down to just
+  // whichever one tells the strongest story.
+  const seenFamilies = new Set();
+  return allCandidates.filter(c => {
+    const family = c.family || c.key;
+    if (seenFamilies.has(family)) return false;
+    seenFamilies.add(family);
+    return true;
+  });
+}
+
+// Selects up to `count` candidates spread across sports rather than letting
+// one high-volume sport dominate the list. Round-robins through sports
+// ordered by how recently the syndicate has actually picked in that sport -
+// a proxy for "currently in season" since there's no real fixture calendar
+// to check against yet.
+function selectDiversePatterns(candidates, count) {
+  const bySport = new Map();
+  candidates.forEach(c => {
+    const sport = c.group || 'Other';
+    if (!bySport.has(sport)) bySport.set(sport, []);
+    bySport.get(sport).push(c);
+  });
+  const sportsByRecency = [...bySport.entries()].sort((a, b) => {
+    const aDate = Math.max(0, ...a[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
+    const bDate = Math.max(0, ...b[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
+    return bDate - aDate;
+  });
+  const selected = [];
+  for (let round = 0; selected.length < count; round++) {
+    let addedThisRound = false;
+    for (const [, list] of sportsByRecency) {
+      if (selected.length >= count) break;
+      if (list[round]) { selected.push(list[round]); addedThisRound = true; }
+    }
+    if (!addedThisRound) break;
+  }
+  return selected;
 }
 
 // Best pattern from a member's most recent picks (last N) - surfaces
@@ -2038,14 +1975,9 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
 
 // Up to 3 detailed "Your pattern" items for the given member.
 function buildYourPatterns(pool, allMemberRowsSorted) {
-  const items = [];
-  const usedKeys = new Set();
-
-  pool.forEach(c => {
-    if (items.length >= 4 || usedKeys.has(c.key)) return;
-    usedKeys.add(c.key);
-    items.push({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate });
-  });
+  const diverse = selectDiversePatterns(pool, 4);
+  const items = diverse.map(c => ({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate }));
+  const usedKeys = new Set(diverse.map(c => c.key));
 
   const recent = recencyPattern(allMemberRowsSorted, usedKeys);
   if (recent) {
@@ -2058,17 +1990,12 @@ function buildYourPatterns(pool, allMemberRowsSorted) {
   return items.slice(0, 5);
 }
 
-// Up to 3 detailed "Syndicate pattern" items, drawn from all-time,
-// syndicate-wide data. No minimum-picks or season-window restriction.
+// Up to 5 detailed "Syndicate pattern" items, drawn from all-time,
+// syndicate-wide data (excluding the highlighted member). No minimum-picks
+// or season-window restriction.
 function buildSyndicatePatterns(pool) {
-  const usedKeys = new Set();
-  const items = [];
-  pool.forEach(c => {
-    if (items.length >= 5 || usedKeys.has(c.key)) return;
-    usedKeys.add(c.key);
-    items.push({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate });
-  });
-  return items;
+  const diverse = selectDiversePatterns(pool, 5);
+  return diverse.map(c => ({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate }));
 }
 
 // ----------------------------------------------------------------------
@@ -2093,202 +2020,74 @@ function svgStatBar(success, color) {
   </svg>`;
 }
 
-function svgVenn(kind) {
-  const isConflict = kind === 'conflict';
-  const leftColor = isConflict ? '#d84a4a' : '#4a8bd8';
-  const rightColor = isConflict ? '#4a8bd8' : '#d8a24a';
-  const overlapColor = isConflict ? '#d8c14a' : '#4ad87e';
-  return `<svg class="pa-venn" viewBox="0 0 90 56" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="33" cy="28" r="21" fill="${leftColor}" fill-opacity="0.55"></circle>
-    <circle cx="57" cy="28" r="21" fill="${rightColor}" fill-opacity="0.55"></circle>
-    <ellipse cx="45" cy="28" rx="11" ry="18" fill="${overlapColor}" fill-opacity="0.85"></ellipse>
-    <text x="33" y="52" text-anchor="middle" class="pa-venn-label">You</text>
-    <text x="57" y="52" text-anchor="middle" class="pa-venn-label">Synd.</text>
-  </svg>`;
-}
+// ----------------------------------------------------------------------
+// Rate a Pick - a member types in a hypothetical pick (name, bet type,
+// sport, odds) and gets it checked against real history. Nothing is
+// written anywhere - purely a client-side lookup against state.raw.
+// ----------------------------------------------------------------------
 
-function svgStreakPips(count, type) {
-  const color = type === 'Win' ? '#4ad87e' : '#d84a4a';
-  const spacing = 20;
-  let dots = '';
-  for (let i = 0; i < count; i++) {
-    dots += `<circle cx="${9 + i * spacing}" cy="10" r="7" fill="${color}"></circle>`;
+function ratePotentialPick(name, betType, sport, odds) {
+  const signals = [];
+  const pool = state.raw.filter(isRealPick);
+
+  // Signal 1: this exact team+bet type+sport combo, all-time vs last 2 years.
+  const comboRows = pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
+  if (comboRows.length >= 3) {
+    const allTimeWins = comboRows.filter(r => r.win).length;
+    const allTimeSuccess = allTimeWins / comboRows.length;
+    const twoYearsAgo = new Date(Date.UTC(new Date().getUTCFullYear() - 2, new Date().getUTCMonth(), new Date().getUTCDate()));
+    const recentRows = comboRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
+    const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
+    const text = recentSuccess !== null
+      ? `${name} ${betType} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
+      : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks) - not enough recent picks to show a two-year trend.`;
+    signals.push({ text, success: recentSuccess !== null ? recentSuccess : allTimeSuccess, sampleSize: recentSuccess !== null ? recentRows.length : comboRows.length });
+  } else {
+    signals.push({ text: `No real history yet for ${name} ${betType} in ${sport}.`, success: null, sampleSize: 0 });
   }
-  const width = count * spacing + 4;
-  return `<svg class="pa-pips" viewBox="0 0 ${width} 20" xmlns="http://www.w3.org/2000/svg">${dots}</svg>`;
+
+  // Signal 2: this sport, odds within +/-$0.05 of the entered price, last 6 months.
+  if (Number.isFinite(odds)) {
+    const bandLow = Math.round((odds - 0.05) * 100) / 100;
+    const bandHigh = Math.round((odds + 0.05) * 100) / 100;
+    const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
+    const bandRows = pool.filter(r => r.sport === sport && r.odds >= bandLow && r.odds <= bandHigh);
+    const recentBandRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= sixMonthsAgo; });
+    if (recentBandRows.length >= 5) {
+      const bandSuccess = recentBandRows.filter(r => r.win).length / recentBandRows.length;
+      signals.push({ text: `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months.`, success: bandSuccess, sampleSize: recentBandRows.length });
+    } else {
+      signals.push({ text: `Not enough recent ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} to show a trend.`, success: null, sampleSize: 0 });
+    }
+  }
+
+  // Rating: weighted average of whichever signals had enough data (weight
+  // capped at 50 so one huge sample can't completely drown out the other
+  // signal), mapped onto a 1-5 scale. Null (no usable rating) when neither
+  // signal had enough data at all.
+  const usable = signals.filter(s => s.success !== null);
+  let rating = null;
+  if (usable.length) {
+    const totalWeight = usable.reduce((sum, s) => sum + Math.min(s.sampleSize, 50), 0);
+    const weighted = usable.reduce((sum, s) => sum + s.success * Math.min(s.sampleSize, 50), 0) / totalWeight;
+    rating = Math.max(1, Math.min(5, Math.round(weighted * 5)));
+  }
+  const lowConfidence = usable.length > 0 && usable.every(s => s.sampleSize < 15);
+
+  return { signals, rating, lowConfidence };
 }
 
-// ----------------------------------------------------------------------
-// Fade alerts - the mirror of Worth Watching. Ranks the same candidate
-// pool by how confidently BAD a pattern has been (Wilson lower bound on
-// the loss rate), so a reliably cold pattern surfaces even though nothing
-// about the ranking is inverted or hand-tuned.
-// ----------------------------------------------------------------------
-
-function fadeScoreFromPool(pool) {
-  return pool
-    .map(c => ({ ...c, fadeScore: wilsonLowerBound(c.picks - c.wins, c.picks) }))
-    .filter(c => c.picks - c.wins > 0)
-    .sort((a, b) => b.fadeScore - a.fadeScore);
+function svgFlame(filled) {
+  const color = filled ? '#f97316' : 'rgba(255,255,255,0.15)';
+  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="${color}"><path d="M12,2 C8,6 6,10 8,14 C6,13 5,15 6,17 C7,19.5 10,21 12,21 C16,21 18,17 17,13 C16,15 15,15 15,13 C17,10 14,6 12,2 Z"/></svg>`;
 }
 
-function fadeCandidatePool(rows) {
-  return fadeScoreFromPool(patternCandidatePool(rows));
+function ratingFlamesHtml(rating) {
+  if (rating === null) return '<span class="muted small">Not enough data yet to give a rating.</span>';
+  return `<div class="pa-flames">${[1, 2, 3, 4, 5].map(n => svgFlame(n <= rating)).join('')}<span class="pa-flames-text">${rating} out of 5</span></div>`;
 }
 
-function buildFadeAlertsFromPool(pool, source, count = 2) {
-  const fadePool = fadeScoreFromPool(pool);
-  const usedKeys = new Set();
-  const items = [];
-  fadePool.forEach(c => {
-    if (items.length >= count || usedKeys.has(c.key)) return;
-    usedKeys.add(c.key);
-    items.push({ source, label: c.label, picks: c.picks, success: c.success });
-  });
-  return items;
-}
 
-function buildFadeAlerts(rows, source, count = 2) {
-  const pool = fadeCandidatePool(rows);
-  const usedKeys = new Set();
-  const items = [];
-  pool.forEach(c => {
-    if (items.length >= count || usedKeys.has(c.key)) return;
-    usedKeys.add(c.key);
-    items.push({ source, label: c.label, picks: c.picks, success: c.success });
-  });
-  return items;
-}
-
-// ----------------------------------------------------------------------
-// Corroboration / conflict - flags when a member's own top patterns and
-// the syndicate's top patterns point at the same team (extra confidence),
-// or when one side's strong pattern is the other side's fade candidate
-// (a signal worth double-checking before trusting either alone).
-// ----------------------------------------------------------------------
-
-function topTeams(pool, n, predicate) {
-  return pool.filter(c => predicate(c.success)).slice(0, n).map(c => c.team).filter(Boolean);
-}
-
-function corroborationNotes(yourPool, syndicatePool, yourFadePool, syndicateFadePool) {
-  const notes = [];
-  const yourTop = new Set(topTeams(yourPool, 8, s => s >= 0.55));
-  const syndTop = new Set(topTeams(syndicatePool, 8, s => s >= 0.55));
-  const yourFadeTeams = new Set(topTeams(yourFadePool, 8, s => s <= 0.5));
-  const syndFadeTeams = new Set(topTeams(syndicateFadePool, 8, s => s <= 0.5));
-
-  const corroborated = [...yourTop].filter(t => syndTop.has(t));
-  corroborated.slice(0, 2).forEach(team => {
-    notes.push({ kind: 'corroborated', team });
-  });
-
-  const conflicts = new Set([
-    ...[...yourTop].filter(t => syndFadeTeams.has(t)),
-    ...[...syndTop].filter(t => yourFadeTeams.has(t)),
-  ]);
-  [...conflicts].slice(0, 2).forEach(team => {
-    notes.push({ kind: 'conflict', team });
-  });
-
-  return notes;
-}
-
-// ----------------------------------------------------------------------
-// Streak continuation - when a member is currently on a win/loss streak,
-// looks at every syndicate member's picks made immediately after a streak
-// of that type and length (or longer), and surfaces the strongest pattern
-// within that specific situation.
-// ----------------------------------------------------------------------
-
-function picksAfterStreak(rows, type, threshold) {
-  if (!type || threshold < 1) return [];
-  const grouped = groupBy(rows, 'member');
-  const results = [];
-  Object.values(grouped).forEach(picks => {
-    const sorted = picks.slice().sort(comparePickOrder);
-    let runType = '';
-    let runCount = 0;
-    sorted.forEach(pick => {
-      if (runType === type && runCount >= threshold) results.push(pick);
-      const result = pick.win ? 'Win' : pick.loss ? 'Loss' : '';
-      if (result === runType) runCount += 1;
-      else { runType = result; runCount = result ? 1 : 0; }
-    });
-  });
-  return results;
-}
-
-function oddsBandCandidates(rows) {
-  return ODDS.map(band => {
-    const picks = rows.filter(r => r.odds >= band[2] && r.odds <= band[3]);
-    const wins = picks.filter(r => r.win).length;
-    return { key: `odds||${band[0]}`, label: `Odds ${band[1]}`, picks: picks.length, wins, success: picks.length ? wins / picks.length : 0 };
-  }).filter(c => c.picks > 0);
-}
-
-function streakContinuationPatterns(allMemberRowsSorted) {
-  const active = activeStreak(allMemberRowsSorted);
-  if (!active.type || active.count < 2) return null;
-  const afterRows = picksAfterStreak(state.raw, active.type, active.count);
-  if (!afterRows.length) return null;
-  const candidates = patternCandidatePool(afterRows)
-    .concat(oddsBandCandidates(afterRows))
-    .sort(byBestStory);
-  const top = candidates.slice(0, 2);
-  if (!top.length) return null;
-  return {
-    active,
-    items: top.map(c => ({ label: c.label, picks: c.picks, success: c.success })),
-  };
-}
-function trendingPool(currentSeason) {
-  const currentRows = state.raw.filter(r => seasonEqual(r.year, currentSeason));
-  const currentRoundDates = uniq(currentRows.map(r => r.date));
-  if (currentRoundDates.length >= 16) return currentRows;
-  const priorRows = state.raw.filter(r => !seasonEqual(r.year, currentSeason));
-  const priorDatesChronological = priorRows.slice().sort(comparePickOrder).map(r => r.date);
-  const priorDatesMostRecentFirst = [...new Set(priorDatesChronological)].reverse();
-  const roundsNeeded = 16 - currentRoundDates.length;
-  const fillDates = priorDatesMostRecentFirst.slice(0, roundsNeeded);
-  const fillRows = priorRows.filter(r => fillDates.includes(r.date));
-  return fillRows.concat(currentRows);
-}
-function trendingMembersHtml(rows) {
-  const min = 10;
-  const top = aggregate(rows, 'member')
-    .filter(x => x.picks >= min)
-    .sort((a, b) => b.success - a.success || b.picks - a.picks)
-    .slice(0, 3);
-  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
-  return '<div class="pa-stats">' + top.map((r, i) =>
-    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
-  ).join('') + '</div>';
-}
-
-function trendingSportsHtml(rows) {
-  const min = 20;
-  const top = aggregate(rows, 'group')
-    .filter(x => x.picks >= min)
-    .sort((a, b) => b.success - a.success || b.picks - a.picks)
-    .slice(0, 3);
-  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
-  return '<div class="pa-stats">' + top.map((r, i) =>
-    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
-  ).join('') + '</div>';
-}
-
-function trendingCompetitionsHtml(rows) {
-  const min = 15;
-  const top = aggregate(rows, 'sport')
-    .filter(x => x.picks >= min)
-    .sort((a, b) => b.success - a.success || b.picks - a.picks)
-    .slice(0, 3);
-  if (!top.length) return '<div class="pa-placeholder">Not enough data yet.</div>';
-  return '<div class="pa-stats">' + top.map((r, i) =>
-    `<span>${i + 1}. ${escapeHtml(r.name)} - ${pct(r.success)} (${r.picks.toLocaleString()} picks)</span>`
-  ).join('') + '</div>';
-}
 function hotMemberCard(data) {
   const grouped = groupBy(data, 'member');
   const rows = Object.entries(grouped).map(([member, picks]) => {
