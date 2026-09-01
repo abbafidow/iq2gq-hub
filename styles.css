@@ -656,6 +656,95 @@ border: 1px solid rgba(255,255,255,0.10);
   border-left-color: #d8a24a;
 }
 
+.pa-rate-title {
+  font-family: 'Poppins', Arial, sans-serif;
+  letter-spacing: 0.02em;
+}
+.pa-rate-card .pa-rate-form label,
+.pa-rate-card .pa-rate-form input,
+.pa-rate-card .pa-rate-form button,
+.pa-rate-card .pa-rating-signal,
+.pa-rate-card .pa-flames-text {
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+.pa-rate-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  align-items: end;
+  margin: 14px 0 4px;
+}
+.pa-rate-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.pa-autocomplete { position: relative; display: block; }
+.pa-autocomplete input { width: 100%; box-sizing: border-box; }
+.pa-autocomplete-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #0d1732;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 12px 24px rgba(0,0,0,.4);
+}
+.pa-autocomplete-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.pa-autocomplete-item:hover { background: rgba(255,255,255,0.06); }
+.pa-autocomplete-item + .pa-autocomplete-item { border-top: 1px solid rgba(255,255,255,0.05); }
+.pa-rate-form input {
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #142044;
+  color: var(--text);
+  padding: 0 14px;
+  font-size: 12px;
+}
+.pa-rate-form input::placeholder { color: var(--muted); }
+.pa-rate-form input:focus { outline: none; border-color: var(--accent); }
+.pa-rate-form button {
+  height: 34px;
+  border: none;
+  background: var(--accent);
+  color: #061022;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 16px;
+}
+.pa-rating-results { margin-top: 14px; }
+.pa-rating-signals { margin-bottom: 10px; }
+.pa-rating-signal {
+  padding: 10px 12px;
+  border-left: 3px solid #53627a;
+  background: rgba(255,255,255,0.04);
+  color: #d8e2f0;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+.pa-flames { display: flex; align-items: center; gap: 4px; }
+.pa-flames-text { color: var(--text); font-weight: 700; font-size: 13px; margin-left: 6px; }
+
+@media (max-width: 640px) {
+  .pa-rate-form { grid-template-columns: 1fr 1fr; }
+}
+
 .pa-graphic-row {
   display: flex;
   flex-wrap: wrap;
