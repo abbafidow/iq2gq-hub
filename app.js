@@ -1497,7 +1497,8 @@ const currentSeason = currentYear(state.raw);
     ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}`
     : '-';
   const yourPool = patternCandidatePool(memberRows);
-  const syndicatePool = patternCandidatePool(state.raw);
+  const otherMembersRows = state.raw.filter(r => r.member !== member);
+  const syndicatePool = patternCandidatePool(otherMembersRows);
   const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
 
@@ -1542,11 +1543,11 @@ const currentSeason = currentYear(state.raw);
 
         <div class="pa-pattern-columns">
           <div class="pa-pattern-col">
-            <div class="pa-label">Your patterns</div>
+            <div class="pa-label">Based on your past picks you could consider these picks</div>
             ${yourPatterns.length ? yourPatterns.map(item => patternCardHtml(item, 'pa-pattern-you')).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
           </div>
           <div class="pa-pattern-col">
-            <div class="pa-label">Syndicate patterns to consider</div>
+            <div class="pa-label">Based on everyone else's picks, you could consider these picks</div>
             ${syndicatePatterns.length ? syndicatePatterns.map(item => patternCardHtml(item, 'pa-pattern-syndicate')).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
           </div>
         </div>
@@ -1936,7 +1937,9 @@ function thresholdsFromPool(pool, teamName, sportGroupName) {
     const avgOdds = subset.reduce((s, r) => s + (r.odds || 0), 0) / (subset.length || 1);
     const label = teamName
       ? `${teamName} (${sportGroupName ? sportGroupName + ' - ' : ''}${t} point start or higher)`
-      : `Point start of ${t} or higher`;
+      : sportGroupName
+        ? `Point start of ${t} or higher (${sportGroupName})`
+        : `Point start of ${t} or higher`;
     return {
       key: `points||${teamName || 'all'}||${sportGroupName || 'all'}||${t}`,
       label,
@@ -1978,8 +1981,12 @@ function patternCandidatePool(rows) {
   // rather than re-scanning the full row set once per distinct combination.
   const pointStartRows = rows.filter(r => r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null);
   const byTeamGroup = new Map();
+  const byGroupOnly = new Map();
   pointStartRows.forEach(r => {
-    if (!r.name || !r.group) return;
+    if (!r.group) return;
+    if (!byGroupOnly.has(r.group)) byGroupOnly.set(r.group, []);
+    byGroupOnly.get(r.group).push(r);
+    if (!r.name) return;
     const key = `${r.name}||${r.group}`;
     if (!byTeamGroup.has(key)) byTeamGroup.set(key, []);
     byTeamGroup.get(key).push(r);
@@ -1988,11 +1995,16 @@ function patternCandidatePool(rows) {
     const [team, group] = key.split('||');
     return thresholdsFromPool(teamRows, team, group);
   });
-  const overallThresholds = thresholdsFromPool(pointStartRows, null, null);
+  // Scoped by sport group, not pooled across every sport - "12.5 point
+  // start" means something different in league vs union vs AFL, so pooling
+  // them together would be the same conflation the team-name fix addressed.
+  const overallThresholds = [...byGroupOnly.entries()].flatMap(([group, groupRows]) =>
+    thresholdsFromPool(groupRows, null, group)
+  );
 
   const fallback = aggregateComposite(rows, r => r.name && r.group ? `${r.name}||${r.group}` : null, r => `${r.name} (${r.group}) - all bet types`)
     .map(x => ({ ...x, team: x.label.split(' (')[0] }))
-    .concat(aggregateComposite(rows, r => r.betType || null, r => r.betType)
+    .concat(aggregateComposite(rows, r => r.betType && r.group ? `${r.betType}||${r.group}` : null, r => `${r.betType} (${r.group})`)
       .map(x => ({ ...x, team: null })));
 
   const cutoffDate = recencyCutoffDate();
@@ -2008,9 +2020,15 @@ function patternCandidatePool(rows) {
 // "what's working right now" as one of the 3 "Your pattern" slots.
 function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
   const pool = memberRowsSorted.filter(isRealPick).slice(-windowSize);
+  const pointStartsBySport = new Map();
+  pool.filter(r => r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && r.group).forEach(r => {
+    if (!pointStartsBySport.has(r.group)) pointStartsBySport.set(r.group, []);
+    pointStartsBySport.get(r.group).push(r);
+  });
+  const scopedThresholds = [...pointStartsBySport.entries()].flatMap(([group, groupRows]) => thresholdsFromPool(groupRows, null, group));
   const candidates = comboCandidates(pool)
-    .concat(pointThresholdCandidates(pool))
-    .concat(aggregateComposite(pool, r => r.betType || null, r => r.betType))
+    .concat(scopedThresholds)
+    .concat(aggregateComposite(pool, r => r.betType && r.group ? `${r.betType}||${r.group}` : null, r => `${r.betType} (${r.group})`))
     .filter(c => !usedKeys.has(c.key))
     .sort(byBestStory);
   const top = candidates[0];
