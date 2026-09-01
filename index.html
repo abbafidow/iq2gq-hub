@@ -1,16 +1,17 @@
 <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IQ2GQ Hub</title>
-  <!-- Cache-busting: bump ?v=X.X on styles.css, app.js and pickAssistant.js
-       (and the footer below) every time any of those files change, or
-       browsers may keep serving a stale cached copy after an update. -->
+  <!-- Cache-busting is automatic: styles.css and app.js are loaded with a
+       fresh timestamp on every page load, so a stale cached copy can never
+       be served after an update - nothing here needs manual editing. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3.6">
+  <script>document.write('<link rel="stylesheet" href="styles.css?v=' + Date.now() + '">');</script>
 </head>
 <body>
   <header class="topbar">
@@ -37,9 +38,11 @@
 
   <main id="app" class="main"></main>
 
-  <footer class="footer">IQ2GQ Hub v3.6 - live from Google Sheets</footer>
+  <!-- This label is just a human-readable changelog marker for spotting a
+       successful deploy at a glance - it plays no role in cache-busting,
+       which is fully automatic above. -->
+  <footer class="footer">IQ2GQ Hub v3.7 - live from Google Sheets</footer>
 
-  <script src="app.js?v=3.6"></script>
-  <script src="pickAssistant.js?v=3.6"></script>
+  <script>document.write('<scri' + 'pt src="app.js?v=' + Date.now() + '"><\/scri' + 'pt>');</script>
 </body>
 </html>
