@@ -2189,9 +2189,15 @@ function stalenessCaveat(rows) {
 }
 
 function sampleSizeSentence(sampleSize) {
-  if (sampleSize >= 50) return 'That\'s a large sample, so it\'s about as trustworthy as this kind of data gets.';
-  if (sampleSize >= 20) return 'That\'s a solid sample size, so this looks like a genuine trend rather than noise.';
-  return 'That\'s a fairly small sample, so treat it as an early signal rather than a certainty.';
+  const n = sampleSize.toLocaleString();
+  if (sampleSize >= 50) return `That's a large sample (${n} picks), so it's about as trustworthy as this kind of data gets.`;
+  if (sampleSize >= 20) return `That's a solid sample size (${n} picks), so this looks like a genuine trend rather than noise.`;
+  return `That's a fairly small sample (${n} picks), so treat it as an early signal rather than a certainty.`;
+}
+
+function shortSportLabel(sport) {
+  const match = String(sport || '').match(/\(([^)]+)\)/);
+  return match ? match[1] : sport;
 }
 
 function ratePotentialPick(name, betType, sport, odds) {
@@ -2227,7 +2233,7 @@ function ratePotentialPick(name, betType, sport, odds) {
       const caveat = stalenessCaveat(comboRows) || ` ${sampleSizeSentence(finalSampleSize)}`;
       signals.push({ text: `${headline}${caveat}`, success: finalSuccess, sampleSize: finalSampleSize });
     } else {
-      signals.push({ text: `No real history yet for ${name} ${betLabel} in ${sport} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
+      signals.push({ text: `No real history yet for ${name} ${betLabel} in ${shortSportLabel(sport)} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
     }
   }
 
@@ -2237,23 +2243,25 @@ function ratePotentialPick(name, betType, sport, odds) {
   // sport's out of season right now). Only runs if sport + odds were given.
   if (sport && Number.isFinite(odds)) {
     const enteredFamily = competitionFamily(sport, name);
+    const shortLabel = shortSportLabel(sport);
     const bandLow = Math.round((odds - 0.05) * 100) / 100;
     const bandHigh = Math.round((odds + 0.05) * 100) / 100;
     const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
     const bandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.odds >= bandLow && r.odds <= bandHigh);
     const recentBandRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= sixMonthsAgo; });
-    const contextNote = ' This is the sport overall at this price, not this specific selection, so treat it as market context rather than a team-specific edge.';
     if (recentBandRows.length >= 5) {
       const bandSuccess = recentBandRows.filter(r => r.win).length / recentBandRows.length;
-      const headline = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months (${recentBandRows.length.toLocaleString()} picks).`;
-      signals.push({ text: `${headline} ${sampleSizeSentence(recentBandRows.length)}${contextNote}`, success: bandSuccess, sampleSize: recentBandRows.length });
+      const headline = `${shortLabel} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months.`;
+      signals.push({ text: `${headline} ${sampleSizeSentence(recentBandRows.length)}`, success: bandSuccess, sampleSize: recentBandRows.length });
+      if (name) signals.push({ text: `This reflects ${shortLabel} overall at this price, not ${name} specifically.`, success: null, sampleSize: 0 });
     } else if (bandRows.length >= 5) {
       const bandSuccess = bandRows.filter(r => r.win).length / bandRows.length;
-      const headline = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time (${bandRows.length.toLocaleString()} picks).`;
+      const headline = `${shortLabel} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time.`;
       const caveat = stalenessCaveat(bandRows) || ` ${sampleSizeSentence(bandRows.length)}`;
-      signals.push({ text: `${headline}${caveat}${contextNote}`, success: bandSuccess, sampleSize: bandRows.length });
+      signals.push({ text: `${headline}${caveat}`, success: bandSuccess, sampleSize: bandRows.length });
+      if (name) signals.push({ text: `This reflects ${shortLabel} overall at this price, not ${name} specifically.`, success: null, sampleSize: 0 });
     } else {
-      signals.push({ text: `Not enough ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point (only ${bandRows.length} found) to show a trend.`, success: null, sampleSize: 0 });
+      signals.push({ text: `Not enough ${shortLabel} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point (only ${bandRows.length} found) to show a trend.`, success: null, sampleSize: 0 });
     }
   }
 
