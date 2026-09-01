@@ -787,13 +787,13 @@ function presidentialTeamsSection(currentSeasonRows) {
 
   const teams = teamStats(currentSeasonRows);
   const teamTable = teams.map(t =>
-    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`
+    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td><td class="num">${t.mmWon}</td></tr>`
   ).join('');
 
   return `<section class="two standings-row">
     <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Pts</th></tr></thead><tbody>${presTable}</tbody></table></div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
     <div class="standings-col">
-      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
+      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th><th class="num">MM Wins</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
       ${teamQuarterFormPanel()}
     </div>
   </section>`;
@@ -807,9 +807,9 @@ function teamQuarterFormPanel() {
   const worstName = ranked.length > 1 ? ranked[ranked.length - 1]?.name : null;
   const rows = teams.map(t => {
     const cls = withData.length > 1 && t.name === bestName ? 'row-best' : withData.length > 1 && t.name === worstName ? 'row-worst' : '';
-    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`;
+    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td><td class="num">${t.mmWon}</td></tr>`;
   }).join('');
-  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window, independent of each team's own AC captaincy cycle</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
+  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Win $</th><th class="num">Succ.%</th><th class="num">MM Wins</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
 }
 
 // ---------- "Insights this year" strip (top sport / bet option / pick
