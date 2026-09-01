@@ -1477,6 +1477,9 @@ function pickAssistant(data) {
         render();
       };
     }
+    bindAutocomplete('rateAPickName', 'rateAPickNameList', nameOptions);
+    bindAutocomplete('rateAPickBetType', 'rateAPickBetTypeList', betTypeOptions);
+    bindAutocomplete('rateAPickSport', 'rateAPickSportList', sportOptions);
     const rateBtn = document.getElementById('rateAPickBtn');
     if (rateBtn) {
       rateBtn.onclick = () => {
@@ -1531,9 +1534,9 @@ function pickAssistant(data) {
         <div class="pa-title pa-rate-title">RATE YOUR PICK</div>
         <p class="muted small">Type in a pick you're considering and see how it's checked out historically. Nothing here is saved or shared - it's just a lookup.</p>
         <div class="pa-rate-form">
-          <label>Selection<input list="rateAPickNameList" id="rateAPickName" placeholder="Please type e.g. NZ Warriors"><datalist id="rateAPickNameList">${nameOptions.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist></label>
-          <label>Bet type<input list="rateAPickBetTypeList" id="rateAPickBetType" placeholder="Please type e.g. H2H"><datalist id="rateAPickBetTypeList">${betTypeOptions.map(b => `<option value="${escapeHtml(b)}">`).join('')}</datalist></label>
-          <label>Sport<input list="rateAPickSportList" id="rateAPickSport" placeholder="Please type e.g. Rugby League (NRL)"><datalist id="rateAPickSportList">${sportOptions.map(s => `<option value="${escapeHtml(s)}">`).join('')}</datalist></label>
+          <label>Selection<span class="pa-autocomplete"><input autocomplete="off" id="rateAPickName" placeholder="Please type e.g. NZ Warriors"><div class="pa-autocomplete-list" id="rateAPickNameList"></div></span></label>
+          <label>Bet type<span class="pa-autocomplete"><input autocomplete="off" id="rateAPickBetType" placeholder="Please type e.g. H2H"><div class="pa-autocomplete-list" id="rateAPickBetTypeList"></div></span></label>
+          <label>Sport<span class="pa-autocomplete"><input autocomplete="off" id="rateAPickSport" placeholder="Please type e.g. Rugby League (NRL)"><div class="pa-autocomplete-list" id="rateAPickSportList"></div></span></label>
           <label>Odds<input type="number" step="0.01" min="1.01" id="rateAPickOdds" placeholder="Please type e.g. 1.35"></label>
           <button type="button" id="rateAPickBtn">Rate this pick</button>
         </div>
@@ -2038,6 +2041,45 @@ function svgStatBar(success, color) {
 // a member typing in a specific hypothetical pick should see everything
 // that's known, not have older evidence silently excluded. Instead, if the
 // evidence is old, say so plainly rather than filtering it out.
+// Custom autocomplete: native <datalist> gives no control over match order
+// (browsers just show options in DOM order), so this ranks "starts with
+// what you typed" above "contains it somewhere in the middle" instead.
+function bindAutocomplete(inputId, listId, options) {
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  if (!input || !list) return;
+
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { list.style.display = 'none'; list.innerHTML = ''; return; }
+    const starts = [];
+    const contains = [];
+    options.forEach(o => {
+      const lower = o.toLowerCase();
+      if (lower.startsWith(q)) starts.push(o);
+      else if (lower.includes(q)) contains.push(o);
+    });
+    starts.sort((a, b) => a.localeCompare(b));
+    contains.sort((a, b) => a.localeCompare(b));
+    const matches = starts.concat(contains).slice(0, 8);
+    if (!matches.length) { list.style.display = 'none'; list.innerHTML = ''; return; }
+    list.innerHTML = matches.map(m => `<div class="pa-autocomplete-item" data-value="${escapeHtml(m)}">${escapeHtml(m)}</div>`).join('');
+    list.style.display = 'block';
+    list.querySelectorAll('.pa-autocomplete-item').forEach(item => {
+      item.onmousedown = (e) => {
+        e.preventDefault();
+        input.value = item.dataset.value;
+        list.style.display = 'none';
+        list.innerHTML = '';
+      };
+    });
+  };
+
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => setTimeout(() => { list.style.display = 'none'; }, 150));
+}
+
 function stalenessCaveat(rows) {
   const dates = rows.map(r => parseDMY(r.date)).filter(Boolean);
   if (!dates.length) return '';
