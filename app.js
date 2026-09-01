@@ -194,6 +194,68 @@ function normalise(row, index) {
 
 }
 
+// A middle tier between the raw sport string (used by Search) and the
+// broad sportGroup (used by Stats/Dashboard) - consolidates competitions
+// that have simply been renamed over the years, without merging genuinely
+// different competitions or eras where the underlying picks aren't safely
+// knowable to be the same thing. Used by Rate Your Pick, where statistical
+// robustness matters more than granularity.
+function competitionFamily(sport, teamName) {
+  const x = lower(sport);
+
+  // Super Rugby: renamed several times (regional splits during COVID,
+  // current Pacific-wide format) but it's the same underlying competition.
+  if (x.includes('super rugby')) return 'Super Rugby';
+
+  // Six Nations: "Six Nations" / "6 Nations", same thing.
+  if (x.includes('six nations') || x === '6 nations') return 'Six Nations';
+
+  // English club rugby: Premiership Rugby was renamed Gallagher
+  // Premiership on a new sponsorship deal - same competition.
+  if (x.includes('gallagher premiership') || x.includes('premiership rugby') || x === 'rugby union (english domestic)') return 'English Premiership Rugby';
+
+  // French club rugby: Top 14 / French Top 14, same competition. Pro D2
+  // is genuinely the second tier, kept separate.
+  if (x.includes('top 14')) return 'French Top 14';
+
+  // Pro14 was renamed United Rugby Championship when South African teams
+  // joined - same underlying competition, real rename.
+  if (x.includes('pro14') || x.includes('pro 14') || x.includes('united rugby championship')) return 'United Rugby Championship';
+
+  // German football: Bundesliga renamed/reformatted label over the years.
+  if (x.includes('bundesliga')) return 'German Bundesliga';
+
+  // Spanish football: La Liga / Spanish Domestic, same competition.
+  if (x.includes('la liga') || x === 'football (spanish domestic)') return 'Spanish La Liga';
+
+  // Rugby World Cup: "World Cup" / "Mens World Cup", same event (women's
+  // version already says so explicitly and stays separate).
+  if (x.includes('rugby union') && x.includes('world cup') && !x.includes('womens')) return 'Rugby World Cup';
+
+  // MMA: fold all promotions together (UFC, Bellator, TUF, bare MMA).
+  if (x.includes('mma')) return 'MMA';
+
+  // Basketball NBL: genuinely ambiguous on its own, since both Australia
+  // and NZ have a league called this. NZ Breakers play in the Australian
+  // league (ANBL) despite being an NZ-based team; anything else under a
+  // bare "NBL" label defaults to the NZ domestic league (NZNBL), since
+  // ANBL/NZNBL-labelled rows already say which one they are. This default
+  // is an assumption, not a confirmed rule - flag any misclassifications.
+  if (x.includes('anbl') || (teamName && lower(teamName).includes('nz breakers'))) return 'Basketball (ANBL)';
+  if (x.includes('nznbl')) return 'Basketball (NZNBL)';
+  if (x === 'basketball (nbl)') return 'Basketball (NZNBL)';
+
+  // Genuinely ambiguous historical catch-alls - do NOT merge into any
+  // specific competition, since the underlying picks could plausibly be
+  // any of several different real competitions and merging would silently
+  // misattribute data into the wrong bucket.
+  if (x === 'football (england domestic)') return 'Football (England Domestic - mixed competitions)';
+  if (x === 'rugby union (european competition)') return 'Rugby Union (European Competition - mixed competitions)';
+
+  // Default: no known family, just use the sport as-is.
+  return sport || 'Other';
+}
+
 function sportGroup(sport) {
   const x = lower(sport);
   if (x.includes('rugby league') || x.includes('nrl') || x.includes('super league')) return 'Rugby League';
@@ -1499,7 +1561,7 @@ function pickAssistant(data) {
 
   const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
   const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
-  const sportOptions = uniq(state.raw.map(r => r.sport)).filter(Boolean);
+  const sportOptions = uniq(state.raw.map(r => competitionFamily(r.sport, r.name))).filter(Boolean);
 
   setTimeout(() => {
     const changeLink = document.querySelector('.change-member-link');
@@ -2143,11 +2205,12 @@ function ratePotentialPick(name, betType, sport, odds) {
   // was built from, since a threshold pattern pools several exact bet-type
   // values together (1.5, 2.5, 3.5...) rather than matching one literally.
   if (name && betType && sport) {
+    const enteredFamily = competitionFamily(sport, name);
     const enteredPointValue = parsePointValue(betType);
     const isPointStart = enteredPointValue !== null && betTypeGroup(betType) === 'Point Starts';
     const comboRows = isPointStart
-      ? pool.filter(r => r.name === name && r.sport === sport && r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && parsePointValue(r.betType) >= enteredPointValue)
-      : pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
+      ? pool.filter(r => r.name === name && competitionFamily(r.sport, r.name) === enteredFamily && r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && parsePointValue(r.betType) >= enteredPointValue)
+      : pool.filter(r => r.name === name && r.betType === betType && competitionFamily(r.sport, r.name) === enteredFamily);
     const betLabel = isPointStart ? `${enteredPointValue} point start or higher` : betType;
     if (comboRows.length >= 3) {
       const allTimeWins = comboRows.filter(r => r.win).length;
@@ -2173,10 +2236,11 @@ function ratePotentialPick(name, betType, sport, odds) {
   // data rather than showing nothing when recent activity is thin (e.g. the
   // sport's out of season right now). Only runs if sport + odds were given.
   if (sport && Number.isFinite(odds)) {
+    const enteredFamily = competitionFamily(sport, name);
     const bandLow = Math.round((odds - 0.05) * 100) / 100;
     const bandHigh = Math.round((odds + 0.05) * 100) / 100;
     const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
-    const bandRows = pool.filter(r => r.sport === sport && r.odds >= bandLow && r.odds <= bandHigh);
+    const bandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.odds >= bandLow && r.odds <= bandHigh);
     const recentBandRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= sixMonthsAgo; });
     const contextNote = ' This is the sport overall at this price, not this specific selection, so treat it as market context rather than a team-specific edge.';
     if (recentBandRows.length >= 5) {
