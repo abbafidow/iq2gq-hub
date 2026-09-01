@@ -240,7 +240,7 @@ h1, h2, h3 { margin: 0; }
 .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 14px; }
 table { width: 100%; border-collapse: collapse; min-width: 650px; }
 th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; }
-th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th:first-child:not(.num), td:first-child:not(.num), th:nth-child(2):not(.num), td:nth-child(2):not(.num) { text-align: left; }
 th { background: #0d1732; cursor: pointer; position: sticky; top: 0; font-size: 13px; }
 tr:last-child td { border-bottom: 0; }
 
