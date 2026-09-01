@@ -787,13 +787,13 @@ function presidentialTeamsSection(currentSeasonRows) {
 
   const teams = teamStats(currentSeasonRows);
   const teamTable = teams.map(t =>
-    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td><td class="num">${t.mmWon}</td></tr>`
+    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${t.mmWon}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`
   ).join('');
 
   return `<section class="two standings-row">
     <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Pts</th></tr></thead><tbody>${presTable}</tbody></table></div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
     <div class="standings-col">
-      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">Win $</th><th class="num">Succ.%</th><th class="num">MM Wins</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
+      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">MM Wins</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
       ${teamQuarterFormPanel()}
     </div>
   </section>`;
@@ -807,9 +807,9 @@ function teamQuarterFormPanel() {
   const worstName = ranked.length > 1 ? ranked[ranked.length - 1]?.name : null;
   const rows = teams.map(t => {
     const cls = withData.length > 1 && t.name === bestName ? 'row-best' : withData.length > 1 && t.name === worstName ? 'row-worst' : '';
-    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td><td class="num">${t.mmWon}</td></tr>`;
+    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${t.mmWon}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`;
   }).join('');
-  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Win $</th><th class="num">Succ.%</th><th class="num">MM Wins</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
+  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">MM Wins</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
 }
 
 // ---------- "Insights this year" strip (top sport / bet option / pick
@@ -1206,19 +1206,27 @@ function currentTrailingStreakRecord(allData, wantWin) {
   Object.entries(grouped).forEach(([member, picks]) => {
     picks.sort(comparePickOrder);
     let current = 0;
+    let startDate = null, endDate = null;
     for (let i = picks.length - 1; i >= 0; i--) {
       const hit = wantWin ? picks[i].win : picks[i].loss;
       const breaks = wantWin ? picks[i].loss : picks[i].win;
-      if (hit) current += 1;
+      if (hit) {
+        current += 1;
+        const d = parseDMY(picks[i].date);
+        if (!endDate) endDate = d;
+        startDate = d;
+      }
       else if (breaks) break;
       // else: skip N/A rows (e.g. immunity-protected results) without
       // breaking the streak.
     }
-    perMember[member] = current;
-    if (current > best) best = current;
+    perMember[member] = { top: current, startDate, endDate };
   });
-  const members = Object.entries(perMember).filter(([, v]) => v === best && best > 0).map(([m]) => m);
-  return { streak: best, members };
+  Object.values(perMember).forEach(v => { if (v.top > best) best = v.top; });
+  const tied = Object.entries(perMember).filter(([, v]) => v.top === best && best > 0);
+  const members = tied.map(([m]) => m);
+  const ranges = tied.map(([m, v]) => `${m} (${streakDateRangeLabel(v.startDate, v.endDate)})`);
+  return { streak: best, members, ranges };
 }
 
 function longestStreakRecord(data, wantWin) {
@@ -1228,19 +1236,29 @@ function longestStreakRecord(data, wantWin) {
   Object.entries(grouped).forEach(([member, picks]) => {
     picks.sort(comparePickOrder);
     let current = 0, top = 0;
+    let currentStart = null, topStart = null, topEnd = null;
     picks.forEach(p => {
       const hit = wantWin ? p.win : p.loss;
       const breaks = wantWin ? p.loss : p.win;
-      if (hit) { current += 1; top = Math.max(top, current); }
-      else if (breaks) { current = 0; }
+      const d = parseDMY(p.date);
+      if (hit) {
+        if (current === 0) currentStart = d;
+        current += 1;
+        if (current > top) { top = current; topStart = currentStart; topEnd = d; }
+      } else if (breaks) {
+        current = 0;
+        currentStart = null;
+      }
       // else: neither a hit nor a genuine break (e.g. an immunity-protected
       // N/A result) - skip it, don't reset the streak.
     });
-    perMember[member] = top;
-    if (top > best) best = top;
+    perMember[member] = { top, startDate: topStart, endDate: topEnd };
   });
-  const members = Object.entries(perMember).filter(([, v]) => v === best && best > 0).map(([m]) => m);
-  return { streak: best, members };
+  Object.values(perMember).forEach(v => { if (v.top > best) best = v.top; });
+  const tied = Object.entries(perMember).filter(([, v]) => v.top === best && best > 0);
+  const members = tied.map(([m]) => m);
+  const ranges = tied.map(([m, v]) => `${m} (${streakDateRangeLabel(v.startDate, v.endDate)})`);
+  return { streak: best, members, ranges };
 }
 
 function bestWinPercentRecord(data, minPicks) {
@@ -1339,10 +1357,10 @@ function recordsColumnHtml(title, data, opts, scope) {
   const items = [];
   items.push(['Highest successful odds', formatOddsRecord(highWin)]);
   items.push(['Lowest unsuccessful odds', formatOddsRecord(lowLoss)]);
-items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - ${winStreak.members.join(', ')}` : 'Not enough data yet.']);
+items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - ${winStreak.ranges.join(', ')}` : 'Not enough data yet.']);
   if (opts.includeLosingStreak) {
     const loseStreak = longestStreakRecord(data, false);
-    items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.members.join(', ')}` : 'Not enough data yet.']);
+    items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.ranges.join(', ')}` : 'Not enough data yet.']);
   }
   if (opts.includeWinPercent) {
     const best = bestWinPercentRecord(data, minPicks);
@@ -2423,6 +2441,7 @@ function memberCols() {
     { key: 'picks', label: 'Picks', type: 'num' },
     { key: 'wins', label: 'Wins', type: 'num' },
     { key: 'losses', label: 'Losses', type: 'num' },
+    { key: 'standDowns', label: 'Stand Downs', type: 'num' },
     { key: 'success', label: 'Success', type: 'pct' },
     { key: 'avgOdds', label: 'Avg odds', type: 'odds' },
     { key: 'currentStreak', label: 'Current streak' },
@@ -2451,12 +2470,14 @@ function enrichMembers(rows, data) {
     const active = activeStreak(picks);
     const last10Rows = picks.slice(-10);
     const last10Wins = last10Rows.filter(p => p.win).length;
+    const standDowns = picks.filter(p => !isRealPick(p)).length;
     return {
       ...row,
       currentStreak: active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-',
       streakValue: active.type === 'Win' ? active.count : -active.count,
       last10: last10Rows.length ? `${last10Wins}/${last10Rows.length}` : '-',
       last10Value: last10Rows.length ? last10Wins / last10Rows.length : 0,
+      standDowns,
     };
   });
 }
