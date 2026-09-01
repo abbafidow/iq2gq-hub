@@ -12,12 +12,19 @@ const state = {
 };
 
 const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
+const PRESIDENT_COUNTS = { TP: 1, LS: 2, MA: 2, TF: 1, MV: 2, SB: 3 };
+
+function svgTrophy() {
+  return `<svg viewBox="0 0 24 24" width="10" height="10" fill="#ffd700"><path d="M7,3 L17,3 L17,6 C17,9 15,11 12.5,11.5 L12.5,15 L15,15 L15,17 L9,17 L9,15 L11.5,15 L11.5,11.5 C9,11 7,9 7,6 Z M5,4 L7,4 L7,7.2 C6,6.6 5,5.5 5,4 Z M17,4 L19,4 C19,5.5 18,6.6 17,7.2 Z"/></svg>`;
+}
 
 function memberPickerHtml(promptText) {
   const members = Object.keys(TEAM_MAP).slice().sort();
   const buttons = members.map(m => {
     const nick = MEMBER_NICKNAMES[m];
-    return `<button class="member-pick-btn" data-member="${m}"><span class="member-pick-code">${m}</span>${nick ? `<span class="member-pick-nick">${escapeHtml(nick)}</span>` : ''}</button>`;
+    const trophyCount = PRESIDENT_COUNTS[m] || 0;
+    const trophies = trophyCount ? `<span class="member-pick-trophies">${svgTrophy().repeat(trophyCount)}</span>` : '';
+    return `<button class="member-pick-btn" data-member="${m}"><span class="member-pick-code">${m}</span>${nick ? `<span class="member-pick-nick">${escapeHtml(nick)}${trophies}</span>` : ''}</button>`;
   }).join('');
   return `<p class="member-pick-prompt">${escapeHtml(promptText || 'Select your name below to personalise for you.')}</p><div class="member-pick-grid">${buttons}</div>`;
 }
@@ -843,10 +850,11 @@ function dashboard(data) {
   const presRows = presidentialRace(currentSeasonRows);
   const presidents = presRows.filter(r => r.rank === 1).map(r => r.name);
   const seasonHeading = `<p class="dashboard-season-heading">${escapeHtml(cy || 'Current season')}${presidents.length ? ` | President: ${escapeHtml(presidents.join(', '))}` : ''}</p>`;
+  const pageHeader = `<div class="page-header"><h1>Dashboard</h1><p>See how this season is going for the Syndicate - the race for the Presidency, which team is doing best, and our top Sport, Bet and Pick options.</p></div>`;
   const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `${seasonHeading}
+  return `${pageHeader}${seasonHeading}
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
@@ -862,7 +870,8 @@ ${yearInsightStrip(currentSeasonRows)}
 }
 
 function statsBallSelector() {
-  return `<div class="stats-ball-page">
+  return `<div class="page-header"><h1>Stats</h1><p>Explore syndicate stats by member, sport, bet type or odds - all-time.</p></div>
+  <div class="stats-ball-page">
     <p class="stats-ball-prompt">What are you interested in?</p>
     <svg id="statsBall" viewBox="0 0 300 180" class="stats-ball-svg">
       <path data-stats-tab="members" d="M150,90 L150,15 A145,75 0 0 1 295,90 Z" fill="#8a5a34"></path>
@@ -919,7 +928,7 @@ function statsPage(data) {
       };
     });
   }, 0);
-  return `<div class="stats-subnav">${nav}</div>${content}`;
+  return `<div class="page-header"><h1>Stats</h1><p>Explore syndicate stats by member, sport, bet type or odds - all-time.</p></div><div class="stats-subnav">${nav}</div>${content}`;
 }
 
 function members(data) {
@@ -1378,8 +1387,8 @@ function records(data) {
   const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
 
   const streakMiniTable = (rows) => {
-    const body = rows.slice(0, 6).map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td class="num">${r.streak}</td></tr>`).join('');
-    return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Best streak</th></tr></thead><tbody>${body}</tbody></table>`;
+    const body = rows.slice(0, 6).map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(streakDateRangeLabel(r.startDate, r.endDate))}</td><td class="num">${r.streak}</td></tr>`).join('');
+    return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th>Period</th><th class="num">Best streak</th></tr></thead><tbody>${body}</tbody></table>`;
   };
   const highOddsTop6 = (rows) => rows
     .filter(r => r.win && Number.isFinite(r.odds))
@@ -1434,7 +1443,20 @@ function records(data) {
     });
   }, 0);
 
-  return `${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section>`;
+  return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section>`;
+}
+
+function monthYearLabel(date) {
+  if (!date) return '';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+function streakDateRangeLabel(startDate, endDate) {
+  if (!startDate || !endDate) return '';
+  const start = monthYearLabel(startDate);
+  const end = monthYearLabel(endDate);
+  return start === end ? start : `${start} - ${end}`;
 }
 
 function bestStreaks(data) {
@@ -1443,16 +1465,24 @@ function bestStreaks(data) {
     picks.sort(comparePickOrder);
     let best = 0;
     let current = 0;
+    let currentStart = null, bestStart = null, bestEnd = null;
     picks.forEach(pick => {
+      const d = parseDMY(pick.date);
       if (pick.win) {
+        if (current === 0) currentStart = d;
         current += 1;
-        best = Math.max(best, current);
+        if (current > best) {
+          best = current;
+          bestStart = currentStart;
+          bestEnd = d;
+        }
       } else if (pick.loss) {
         current = 0;
+        currentStart = null;
       }
       // else: N/A result (e.g. immunity-protected) - skip, don't break the streak.
     });
-    return { name: member, streak: best };
+    return { name: member, streak: best, startDate: bestStart, endDate: bestEnd };
   }).sort((a, b) => b.streak - a.streak || a.name.localeCompare(b.name));
   return rank(rows);
 }
@@ -1475,8 +1505,7 @@ function search(data) {
 
   const activeCount = ['member', 'group', 'betType', 'year', 'odds', 'result', 'query'].filter(k => f[k]).length;
 
-  const filtersHtml = `<div class="panel search-filters">
-    <h2>Search</h2>
+  const filtersHtml = `<div class="page-header"><h1>Search</h1><p>Filter and search through every pick the syndicate has ever made.</p></div><div class="panel search-filters">
     <div class="search-filters-grid">
       ${selectHtml('member', 'Member', memberOptions, f.member)}
       ${selectHtml('group', 'Sport group', groupOptions, f.group)}
@@ -1539,8 +1568,9 @@ function pickAssistant(data) {
     bindMemberPicker();
     return `
       <div class="pa-page">
-        <div class="pa-header">
+        <div class="page-header">
           <h1>Pick Assistant</h1>
+          <p>Get personalised pick suggestions based on your history, or check any pick you're considering against the syndicate's full history.</p>
         </div>
 
         ${memberPickerHtml()}
@@ -1603,7 +1633,7 @@ function pickAssistant(data) {
   return `
     <div class="pa-page">
 
-      <div class="pa-header">
+      <div class="page-header">
         <h1>Pick Assistant - ${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h1>
         <p>Personalised insights based on your betting history. <a href="#" class="change-member-link">Not you?</a></p>
       </div>

@@ -197,7 +197,8 @@ h1, h2, h3 { margin: 0; }
 }
 .member-pick-btn:hover { border-color: var(--accent); }
 .member-pick-code { font-size: 13px; font-weight: 700; }
-.member-pick-nick { font-size: 10px; color: var(--muted); font-weight: 400; }
+.member-pick-nick { font-size: 10px; color: var(--muted); font-weight: 400; display: inline-flex; align-items: center; gap: 4px; }
+.member-pick-trophies { display: inline-flex; gap: 1px; }
 .change-member-link { color: var(--accent); text-decoration: none; margin-left: 6px; }
 .change-member-link:hover { text-decoration: underline; }
 
@@ -582,15 +583,15 @@ tr:last-child td { border-bottom: 0; }
   margin-top: 20px;
 }
 
-.pa-header {
+.page-header {
   margin-bottom: 20px;
 }
 
-.pa-header h1 {
+.page-header h1 {
   margin: 0 0 6px;
 }
 
-.pa-header p {
+.page-header p {
   margin: 0;
 }
 
@@ -852,7 +853,7 @@ border: 1px solid rgba(255,255,255,0.10);
     margin-bottom: 14px;
   }
 
-  .pa-header h1 {
+  .page-header h1 {
     font-size: 24px;
   }
 
