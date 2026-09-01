@@ -415,6 +415,11 @@ tr:last-child td { border-bottom: 0; }
   .form-grid, .record-list { grid-template-columns: 1fr 1fr; }
 }
 
+@media (max-width: 420px) {
+  .search-filters-grid { grid-template-columns: 1fr; }
+  .search-filters-grid .search-text-label { grid-column: 1; }
+}
+
 @media (max-width: 520px) {
   .stats-subnav { width: 100%; overflow-x: auto; }
 
@@ -743,6 +748,11 @@ border: 1px solid rgba(255,255,255,0.10);
 
 @media (max-width: 640px) {
   .pa-rate-form { grid-template-columns: 1fr 1fr; }
+  .pa-rate-form button { grid-column: 1 / -1; }
+}
+
+@media (max-width: 420px) {
+  .pa-rate-form { grid-template-columns: 1fr; }
 }
 
 .pa-graphic-row {
