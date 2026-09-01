@@ -76,6 +76,36 @@ function pick(row, names) {
   return '';
 }
 
+// The Sheet accumulates inconsistent capitalization over years of manual
+// entry (e.g. "H2H", "h2h", "H2h" all meaning the same thing). Grouped
+// views already lowercase before comparing so they're unaffected, but exact
+// -match fields (Rate Your Pick's dropdowns, comboCandidates' keys/labels)
+// need one consistent string per real-world value, or the same underlying
+// bet type/team/sport silently fragments into several. Picks whichever
+// exact casing is most common in the data as the canonical form.
+function canonicalizeCasing(rows, field) {
+  const variantCounts = new Map();
+  rows.forEach(r => {
+    const value = r[field];
+    if (!value) return;
+    const key = value.toLowerCase();
+    if (!variantCounts.has(key)) variantCounts.set(key, new Map());
+    const variants = variantCounts.get(key);
+    variants.set(value, (variants.get(value) || 0) + 1);
+  });
+  const canonical = new Map();
+  variantCounts.forEach((variants, key) => {
+    let best = null, bestCount = -1;
+    variants.forEach((count, casing) => { if (count > bestCount) { best = casing; bestCount = count; } });
+    canonical.set(key, best);
+  });
+  rows.forEach(r => {
+    const value = r[field];
+    if (!value) return;
+    r[field] = canonical.get(value.toLowerCase());
+  });
+}
+
 function normalise(row, index) {
 
   const member = clean(row["Member code"]);
@@ -213,6 +243,9 @@ async function init() {
 
     state.apiCount = Number(json.count || 0);
     state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
+    canonicalizeCasing(state.raw, 'betType');
+    canonicalizeCasing(state.raw, 'name');
+    canonicalizeCasing(state.raw, 'sport');
 
     bind();
     render();
@@ -2093,27 +2126,45 @@ function stalenessCaveat(rows) {
   return ` This trend was particularly strong ${span} - there's limited recent evidence, so consider carefully.`;
 }
 
+function sampleSizeSentence(sampleSize) {
+  if (sampleSize >= 50) return 'That\'s a large sample, so it\'s about as trustworthy as this kind of data gets.';
+  if (sampleSize >= 20) return 'That\'s a solid sample size, so this looks like a genuine trend rather than noise.';
+  return 'That\'s a fairly small sample, so treat it as an early signal rather than a certainty.';
+}
+
 function ratePotentialPick(name, betType, sport, odds) {
   const signals = [];
   const pool = state.raw.filter(isRealPick);
 
-  // Signal 1: this exact team+bet type+sport combo, all time, with a recent
-  // (last 2 years) comparison where there's enough data to show one. Only
-  // runs if selection + bet type + sport were all given.
+  // Signal 1: this team+bet type+sport. For point-start bets, matched the
+  // same way Worth Watching computes its own threshold patterns ("X or
+  // higher"), not an exact text match - otherwise typing in exactly one of
+  // Worth Watching's own recommended picks could fail to find the data it
+  // was built from, since a threshold pattern pools several exact bet-type
+  // values together (1.5, 2.5, 3.5...) rather than matching one literally.
   if (name && betType && sport) {
-    const comboRows = pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
+    const enteredPointValue = parsePointValue(betType);
+    const isPointStart = enteredPointValue !== null && betTypeGroup(betType) === 'Point Starts';
+    const comboRows = isPointStart
+      ? pool.filter(r => r.name === name && r.sport === sport && r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && parsePointValue(r.betType) >= enteredPointValue)
+      : pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
+    const betLabel = isPointStart ? `${enteredPointValue} point start or higher` : betType;
     if (comboRows.length >= 3) {
       const allTimeWins = comboRows.filter(r => r.win).length;
       const allTimeSuccess = allTimeWins / comboRows.length;
       const twoYearsAgo = new Date(Date.UTC(new Date().getUTCFullYear() - 2, new Date().getUTCMonth(), new Date().getUTCDate()));
       const recentRows = comboRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
       const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
-      const text = recentSuccess !== null
-        ? `${name} ${betType} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
-        : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks).${stalenessCaveat(comboRows)}`;
-      signals.push({ text, success: recentSuccess !== null ? recentSuccess : allTimeSuccess, sampleSize: recentSuccess !== null ? recentRows.length : comboRows.length });
+      const sinceYear = comboRows.map(r => parseDMY(r.date)).filter(Boolean).reduce((min, d) => !min || d < min ? d : min, null);
+      const headline = recentSuccess !== null
+        ? `${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
+        : `${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks${sinceYear ? ` since ${sinceYear.getUTCFullYear()}` : ''}).`;
+      const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
+      const finalSampleSize = recentSuccess !== null ? recentRows.length : comboRows.length;
+      const caveat = stalenessCaveat(comboRows) || ` ${sampleSizeSentence(finalSampleSize)}`;
+      signals.push({ text: `${headline}${caveat}`, success: finalSuccess, sampleSize: finalSampleSize });
     } else {
-      signals.push({ text: `No real history yet for ${name} ${betType} in ${sport}.`, success: null, sampleSize: 0 });
+      signals.push({ text: `No real history yet for ${name} ${betLabel} in ${sport} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
     }
   }
 
@@ -2127,15 +2178,18 @@ function ratePotentialPick(name, betType, sport, odds) {
     const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
     const bandRows = pool.filter(r => r.sport === sport && r.odds >= bandLow && r.odds <= bandHigh);
     const recentBandRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= sixMonthsAgo; });
+    const contextNote = ' This is the sport overall at this price, not this specific selection, so treat it as market context rather than a team-specific edge.';
     if (recentBandRows.length >= 5) {
       const bandSuccess = recentBandRows.filter(r => r.win).length / recentBandRows.length;
-      signals.push({ text: `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months.`, success: bandSuccess, sampleSize: recentBandRows.length });
+      const headline = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months (${recentBandRows.length.toLocaleString()} picks).`;
+      signals.push({ text: `${headline} ${sampleSizeSentence(recentBandRows.length)}${contextNote}`, success: bandSuccess, sampleSize: recentBandRows.length });
     } else if (bandRows.length >= 5) {
       const bandSuccess = bandRows.filter(r => r.win).length / bandRows.length;
-      const text = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time (${bandRows.length.toLocaleString()} picks).${stalenessCaveat(bandRows)}`;
-      signals.push({ text, success: bandSuccess, sampleSize: bandRows.length });
+      const headline = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time (${bandRows.length.toLocaleString()} picks).`;
+      const caveat = stalenessCaveat(bandRows) || ` ${sampleSizeSentence(bandRows.length)}`;
+      signals.push({ text: `${headline}${caveat}${contextNote}`, success: bandSuccess, sampleSize: bandRows.length });
     } else {
-      signals.push({ text: `Not enough ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point to show a trend.`, success: null, sampleSize: 0 });
+      signals.push({ text: `Not enough ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point (only ${bandRows.length} found) to show a trend.`, success: null, sampleSize: 0 });
     }
   }
 
