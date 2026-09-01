@@ -1527,13 +1527,13 @@ function pickAssistant(data) {
       </div>
 
       <div class="pa-card">
-        <div class="pa-title">RATE A PICK</div>
+        <div class="pa-title">RATE YOUR PICK</div>
         <p class="muted small">Type in a pick you're considering and see how it's checked out historically. Nothing here is saved or shared - it's just a lookup.</p>
         <div class="pa-rate-form">
-          <label>Selection<input list="rateAPickNameList" id="rateAPickName" placeholder="NZ Warriors"><datalist id="rateAPickNameList">${nameOptions.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist></label>
-          <label>Bet type<input list="rateAPickBetTypeList" id="rateAPickBetType" placeholder="H2H"><datalist id="rateAPickBetTypeList">${betTypeOptions.map(b => `<option value="${escapeHtml(b)}">`).join('')}</datalist></label>
-          <label>Sport<input list="rateAPickSportList" id="rateAPickSport" placeholder="Rugby League (NRL)"><datalist id="rateAPickSportList">${sportOptions.map(s => `<option value="${escapeHtml(s)}">`).join('')}</datalist></label>
-          <label>Odds<input type="number" step="0.01" min="1.01" id="rateAPickOdds" placeholder="1.35"></label>
+          <label>Selection<input list="rateAPickNameList" id="rateAPickName" placeholder="Please type e.g. NZ Warriors"><datalist id="rateAPickNameList">${nameOptions.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist></label>
+          <label>Bet type<input list="rateAPickBetTypeList" id="rateAPickBetType" placeholder="Please type e.g. H2H"><datalist id="rateAPickBetTypeList">${betTypeOptions.map(b => `<option value="${escapeHtml(b)}">`).join('')}</datalist></label>
+          <label>Sport<input list="rateAPickSportList" id="rateAPickSport" placeholder="Please type e.g. Rugby League (NRL)"><datalist id="rateAPickSportList">${sportOptions.map(s => `<option value="${escapeHtml(s)}">`).join('')}</datalist></label>
+          <label>Odds<input type="number" step="0.01" min="1.01" id="rateAPickOdds" placeholder="Please type e.g. 1.35"></label>
           <button type="button" id="rateAPickBtn">Rate this pick</button>
         </div>
         <div id="rateAPickResults" class="pa-rating-results"></div>
@@ -2026,11 +2026,29 @@ function svgStatBar(success, color) {
 // written anywhere - purely a client-side lookup against state.raw.
 // ----------------------------------------------------------------------
 
+// Unlike Worth Watching, Rate Your Pick is deliberately historically based -
+// a member typing in a specific hypothetical pick should see everything
+// that's known, not have older evidence silently excluded. Instead, if the
+// evidence is old, say so plainly rather than filtering it out.
+function stalenessCaveat(rows) {
+  const dates = rows.map(r => parseDMY(r.date)).filter(Boolean);
+  if (!dates.length) return '';
+  const lastDate = new Date(Math.max(...dates.map(d => d.getTime())));
+  const cutoff = recencyCutoffDate();
+  if (cutoff && lastDate.getTime() >= cutoff.getTime()) return '';
+  const firstDate = new Date(Math.min(...dates.map(d => d.getTime())));
+  const firstYear = firstDate.getUTCFullYear();
+  const lastYear = lastDate.getUTCFullYear();
+  const span = firstYear === lastYear ? `in ${firstYear}` : `between ${firstYear} and ${lastYear}`;
+  return ` This trend was particularly strong ${span} - there's limited recent evidence, so consider carefully.`;
+}
+
 function ratePotentialPick(name, betType, sport, odds) {
   const signals = [];
   const pool = state.raw.filter(isRealPick);
 
-  // Signal 1: this exact team+bet type+sport combo, all-time vs last 2 years.
+  // Signal 1: this exact team+bet type+sport combo, all time, with a recent
+  // (last 2 years) comparison where there's enough data to show one.
   const comboRows = pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
   if (comboRows.length >= 3) {
     const allTimeWins = comboRows.filter(r => r.win).length;
@@ -2040,13 +2058,16 @@ function ratePotentialPick(name, betType, sport, odds) {
     const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
     const text = recentSuccess !== null
       ? `${name} ${betType} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
-      : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks) - not enough recent picks to show a two-year trend.`;
+      : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks).${stalenessCaveat(comboRows)}`;
     signals.push({ text, success: recentSuccess !== null ? recentSuccess : allTimeSuccess, sampleSize: recentSuccess !== null ? recentRows.length : comboRows.length });
   } else {
     signals.push({ text: `No real history yet for ${name} ${betType} in ${sport}.`, success: null, sampleSize: 0 });
   }
 
-  // Signal 2: this sport, odds within +/-$0.05 of the entered price, last 6 months.
+  // Signal 2: this sport, odds within +/-$0.05 of the entered price. Prefers
+  // the last six months if there's enough there, but falls back to all-time
+  // data rather than showing nothing when recent activity is thin (e.g. the
+  // sport's out of season right now).
   if (Number.isFinite(odds)) {
     const bandLow = Math.round((odds - 0.05) * 100) / 100;
     const bandHigh = Math.round((odds + 0.05) * 100) / 100;
@@ -2056,8 +2077,12 @@ function ratePotentialPick(name, betType, sport, odds) {
     if (recentBandRows.length >= 5) {
       const bandSuccess = recentBandRows.filter(r => r.win).length / recentBandRows.length;
       signals.push({ text: `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months.`, success: bandSuccess, sampleSize: recentBandRows.length });
+    } else if (bandRows.length >= 5) {
+      const bandSuccess = bandRows.filter(r => r.win).length / bandRows.length;
+      const text = `${sport} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time (${bandRows.length.toLocaleString()} picks).${stalenessCaveat(bandRows)}`;
+      signals.push({ text, success: bandSuccess, sampleSize: bandRows.length });
     } else {
-      signals.push({ text: `Not enough recent ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} to show a trend.`, success: null, sampleSize: 0 });
+      signals.push({ text: `Not enough ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point to show a trend.`, success: null, sampleSize: 0 });
     }
   }
 
