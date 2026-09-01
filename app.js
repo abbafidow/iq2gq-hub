@@ -1480,13 +1480,14 @@ function pickAssistant(data) {
     const rateBtn = document.getElementById('rateAPickBtn');
     if (rateBtn) {
       rateBtn.onclick = () => {
-        const name = clean($('rateAPickName').value);
-        const betType = clean($('rateAPickBetType').value);
-        const sport = clean($('rateAPickSport').value);
-        const odds = Number($('rateAPickOdds').value);
+        const name = clean($('rateAPickName').value) || null;
+        const betType = clean($('rateAPickBetType').value) || null;
+        const sport = clean($('rateAPickSport').value) || null;
+        const oddsRaw = $('rateAPickOdds').value;
+        const odds = oddsRaw !== '' && Number.isFinite(Number(oddsRaw)) && Number(oddsRaw) > 1 ? Number(oddsRaw) : null;
         const resultsEl = document.getElementById('rateAPickResults');
-        if (!name || !betType || !sport || !Number.isFinite(odds) || odds <= 1) {
-          resultsEl.innerHTML = '<p class="muted small">Fill in a selection, bet type, sport and odds (e.g. 1.35) to get a rating.</p>';
+        if (!sport || (!odds && !(name && betType))) {
+          resultsEl.innerHTML = '<p class="muted small">Fill in at least a sport plus either (odds) or (selection + bet type) to get a rating - the more you fill in, the sharper the rating.</p>';
           return;
         }
         const result = ratePotentialPick(name, betType, sport, odds);
@@ -1526,8 +1527,8 @@ function pickAssistant(data) {
 
       </div>
 
-      <div class="pa-card">
-        <div class="pa-title">RATE YOUR PICK</div>
+      <div class="pa-card pa-rate-card">
+        <div class="pa-title pa-rate-title">RATE YOUR PICK</div>
         <p class="muted small">Type in a pick you're considering and see how it's checked out historically. Nothing here is saved or shared - it's just a lookup.</p>
         <div class="pa-rate-form">
           <label>Selection<input list="rateAPickNameList" id="rateAPickName" placeholder="Please type e.g. NZ Warriors"><datalist id="rateAPickNameList">${nameOptions.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist></label>
@@ -1899,17 +1900,23 @@ function patternCandidatePool(rows) {
     thresholdsFromPool(groupRows, null, group)
   );
 
+  const teamCombos = comboCandidates(rows);
+  const teamsCoveredByCombo = new Set(teamCombos.map(c => `${c.team}||${c.group}`));
   const fallback = aggregateComposite(rows, r => r.name && r.group ? `${r.name}||${r.group}` : null, r => `${r.name} (${r.group}) - all bet types`)
     .map(x => ({ ...x, team: x.label.split(' (')[0] }))
+    .filter(x => !teamsCoveredByCombo.has(`${x.team}||${x.group}`))
     .concat(aggregateComposite(rows, r => r.betType && r.group ? `${r.betType}||${r.group}` : null, r => `${r.betType} (${r.group})`)
       .map(x => ({ ...x, team: null })));
 
   const cutoffDate = recencyCutoffDate();
-  const allCandidates = comboCandidates(rows)
+  const MIN_ROBUST_PICKS = 12;
+  const MIN_ROBUST_SUCCESS = 0.65;
+  const allCandidates = teamCombos
     .concat(overallThresholds)
     .concat(perTeamThresholds)
     .concat(fallback)
     .filter(c => isPatternRecentEnough(c.lastDate, cutoffDate))
+    .filter(c => c.picks >= MIN_ROBUST_PICKS && c.success >= MIN_ROBUST_SUCCESS)
     .sort(byBestStory);
 
   // Keep only the single best-scoring candidate per family - drops the
@@ -1967,6 +1974,7 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
     .concat(scopedThresholds)
     .concat(aggregateComposite(pool, r => r.betType && r.group ? `${r.betType}||${r.group}` : null, r => `${r.betType} (${r.group})`))
     .filter(c => !usedKeys.has(c.key))
+    .filter(c => c.picks >= 5 && c.success >= 0.65)
     .sort(byBestStory);
   const top = candidates[0];
   if (!top) return null;
@@ -2048,27 +2056,30 @@ function ratePotentialPick(name, betType, sport, odds) {
   const pool = state.raw.filter(isRealPick);
 
   // Signal 1: this exact team+bet type+sport combo, all time, with a recent
-  // (last 2 years) comparison where there's enough data to show one.
-  const comboRows = pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
-  if (comboRows.length >= 3) {
-    const allTimeWins = comboRows.filter(r => r.win).length;
-    const allTimeSuccess = allTimeWins / comboRows.length;
-    const twoYearsAgo = new Date(Date.UTC(new Date().getUTCFullYear() - 2, new Date().getUTCMonth(), new Date().getUTCDate()));
-    const recentRows = comboRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
-    const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
-    const text = recentSuccess !== null
-      ? `${name} ${betType} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
-      : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks).${stalenessCaveat(comboRows)}`;
-    signals.push({ text, success: recentSuccess !== null ? recentSuccess : allTimeSuccess, sampleSize: recentSuccess !== null ? recentRows.length : comboRows.length });
-  } else {
-    signals.push({ text: `No real history yet for ${name} ${betType} in ${sport}.`, success: null, sampleSize: 0 });
+  // (last 2 years) comparison where there's enough data to show one. Only
+  // runs if selection + bet type + sport were all given.
+  if (name && betType && sport) {
+    const comboRows = pool.filter(r => r.name === name && r.betType === betType && r.sport === sport);
+    if (comboRows.length >= 3) {
+      const allTimeWins = comboRows.filter(r => r.win).length;
+      const allTimeSuccess = allTimeWins / comboRows.length;
+      const twoYearsAgo = new Date(Date.UTC(new Date().getUTCFullYear() - 2, new Date().getUTCMonth(), new Date().getUTCDate()));
+      const recentRows = comboRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
+      const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
+      const text = recentSuccess !== null
+        ? `${name} ${betType} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
+        : `${name} ${betType} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks).${stalenessCaveat(comboRows)}`;
+      signals.push({ text, success: recentSuccess !== null ? recentSuccess : allTimeSuccess, sampleSize: recentSuccess !== null ? recentRows.length : comboRows.length });
+    } else {
+      signals.push({ text: `No real history yet for ${name} ${betType} in ${sport}.`, success: null, sampleSize: 0 });
+    }
   }
 
   // Signal 2: this sport, odds within +/-$0.05 of the entered price. Prefers
   // the last six months if there's enough there, but falls back to all-time
   // data rather than showing nothing when recent activity is thin (e.g. the
-  // sport's out of season right now).
-  if (Number.isFinite(odds)) {
+  // sport's out of season right now). Only runs if sport + odds were given.
+  if (sport && Number.isFinite(odds)) {
     const bandLow = Math.round((odds - 0.05) * 100) / 100;
     const bandHigh = Math.round((odds + 0.05) * 100) / 100;
     const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
@@ -2084,6 +2095,10 @@ function ratePotentialPick(name, betType, sport, odds) {
     } else {
       signals.push({ text: `Not enough ${sport} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point to show a trend.`, success: null, sampleSize: 0 });
     }
+  }
+
+  if (!signals.length) {
+    signals.push({ text: 'Not enough information to check any trend - try adding a sport plus either odds or a selection and bet type.', success: null, sampleSize: 0 });
   }
 
   // Rating: weighted average of whichever signals had enough data (weight
