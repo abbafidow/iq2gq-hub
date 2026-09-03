@@ -779,21 +779,63 @@ function dashboardTiles(current, previous, roundCount) {
 <div class="tile-group-label">Odds</div><div class="tile-row">${odds}</div>`;
 }
 
+// Generic sortable mini-table, matching the same click-to-sort behavior as
+// the main table() function elsewhere. columns: [{ key, label, numeric,
+// sortable (default true), render(row) => '<td>...</td>' }]. Sorting
+// operates on the raw column value (col.key on each row), not the
+// rendered HTML, so numeric columns sort numerically even when the cell
+// itself shows formatted text.
+function sortableMiniTable(tableId, rows, columns) {
+  const sort = state.sort[tableId] || {};
+  const sortedRows = sort.key ? rows.slice().sort((a, b) => {
+    const av = a[sort.key], bv = b[sort.key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sort.dir;
+    return String(av).localeCompare(String(bv)) * sort.dir;
+  }) : rows;
+  const head = columns.map(col => {
+    const numClass = col.numeric ? ' class="num"' : '';
+    if (col.sortable === false) return `<th${numClass}>${escapeHtml(col.label)}</th>`;
+    const marker = sort.key === col.key ? (sort.dir === -1 ? ' \u2193' : ' \u2191') : '';
+    return `<th${numClass} data-mini-table="${tableId}" data-key="${col.key}">${escapeHtml(col.label)}${marker}</th>`;
+  }).join('');
+  const body = sortedRows.map(row => `<tr class="${row.rowClass || ''}">${columns.map(col => col.render(row)).join('')}</tr>`).join('');
+  setTimeout(() => {
+    document.querySelectorAll(`th[data-mini-table="${tableId}"]`).forEach(th => {
+      th.onclick = () => {
+        const key = th.dataset.key;
+        const current = state.sort[tableId] || {};
+        state.sort[tableId] = { key, dir: current.key === key ? -current.dir : -1 };
+        render();
+      };
+    });
+  }, 0);
+  return `<table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
 function presidentialTeamsSection(currentSeasonRows) {
   const presidentialRows = presidentialRace(currentSeasonRows);
-  const presTable = presidentialRows.map(r =>
-    `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}${r.needsCoinFlip ? ' <span class="muted small" title="Tied on every tiebreaker - needs a coin flip / wheel spin to resolve">\u00b9</span>' : ''}</td><td class="num">${r.points.toFixed(1)}</td></tr>`
-  ).join('');
+  const presTable = sortableMiniTable('presRace', presidentialRows, [
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}${r.needsCoinFlip ? ' <span class="muted small" title="Tied on every tiebreaker - needs a coin flip / wheel spin to resolve">\u00b9</span>' : ''}</td>` },
+    { key: 'points', label: 'Pts', numeric: true, render: r => `<td class="num">${r.points.toFixed(1)}</td>` },
+  ]);
 
   const teams = teamStats(currentSeasonRows);
-  const teamTable = teams.map(t =>
-    `<tr><td>${escapeHtml(t.name)}</td><td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td><td class="num">${t.mmWon}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`
-  ).join('');
+  const teamTable = sortableMiniTable('teamsCompetition', teams, [
+    { key: 'name', label: 'Team', render: t => `<td>${escapeHtml(t.name)}</td>` },
+    { key: 'membersLabel', label: 'Members', sortable: false, render: t => `<td>${t.members.map((m, i) => i === 0 ? `${escapeHtml(m)}*` : escapeHtml(m)).join(', ')}</td>` },
+    { key: 'mmWon', label: 'MM Wins', numeric: true, render: t => `<td class="num">${t.mmWon}</td>` },
+    { key: 'winnings', label: 'Win $', numeric: true, render: t => `<td class="num">${fmtMoney(t.winnings)}</td>` },
+    { key: 'successRate', label: 'Succ.%', numeric: true, render: t => `<td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td>` },
+  ]);
 
   return `<section class="two standings-row">
-    <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th class="num">Pts</th></tr></thead><tbody>${presTable}</tbody></table></div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
+    <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap">${presTable}</div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
     <div class="standings-col">
-      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th>Members</th><th class="num">MM Wins</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${teamTable}</tbody></table></div><p class="muted small">* captain</p></div>
+      <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap">${teamTable}</div><p class="muted small">* captain</p></div>
       ${teamQuarterFormPanel()}
     </div>
   </section>`;
@@ -805,11 +847,17 @@ function teamQuarterFormPanel() {
   const ranked = withData.slice().sort((a, b) => b.winnings - a.winnings);
   const bestName = ranked[0]?.name;
   const worstName = ranked.length > 1 ? ranked[ranked.length - 1]?.name : null;
-  const rows = teams.map(t => {
-    const cls = withData.length > 1 && t.name === bestName ? 'row-best' : withData.length > 1 && t.name === worstName ? 'row-worst' : '';
-    return `<tr class="${cls}"><td>${escapeHtml(t.name)}</td><td class="num">${t.mmWon}</td><td class="num">${fmtMoney(t.winnings)}</td><td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td></tr>`;
-  }).join('');
-  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">MM Wins</th><th class="num">Win $</th><th class="num">Succ.%</th></tr></thead><tbody>${rows}</tbody></table></div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
+  const rowsWithClass = teams.map(t => ({
+    ...t,
+    rowClass: withData.length > 1 && t.name === bestName ? 'row-best' : withData.length > 1 && t.name === worstName ? 'row-worst' : '',
+  }));
+  const table = sortableMiniTable('teamFormQuarter', rowsWithClass, [
+    { key: 'name', label: 'Team', render: t => `<td>${escapeHtml(t.name)}</td>` },
+    { key: 'mmWon', label: 'MM Wins', numeric: true, render: t => `<td class="num">${t.mmWon}</td>` },
+    { key: 'winnings', label: 'Win $', numeric: true, render: t => `<td class="num">${fmtMoney(t.winnings)}</td>` },
+    { key: 'successRate', label: 'Succ.%', numeric: true, render: t => `<td class="num">${t.successRate === null ? '\u2013' : pct(t.successRate)}</td>` },
+  ]);
+  return `<div class="panel standings-panel form-panel"><h3>Team form this quarter</h3><p class="muted small">${escapeHtml(currentQuarterLabel())} \u00b7 all four teams compared over the same window</p><div class="mini-table-wrap">${table}</div>${bestName && worstName ? `<p class="muted small">Best \u00b7 <span class="good">${escapeHtml(bestName)}</span>&nbsp;&nbsp;Worst \u00b7 <span class="bad">${escapeHtml(worstName)}</span></p>` : ''}</div>`;
 }
 
 // ---------- "Insights this year" strip (top sport / bet option / pick
@@ -1160,12 +1208,16 @@ function odds(data) {
   const topFive = exactOddsRows
     .filter(r => r.confidence === 'High')
     .sort((a, b) => b.success - a.success)
-    .slice(0, 5);
-  const topFiveRows = topFive.map((r, i) =>
-    `<tr><td>${i + 1}</td><td>${escapeHtml(r.name)}</td><td class="num">${pct(r.success)}</td><td class="num">${r.picks.toLocaleString()}</td></tr>`
-  ).join('');
+    .slice(0, 5)
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+  const topFiveTable = sortableMiniTable('topFiveOdds', topFive, [
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'name', label: 'Odds', render: r => `<td>${escapeHtml(r.name)}</td>` },
+    { key: 'success', label: 'Success', numeric: true, render: r => `<td class="num">${pct(r.success)}</td>` },
+    { key: 'picks', label: 'Picks', numeric: true, render: r => `<td class="num">${r.picks.toLocaleString()}</td>` },
+  ]);
   const topFivePanel = topFive.length
-    ? `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">Specific odds values, not bands. High confidence = 50+ picks at that exact price.</p><div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Rank</th><th>Odds</th><th class="num">Success</th><th class="num">Picks</th></tr></thead><tbody>${topFiveRows}</tbody></table></div></div>`
+    ? `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">Specific odds values, not bands. High confidence = 50+ picks at that exact price.</p><div class="mini-table-wrap">${topFiveTable}</div></div>`
     : `<div class="panel standings-panel"><h3>Top 5 most successful (high confidence)</h3><p class="muted small">No individual odds value has 50+ picks yet - try again once more data's in, or ask to lower the confidence bar.</p></div>`;
 
   return `<div class="panel"><h2>Odds bands</h2>${table(rank(sortRows(rows, 'odds', 'success')), 'odds', sportCols('Odds band'))}</div>${topFivePanel}`;
@@ -1496,19 +1548,24 @@ function records(data) {
     : '';
   const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
 
-  const streakMiniTable = (rows) => {
-    const body = rows.slice(0, 6).map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(streakDateRangeLabel(r.startDate, r.endDate))}</td><td class="num">${r.streak}</td></tr>`).join('');
-    return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th>Period</th><th class="num">Best streak</th></tr></thead><tbody>${body}</tbody></table>`;
-  };
+  const streakMiniTable = (rows) => sortableMiniTable('bestStreaks', rows.slice(0, 6), [
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}</td>` },
+    { key: 'endDate', label: 'Period', render: r => `<td>${escapeHtml(streakDateRangeLabel(r.startDate, r.endDate))}</td>` },
+    { key: 'streak', label: 'Best streak', numeric: true, render: r => `<td class="num">${r.streak}</td>` },
+  ]);
   const highOddsTop6 = (rows) => rows
     .filter(r => r.win && Number.isFinite(r.odds))
     .sort((a, b) => b.odds - a.odds)
     .slice(0, 6)
     .map((r, i) => ({ rank: i + 1, name: r.member, bet: r.name, odds: r.odds, year: r.year }));
-  const oddsMiniTable = (rows) => {
-    const body = rows.map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.bet)}</td><td class="num">${oddsFmt(r.odds)}</td><td class="num">${escapeHtml(r.year)}</td></tr>`).join('');
-    return `<table class="mini-table"><thead><tr><th>Rank</th><th>Member</th><th>Bet</th><th class="num">Odds</th><th class="num">Year</th></tr></thead><tbody>${body}</tbody></table>`;
-  };
+  const oddsMiniTable = (rows) => sortableMiniTable('highOdds', rows, [
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}</td>` },
+    { key: 'bet', label: 'Bet', render: r => `<td>${escapeHtml(r.bet)}</td>` },
+    { key: 'odds', label: 'Odds', numeric: true, render: r => `<td class="num">${oddsFmt(r.odds)}</td>` },
+    { key: 'year', label: 'Year', numeric: true, render: r => `<td class="num">${escapeHtml(r.year)}</td>` },
+  ]);
 
   // Generic reusable scope toggle: pass tabs as [{ key, label }] and panels
   // as { key: htmlString }. Self-contained per instance (via closest()), so
@@ -1558,29 +1615,38 @@ function records(data) {
   // complete, comparable season anyway.
   const weightedTally = new Map(memberWinningsTallyOddsWeighted(seasonData).map(r => [r.member, r]));
   const flatTally = new Map(memberFlatBetTally(seasonData).map(r => [r.member, r]));
-  const winningsMembers = Object.keys(TEAM_MAP).sort();
   const emptyItem = { amount: 0, roi: null };
-  const amountCell = (item) => {
+  const amountCellHtml = (item) => {
     const cls = item.amount > 0 ? 'good' : item.amount < 0 ? 'bad' : '';
     const returnPerDollar = item.roi === null ? null : 1 + item.roi / 100;
-    const ratioText = returnPerDollar === null ? '' : ` (${fmtMoney(returnPerDollar)} per \$1 bet)`;
+    const ratioText = returnPerDollar === null ? '' : ` (${fmtMoney(returnPerDollar)})`;
     return `<td class="num ${cls}">${fmtMoney(item.amount)}${ratioText}</td>`;
   };
-  const winningsBody = winningsMembers.map(m =>
-    `<tr><td>${escapeHtml(m)}</td>${amountCell(weightedTally.get(m) || emptyItem)}${amountCell(flatTally.get(m) || emptyItem)}</tr>`
-  ).join('');
+  const winningsRows = Object.keys(TEAM_MAP).sort().map(m => {
+    const weighted = weightedTally.get(m) || emptyItem;
+    const flat = flatTally.get(m) || emptyItem;
+    return { member: m, weightedAmount: weighted.amount, weightedItem: weighted, flatAmount: flat.amount, flatItem: flat };
+  });
+  const winningsTable = sortableMiniTable('memberWinnings', winningsRows, [
+    { key: 'member', label: 'Member', render: r => `<td>${escapeHtml(r.member)}</td>` },
+    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem) },
+    { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
+  ]);
   const winningsSection = `<div class="panel standings-panel">
     <h3>Member winnings tally - ${escapeHtml(cy || 'this season')}</h3>
-    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat-bet:</strong> what you'd have made betting solo, ignoring your team entirely. The bracketed figure is how much came back for every \$1 staked.</p>
-    <div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Member</th><th class="num">Odds-weighted</th><th class="num">\$10 flat-bet</th></tr></thead><tbody>${winningsBody}</tbody></table></div>
+    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure is how much came back for every \$1 staked.</p>
+    <div class="mini-table-wrap">${winningsTable}</div>
   </div>`;
 
-  const teamTally = new Map(teamWinningsTally(seasonData).map(t => [t.team, t]));
-  const teamBody = TEAM_ORDER.map(t => `<tr><td>${escapeHtml(t)}</td>${amountCell(teamTally.get(t) || emptyItem)}</tr>`).join('');
+  const teamTallyRows = teamWinningsTally(seasonData);
+  const teamTable = sortableMiniTable('teamWinnings', teamTallyRows, [
+    { key: 'team', label: 'Team', render: t => `<td>${escapeHtml(t.team)}</td>` },
+    { key: 'amount', label: 'Net', numeric: true, render: t => amountCellHtml(t) },
+  ]);
   const teamRoiSection = `<div class="panel standings-panel">
     <h3>Team winnings tally - ${escapeHtml(cy || 'this season')}</h3>
     <p class="muted small">If the season ended today, this is how much each team has won or lost - total MM payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure is how much came back for every \$1 staked.</p>
-    <div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Net</th></tr></thead><tbody>${teamBody}</tbody></table></div>
+    <div class="mini-table-wrap">${teamTable}</div>
   </div>`;
 
   return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
