@@ -1345,6 +1345,95 @@ function bestAnnualWinPercentRecord(data, minPicks) {
     .sort((a, b) => b.success - a.success || b.picks - a.picks);
   return rows[0] || null;
 }
+// Each MM's actual winnings belong to the team as a whole, not any one
+// member individually - this divides each successful MM's total payout
+// evenly among the members who contributed to it, and tallies each
+// member's running share across every MM they've been part of. Sums
+// mmReturn across the MM's own contributing rows for the total (proven
+// reliable at the team level already, via teamStats), rather than trusting
+// any single row's value alone - robust regardless of how that figure
+// happens to be distributed across the 3 rows internally.
+// Method 1: equal split - each successful MM's total payout divided evenly
+// among the members who contributed to it. Treats all three legs as
+// equally responsible for the win, regardless of how likely each was.
+// Estimated flat cost per MM, split evenly 3 ways - the Sheet doesn't
+// track the exact stake per MM, so this is an approximation of the
+// typical cost, applied to every MM a member was part of regardless of
+// whether it won or lost (the stake is paid either way).
+const MM_COST = 25;
+
+// Method 2: odds-weighted split - each successful MM's total payout split
+// proportionally to each leg's own odds, so the member who took the
+// riskier/less-certain leg gets more credit for the parlay landing than
+// the member on the near-certain leg. Simple proportional split (not
+// log-weighted) so the numbers stay eyeball-verifiable against the Sheet.
+function memberWinningsTallyOddsWeighted(rows) {
+  const teamMM = computeTeamMM(rows);
+  const totals = new Map(Object.keys(TEAM_MAP).map(m => [m, { amount: 0, staked: 0 }]));
+  teamMM.forEach(entry => {
+    const costShare = entry.memberRows.length ? MM_COST / entry.memberRows.length : 0;
+    let payoutTotal = 0, oddsSum = 0;
+    if (entry.successful) {
+      payoutTotal = entry.memberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+      oddsSum = entry.memberRows.reduce((sum, r) => sum + (Number.isFinite(r.odds) ? r.odds : 0), 0);
+    }
+    entry.memberRows.forEach(r => {
+      const t = totals.get(r.member);
+      if (!t) return;
+      const payoutWeight = (entry.successful && oddsSum && Number.isFinite(r.odds)) ? r.odds / oddsSum : 0;
+      t.amount += payoutTotal * payoutWeight - costShare;
+      t.staked += costShare;
+    });
+  });
+  return [...totals.entries()]
+    .map(([member, t]) => ({ member, amount: t.amount, staked: t.staked, roi: t.staked ? (t.amount / t.staked) * 100 : null }))
+    .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity));
+}
+
+// Method 3: $10 flat bet - strips away the team/MM structure entirely and
+// asks a different question: how good is this member at picking on their
+// own? Every resulted pick is treated as an independent $10 bet, win or
+// lose, regardless of what teammates did that week.
+function memberFlatBetTally(rows) {
+  const totals = new Map(Object.keys(TEAM_MAP).map(m => [m, { amount: 0, staked: 0 }]));
+  rows.filter(isRealPick).forEach(r => {
+    const t = totals.get(r.member);
+    if (!t) return;
+    if (r.win && Number.isFinite(r.odds)) {
+      t.amount += 10 * (r.odds - 1);
+      t.staked += 10;
+    } else if (r.loss) {
+      t.amount -= 10;
+      t.staked += 10;
+    }
+  });
+  return [...totals.entries()]
+    .map(([member, t]) => ({ member, amount: t.amount, staked: t.staked, roi: t.staked ? (t.amount / t.staked) * 100 : null }))
+    .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity));
+}
+
+// Same net-of-cost / ROI concept as the member tallies, but rolled up to
+// team level - full $25 stake per MM (not divided by 3), against the
+// team's total payout from every MM it won.
+function teamWinningsTally(rows) {
+  const teamMM = computeTeamMM(rows);
+  const totals = new Map(TEAM_ORDER.map(t => [t, { payout: 0, staked: 0 }]));
+  teamMM.forEach(entry => {
+    const t = totals.get(entry.team);
+    if (!t) return;
+    t.staked += MM_COST;
+    if (entry.successful) {
+      t.payout += entry.memberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+    }
+  });
+  return [...totals.entries()]
+    .map(([team, t]) => {
+      const amount = t.payout - t.staked;
+      return { team, amount, staked: t.staked, roi: t.staked ? (amount / t.staked) * 100 : null };
+    })
+    .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity));
+}
+
 function recordsColumnHtml(title, data, opts, scope) {
   const minPicks = opts.minPicks || 10;
   const highWin = extremeOddsRecord(data, true, 'max');
@@ -1390,6 +1479,9 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
   if (opts.includeAnnualBest) {
     const bestAnnual = bestAnnualWinPercentRecord(data, minPicks);
     if (bestAnnual) items.push(['Highest annual winning percentage', `${bestAnnual.member} - ${pct(bestAnnual.success)} (${bestAnnual.wins} of ${bestAnnual.picks}) - ${bestAnnual.season}`]);
+    // Static - IMs aren't tracked in the Sheet, so this is a manually
+    // maintained figure rather than something computed from the data.
+    items.push(['Highest IM Winnings', 'TP - $2,595']);
   }
   const scopeClass = scope === 'current' ? 'record-gold-current' : 'record-gold-alltime';
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div class="record-shield ${scopeClass}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
@@ -1461,7 +1553,37 @@ function records(data) {
     });
   }, 0);
 
-  return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section>`;
+  // Current season only - all-time data has known consistency issues, and
+  // ROI-style comparisons are most meaningful measured over a single,
+  // complete, comparable season anyway.
+  const weightedTally = new Map(memberWinningsTallyOddsWeighted(seasonData).map(r => [r.member, r]));
+  const flatTally = new Map(memberFlatBetTally(seasonData).map(r => [r.member, r]));
+  const winningsMembers = Object.keys(TEAM_MAP).sort();
+  const emptyItem = { amount: 0, roi: null };
+  const amountCell = (item) => {
+    const cls = item.amount > 0 ? 'good' : item.amount < 0 ? 'bad' : '';
+    const returnPerDollar = item.roi === null ? null : 1 + item.roi / 100;
+    const ratioText = returnPerDollar === null ? '' : ` (${fmtMoney(returnPerDollar)} per \$1 bet)`;
+    return `<td class="num ${cls}">${fmtMoney(item.amount)}${ratioText}</td>`;
+  };
+  const winningsBody = winningsMembers.map(m =>
+    `<tr><td>${escapeHtml(m)}</td>${amountCell(weightedTally.get(m) || emptyItem)}${amountCell(flatTally.get(m) || emptyItem)}</tr>`
+  ).join('');
+  const winningsSection = `<div class="panel standings-panel">
+    <h3>Member winnings tally - ${escapeHtml(cy || 'this season')}</h3>
+    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat-bet:</strong> what you'd have made betting solo, ignoring your team entirely. The bracketed figure is how much came back for every \$1 staked.</p>
+    <div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Member</th><th class="num">Odds-weighted</th><th class="num">\$10 flat-bet</th></tr></thead><tbody>${winningsBody}</tbody></table></div>
+  </div>`;
+
+  const teamTally = new Map(teamWinningsTally(seasonData).map(t => [t.team, t]));
+  const teamBody = TEAM_ORDER.map(t => `<tr><td>${escapeHtml(t)}</td>${amountCell(teamTally.get(t) || emptyItem)}</tr>`).join('');
+  const teamRoiSection = `<div class="panel standings-panel">
+    <h3>Team winnings tally - ${escapeHtml(cy || 'this season')}</h3>
+    <p class="muted small">If the season ended today, this is how much each team has won or lost - total MM payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure is how much came back for every \$1 staked.</p>
+    <div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">Net</th></tr></thead><tbody>${teamBody}</tbody></table></div>
+  </div>`;
+
+  return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
 }
 
 function monthYearLabel(date) {
@@ -1610,6 +1732,7 @@ function pickAssistant(data) {
   const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
   const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
   const sportOptions = uniq(state.raw.map(r => competitionFamily(r.sport, r.name))).filter(Boolean);
+  const nameToTopSport = mostCommonSportByName(state.raw);
 
   setTimeout(() => {
     const changeLink = document.querySelector('.change-member-link');
@@ -1620,7 +1743,12 @@ function pickAssistant(data) {
         render();
       };
     }
-    bindAutocomplete('rateAPickName', 'rateAPickNameList', nameOptions);
+    bindAutocomplete('rateAPickName', 'rateAPickNameList', nameOptions, (value) => {
+      const sportInput = document.getElementById('rateAPickSport');
+      if (!sportInput || sportInput.value.trim()) return;
+      const suggestion = nameToTopSport.get(value);
+      if (suggestion) sportInput.value = suggestion;
+    });
     bindAutocomplete('rateAPickBetType', 'rateAPickBetTypeList', betTypeOptions);
     bindAutocomplete('rateAPickSport', 'rateAPickSportList', sportOptions);
     const rateBtn = document.getElementById('rateAPickBtn');
@@ -2187,7 +2315,7 @@ function svgStatBar(success, color) {
 // Custom autocomplete: native <datalist> gives no control over match order
 // (browsers just show options in DOM order), so this ranks "starts with
 // what you typed" above "contains it somewhere in the middle" instead.
-function bindAutocomplete(inputId, listId, options) {
+function bindAutocomplete(inputId, listId, options, onCommit) {
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
   if (!input || !list) return;
@@ -2214,13 +2342,40 @@ function bindAutocomplete(inputId, listId, options) {
         input.value = item.dataset.value;
         list.style.display = 'none';
         list.innerHTML = '';
+        if (onCommit) onCommit(input.value);
       };
     });
   };
 
   input.addEventListener('input', render);
   input.addEventListener('focus', render);
-  input.addEventListener('blur', () => setTimeout(() => { list.style.display = 'none'; }, 150));
+  input.addEventListener('blur', () => {
+    setTimeout(() => { list.style.display = 'none'; }, 150);
+    if (onCommit) onCommit(input.value);
+  });
+}
+
+// Some selections (e.g. "NZ Warriors") are almost always the same sport in
+// practice, so once a member types one in, the Sport field can be
+// pre-filled with whichever family it's most commonly been picked under,
+// rather than making them type it every time. Doesn't override anything
+// the member has already typed themselves.
+function mostCommonSportByName(rows) {
+  const counts = new Map();
+  rows.forEach(r => {
+    if (!r.name) return;
+    const family = competitionFamily(r.sport, r.name);
+    if (!counts.has(r.name)) counts.set(r.name, new Map());
+    const familyCounts = counts.get(r.name);
+    familyCounts.set(family, (familyCounts.get(family) || 0) + 1);
+  });
+  const result = new Map();
+  counts.forEach((familyCounts, name) => {
+    let best = null, bestCount = -1;
+    familyCounts.forEach((count, family) => { if (count > bestCount) { best = family; bestCount = count; } });
+    result.set(name, best);
+  });
+  return result;
 }
 
 function stalenessCaveat(rows) {
@@ -2343,19 +2498,6 @@ function ratingFlamesHtml(rating) {
   return `<div class="pa-flames">${[1, 2, 3, 4, 5].map(n => svgFlame(n <= rating)).join('')}<span class="pa-flames-text">${rating} out of 5</span></div>`;
 }
 
-
-function hotMemberCard(data) {
-  const grouped = groupBy(data, 'member');
-  const rows = Object.entries(grouped).map(([member, picks]) => {
-    const sorted = picks.slice().sort(comparePickOrder);
-    const last10 = sorted.slice(-10);
-    const wins = last10.filter(r => r.win).length;
-    return { member, total: last10.length, wins, rate: last10.length ? wins / last10.length : 0 };
-  }).filter(x => x.total >= 5).sort((a, b) => b.rate - a.rate || b.total - a.total);
-  const top = rows[0];
-  if (!top) return { label: 'Current form', value: '-', detail: 'Not enough recent picks in this filter.' };
-  return { label: 'Current form', value: top.member, detail: `${top.wins}/${top.total} in latest picks within this filter` };
-}
 
 function confidence(n) {
   if (n >= 100) return 'High';
