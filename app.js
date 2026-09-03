@@ -61,6 +61,32 @@ const TEAM_MAP = {
 };
 const TEAM_ORDER = ['Team One', 'Team Two', 'Team Three', 'Team Four'];
 
+// The syndicate year's start date isn't fixed - it moves around by AGM
+// decision. Rather than hardcoding a calendar month, derive the CURRENT
+// season's actual start date from the earliest recorded date among rows
+// tagged with the current Synd. Year - that data is already there and
+// stays correct automatically even if the boundary shifts again.
+function currentSeasonStartDate(data) {
+  const currentSeason = currentYear(data);
+  if (!currentSeason) return null;
+  const dates = data
+    .filter(r => normalisedSeason(r.year) === currentSeason)
+    .map(r => parseDMY(r.date))
+    .filter(Boolean);
+  if (!dates.length) return null;
+  return new Date(Math.min(...dates.map(d => d.getTime())));
+}
+
+function isPastSeasonHalfway(data, today = new Date()) {
+  const start = currentSeasonStartDate(data);
+  if (!start) return false;
+  // Assumes a roughly year-long season (365.25 days) to find the midpoint -
+  // the exact end date isn't known mid-season, but the length is stable
+  // even when the start date itself moves.
+  const halfway = new Date(start.getTime() + 182.625 * 24 * 60 * 60 * 1000);
+  return today >= halfway;
+}
+
 const $ = id => document.getElementById(id);
 const clean = value => String(value ?? '').trim();
 const lower = value => clean(value).toLowerCase();
@@ -1381,6 +1407,38 @@ function perfectRoundCount(data) {
   });
   return count;
 }
+// A "crash" is the established Tier Crasher event - a whole team's MM
+// fails. Tracked per MEMBER rather than per team, since team composition
+// isn't stable year to year, but a member's own code is.
+function memberCrashesBySeasonRecord(data) {
+  const teamMM = computeTeamMM(data);
+  const groups = {};
+  teamMM.forEach(entry => {
+    if (entry.successful) return;
+    entry.memberRows.forEach(r => {
+      const season = normalisedSeason(r.year);
+      const key = `${r.member}||${season}`;
+      if (!groups[key]) groups[key] = { member: r.member, season, crashes: 0 };
+      groups[key].crashes += 1;
+    });
+  });
+  const rows = Object.values(groups).sort((a, b) => b.crashes - a.crashes);
+  return rows[0] || null;
+}
+
+function mostWinsInSeasonRecord(data) {
+  const groups = {};
+  data.forEach(r => {
+    if (!r.member) return;
+    const season = normalisedSeason(r.year);
+    const key = `${r.member}||${season}`;
+    if (!groups[key]) groups[key] = { member: r.member, season, wins: 0 };
+    if (r.win) groups[key].wins += 1;
+  });
+  const rows = Object.values(groups).sort((a, b) => b.wins - a.wins);
+  return rows[0] || null;
+}
+
 function bestAnnualWinPercentRecord(data, minPicks) {
   const groups = {};
   data.forEach(r => {
@@ -1504,19 +1562,30 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
     items.push(['Longest losing streak', loseStreak.streak ? `${loseStreak.streak} - ${loseStreak.ranges.join(', ')}` : 'Not enough data yet.']);
   }
   if (opts.includeWinPercent) {
-    const best = bestWinPercentRecord(data, minPicks);
-    if (best) {
-      const detail = best.sameSample
-        ? `${best.wins} wins from ${best.picks.toLocaleString()} picks`
-        : best.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ');
-      items.push(['Highest winning percentage', `${best.names.join(', ')} - ${pct(best.success)} (${detail})`]);
+    if (opts.perMemberBestSeason) {
+      const bestSeason = bestAnnualWinPercentRecord(data, 1);
+      if (bestSeason) items.push(['Highest winning percentage', `${pct(bestSeason.success)} (${bestSeason.wins} of ${bestSeason.picks}) - ${bestSeason.season}`]);
+      const mostWinsSeason = mostWinsInSeasonRecord(data);
+      if (mostWinsSeason) items.push(['Most wins', `${mostWinsSeason.wins.toLocaleString()} - ${mostWinsSeason.season}`]);
+    } else {
+      const best = bestWinPercentRecord(data, minPicks);
+      if (best) {
+        const detail = best.sameSample
+          ? `${best.wins} wins from ${best.picks.toLocaleString()} picks`
+          : best.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ');
+        items.push(['Highest winning percentage', `${best.names.join(', ')} - ${pct(best.success)} (${detail})`]);
+      }
+      const mostWins = mostWinsRecord(data);
+      if (mostWins) items.push(['Most wins', `${mostWins.names.join(', ')} - ${mostWins.wins.toLocaleString()}`]);
     }
-    const mostWins = mostWinsRecord(data);
-    if (mostWins) items.push(['Most wins', `${mostWins.names.join(', ')} - ${mostWins.wins.toLocaleString()}`]);
   }
   if (opts.includeLosingSeason) {
     const losingSeason = losingSeasonRecord(data, minPicks);
     if (losingSeason) items.push(['Member with a losing season', losingSeason]);
+  }
+  if (opts.includeCrashesThisYear && isPastSeasonHalfway(data)) {
+    const crashesThisYear = memberCrashesBySeasonRecord(data);
+    if (crashesThisYear) items.push(['Most crashes this year', `${crashesThisYear.member} - ${crashesThisYear.crashes}`]);
   }
   if (opts.includeSyndicateEvents) {
     const mmKillers = memberFieldLeaderboard(data, 'mmKiller');
@@ -1534,6 +1603,8 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
     // Static - IMs aren't tracked in the Sheet, so this is a manually
     // maintained figure rather than something computed from the data.
     items.push(['Highest IM Winnings', 'TP - $2,595']);
+    const worstCrashes = memberCrashesBySeasonRecord(data);
+    if (worstCrashes) items.push(['Most crashes in a syndicate year', `${worstCrashes.member} - ${worstCrashes.crashes} - ${worstCrashes.season}`]);
   }
   const scopeClass = scope === 'current' ? 'record-gold-current' : 'record-gold-alltime';
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div class="record-shield ${scopeClass}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
@@ -1544,9 +1615,9 @@ function records(data) {
   const allTimeData = recordsPool(false);
   const member = state.selectedMember;
   const memberSection = member
-    ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true }, 'alltime')
+    ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true, perMemberBestSeason: true }, 'alltime')
     : '';
-  const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
+  const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, includeCrashesThisYear: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
 
   const streakMiniTable = (rows) => sortableMiniTable('bestStreaks', rows.slice(0, 6), [
     { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
