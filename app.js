@@ -818,7 +818,7 @@ function sortableMiniTable(tableId, rows, columns) {
 function presidentialTeamsSection(currentSeasonRows) {
   const presidentialRows = presidentialRace(currentSeasonRows);
   const presTable = sortableMiniTable('presRace', presidentialRows, [
-    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
     { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}${r.needsCoinFlip ? ' <span class="muted small" title="Tied on every tiebreaker - needs a coin flip / wheel spin to resolve">\u00b9</span>' : ''}</td>` },
     { key: 'points', label: 'Pts', numeric: true, render: r => `<td class="num">${r.points.toFixed(1)}</td>` },
   ]);
@@ -1211,7 +1211,7 @@ function odds(data) {
     .slice(0, 5)
     .map((r, i) => ({ ...r, rank: i + 1 }));
   const topFiveTable = sortableMiniTable('topFiveOdds', topFive, [
-    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
     { key: 'name', label: 'Odds', render: r => `<td>${escapeHtml(r.name)}</td>` },
     { key: 'success', label: 'Success', numeric: true, render: r => `<td class="num">${pct(r.success)}</td>` },
     { key: 'picks', label: 'Picks', numeric: true, render: r => `<td class="num">${r.picks.toLocaleString()}</td>` },
@@ -1549,7 +1549,7 @@ function records(data) {
   const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
 
   const streakMiniTable = (rows) => sortableMiniTable('bestStreaks', rows.slice(0, 6), [
-    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
     { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}</td>` },
     { key: 'endDate', label: 'Period', render: r => `<td>${escapeHtml(streakDateRangeLabel(r.startDate, r.endDate))}</td>` },
     { key: 'streak', label: 'Best streak', numeric: true, render: r => `<td class="num">${r.streak}</td>` },
@@ -1560,7 +1560,7 @@ function records(data) {
     .slice(0, 6)
     .map((r, i) => ({ rank: i + 1, name: r.member, bet: r.name, odds: r.odds, year: r.year }));
   const oddsMiniTable = (rows) => sortableMiniTable('highOdds', rows, [
-    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td>${r.rank}</td>` },
+    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
     { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}</td>` },
     { key: 'bet', label: 'Bet', render: r => `<td>${escapeHtml(r.bet)}</td>` },
     { key: 'odds', label: 'Odds', numeric: true, render: r => `<td class="num">${oddsFmt(r.odds)}</td>` },
