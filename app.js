@@ -818,7 +818,7 @@ function sortableMiniTable(tableId, rows, columns) {
 function presidentialTeamsSection(currentSeasonRows) {
   const presidentialRows = presidentialRace(currentSeasonRows);
   const presTable = sortableMiniTable('presRace', presidentialRows, [
-    { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
+    { key: 'rank', label: 'Rank', render: r => `<td>${r.rank}</td>` },
     { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}${r.needsCoinFlip ? ' <span class="muted small" title="Tied on every tiebreaker - needs a coin flip / wheel spin to resolve">\u00b9</span>' : ''}</td>` },
     { key: 'points', label: 'Pts', numeric: true, render: r => `<td class="num">${r.points.toFixed(1)}</td>` },
   ]);
