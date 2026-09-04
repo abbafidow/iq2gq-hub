@@ -525,7 +525,7 @@ tr:last-child td { border-bottom: 0; }
 
 .pa-pattern-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
 .pa-pattern-col .pa-label { margin-bottom: 10px; grid-column: 1 / -1; }
@@ -543,6 +543,7 @@ tr:last-child td { border-bottom: 0; }
 .pa-pattern-card:last-child { margin-bottom: 0; }
 .pa-pattern-you { background: rgba(74, 154, 216, 0.10); border-color: rgba(74, 154, 216, 0.35); }
 .pa-pattern-syndicate { background: rgba(216, 162, 74, 0.10); border-color: rgba(216, 162, 74, 0.35); }
+.pa-pattern-realworld { background: rgba(168, 85, 247, 0.10); border-color: rgba(168, 85, 247, 0.35); }
 .pa-pattern-top {
   display: flex;
   justify-content: space-between;
