@@ -1,5 +1,39 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwV5-BadjUAKJ7ose-IiOO3yBqCZmlOJDSj2BTuHODTNurw9qznJr4KPXB4xFTvEtk7/exec';
 
+// Real-world match history files, one per sport, committed alongside app.js in
+// this same repo. Every game for every team, regardless of whether the
+// syndicate ever picked it - this is what lets Worth Watching and Rate Your
+// Pick surface a pattern like "Man City have scored 2+ in 15 of their last 15
+// home games" even when nobody in the syndicate has ever picked Man City.
+const REAL_WORLD_SOURCES = {
+  NRL: 'nrl_full_match_history.json',
+  NFL: 'nfl_full_match_history.json',
+  'Super Rugby': 'super_rugby_full_match_history.json',
+  EPL: 'epl_full_match_history.json',
+};
+
+// Maps a syndicate Sport tag to the real-world sport group it belongs to, so
+// syndicate activity (used to make real-world patterns activity-responsive -
+// see computeActivityBySport) can be matched up with the right file above.
+// Deliberately mirrors every Sport tag variant actually seen in Raw_History,
+// not just the "main" one - the English football tag alone silently missed
+// over half its rows early on by only checking one of four tag variants.
+const REAL_WORLD_SPORT_GROUPS = {
+  'Rugby League (NRL)': 'NRL',
+  'Rugby Union (NRL)': 'NRL',
+  'American Football (NFL)': 'NFL',
+  'Rugby Union (Super Rugby)': 'Super Rugby',
+  'Rugby Union (Super Rugby Pacific)': 'Super Rugby',
+  'Rugby Union (Super Rugby Aotearoa)': 'Super Rugby',
+  'Rugby Union (Super Rugby Transtasman)': 'Super Rugby',
+  'Rugby Union (Super Rugby Australia)': 'Super Rugby',
+  'Rugby Union (Super Rugby South Africa)': 'Super Rugby',
+  'Football (England Domestic)': 'EPL',
+  'Football (EPL)': 'EPL',
+  'Football (English Domestic)': 'EPL',
+  'Football (English Championship)': 'EPL',
+};
+
 const state = {
   raw: [],
   apiCount: 0,
@@ -9,6 +43,7 @@ const state = {
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
+  realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
 };
 
 const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
@@ -342,6 +377,15 @@ async function init() {
     canonicalizeCasing(state.raw, 'name');
     canonicalizeCasing(state.raw, 'sport');
 
+    // Real-world match history is separate from the syndicate's own Sheet
+    // data and loaded independently - if one sport's file is missing or
+    // fails to fetch, that sport's real-world patterns simply won't appear
+    // rather than breaking the whole Hub. Not awaited alongside the main
+    // fetch above deliberately: the syndicate data is the Hub's core
+    // purpose and should render immediately, with real-world patterns
+    // filling in a moment later once (if) they arrive.
+    loadRealWorldGames();
+
     bind();
     render();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
@@ -349,6 +393,28 @@ async function init() {
     $('status').textContent = 'Could not load Google Sheet data';
     console.error(error);
   }
+}
+
+async function loadRealWorldGames() {
+  const entries = Object.entries(REAL_WORLD_SOURCES);
+  await Promise.all(entries.map(async ([sport, filename]) => {
+    try {
+      const res = await fetch(`${filename}?v=${Date.now()}`, { cache: 'no-store' });
+      const json = await res.json();
+      state.realWorldGames[sport] = (json.games || []).map(g => ({
+        ...g,
+        dateObj: g.date ? new Date(`${g.date}T00:00:00Z`) : null,
+      }));
+    } catch (error) {
+      console.error(`Could not load real-world match history for ${sport}:`, error);
+      state.realWorldGames[sport] = [];
+    }
+  }));
+  // Real-world patterns depend on data that arrives after the initial
+  // render, so re-render once loading settles (success or failure) to pick
+  // them up - a no-op if the member is currently on a page that doesn't use
+  // this data at all.
+  render();
 }
 
 function isRealPick(row) {
@@ -1865,6 +1931,7 @@ function pickAssistant(data) {
   const syndicatePool = patternCandidatePool(otherMembersRows);
   const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
+  const realWorldPatterns = realWorldPatternsForDisplay();
 
   const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
   const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
@@ -1933,6 +2000,10 @@ function pickAssistant(data) {
           <div class="pa-pattern-col">
             <div class="pa-label">Based on everyone else's picks, you could consider these picks</div>
             ${syndicatePatterns.length ? syndicatePatterns.map(item => patternCardHtml(item, 'pa-pattern-syndicate')).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
+          </div>
+          <div class="pa-pattern-col">
+            <div class="pa-label">Real-world patterns worth knowing about, whether or not anyone's picked them</div>
+            ${realWorldPatterns.length ? realWorldPatterns.map(item => realWorldPatternCardHtml(item)).join('') : '<div class="pa-watch">No strong real-world patterns clearing the bar this week.</div>'}
           </div>
         </div>
 
@@ -2278,6 +2349,263 @@ function pointThresholdCandidates(rows, teamName, sportGroupName) {
   return thresholdsFromPool(pool, teamName, sportGroupName);
 }
 
+// ----------------------------------------------------------------------
+// Real-world pattern detection - streaks, home/away splits, and scoring
+// rates mined from complete match history (state.realWorldGames), entirely
+// independent of the syndicate's own pick history. This is what lets a
+// pattern like "Man City have scored 2+ in 15 of their last 15 home games"
+// surface even if nobody in the syndicate has ever picked Man City.
+//
+// Every pattern here is scored using the same wilsonLowerBound() already
+// used for syndicate patterns above - "10 wins from 10" rates higher than
+// "5 wins from 5" despite both being 100%, because the larger sample
+// carries more genuine statistical weight. Ratings are always expressed on
+// a 1-10 scale here (as opposed to the syndicate side's 1-5 fire rating),
+// matching the confirmed Worth Watching design.
+// ----------------------------------------------------------------------
+
+// A team's chronological game log, from that team's own perspective (for,
+// against, venue), built once per team from the sport's full game list.
+function realWorldTeamLog(games, team) {
+  const log = [];
+  games.forEach(g => {
+    if (!g.dateObj) return;
+    if (g.home_team === team) {
+      log.push({ date: g.dateObj, for: g.home_score, against: g.away_score, venue: 'home' });
+    } else if (g.away_team === team) {
+      log.push({ date: g.dateObj, for: g.away_score, against: g.home_score, venue: 'away' });
+    }
+  });
+  log.sort((a, b) => a.date - b.date);
+  return log;
+}
+
+// A team only counts as "currently active" if their most recent real-world
+// game is within a season-appropriate window, not just however long ago
+// they last played at all. Without this, a relocated/renamed franchise
+// (e.g. San Diego Chargers, who stopped existing under that name after the
+// 2016 season) can surface a years-stale "current" streak as if it were
+// live and actionable - this was caught and fixed during prototyping.
+const REAL_WORLD_STALENESS_DAYS = 400;
+function isRealWorldTeamCurrent(log) {
+  if (!log.length) return false;
+  const daysSince = (Date.now() - log[log.length - 1].date.getTime()) / 86400000;
+  return daysSince <= REAL_WORLD_STALENESS_DAYS;
+}
+
+function realWorldRating(successes, total) {
+  const wilson = wilsonLowerBound(successes, total);
+  return Math.max(1, Math.min(10, Math.round(1 + wilson * 9)));
+}
+
+function findStreakPatterns(games, sport, minLength = 5) {
+  const teams = new Set();
+  games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
+  const patterns = [];
+  teams.forEach(team => {
+    const log = realWorldTeamLog(games, team);
+    if (!isRealWorldTeamCurrent(log)) return;
+    let lastResult = null, streak = 0;
+    for (let i = log.length - 1; i >= 0; i--) {
+      const g = log[i];
+      if (g.for == null || g.against == null) continue;
+      const result = g.for > g.against ? 'W' : g.for < g.against ? 'L' : 'D';
+      if (lastResult === null) { lastResult = result; streak = 1; }
+      else if (result === lastResult) { streak += 1; }
+      else break;
+    }
+    if ((lastResult === 'W' || lastResult === 'L') && streak >= minLength) {
+      const word = lastResult === 'W' ? 'won' : 'lost';
+      patterns.push({
+        sport, team, type: 'streak',
+        headline: `${team} have ${word} their last ${streak}`,
+        rating: realWorldRating(streak, streak),
+      });
+    }
+  });
+  return patterns;
+}
+
+function findHomeAwayPatterns(games, sport, n = 10, minHits = 8) {
+  const teams = new Set();
+  games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
+  const patterns = [];
+  teams.forEach(team => {
+    const log = realWorldTeamLog(games, team);
+    if (!isRealWorldTeamCurrent(log)) return;
+    [['home', 'at home'], ['away', 'away']].forEach(([venue, label]) => {
+      const venueGames = log.filter(g => g.venue === venue && g.for != null).slice(-n);
+      if (venueGames.length < n) return;
+      const wins = venueGames.filter(g => g.for > g.against).length;
+      if (wins >= minHits) {
+        patterns.push({
+          sport, team, type: 'home_away',
+          headline: `${team} have won ${wins} of their last ${venueGames.length} ${label}`,
+          rating: realWorldRating(wins, venueGames.length),
+        });
+      }
+    });
+  });
+  return patterns;
+}
+
+// "Notable score" isn't a fixed number - it's calculated per sport from the
+// actual distribution of recent scores, so it self-calibrates (e.g. lands
+// around 2 goals for football, 30+ points for NFL) without anyone having to
+// hand-tune a threshold per sport, and without a single fixed number being
+// meaningless for a high-scoring sport or unreachable for a low-scoring one.
+function dynamicScoringThreshold(games, windowDays = 365, percentile = 75) {
+  const cutoff = Date.now() - windowDays * 86400000;
+  const scores = [];
+  games.forEach(g => {
+    if (!g.dateObj || g.dateObj.getTime() < cutoff) return;
+    if (g.home_score != null) scores.push(g.home_score);
+    if (g.away_score != null) scores.push(g.away_score);
+  });
+  if (scores.length < 20) return null;
+  scores.sort((a, b) => a - b);
+  return scores[Math.floor(scores.length * percentile / 100)];
+}
+
+function findScoringPatterns(games, sport, threshold, n = 10, minHits = 8) {
+  if (threshold == null) return [];
+  const teams = new Set();
+  games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
+  const patterns = [];
+  teams.forEach(team => {
+    const log = realWorldTeamLog(games, team);
+    if (!isRealWorldTeamCurrent(log)) return;
+    const recent = log.filter(g => g.for != null).slice(-n);
+    if (recent.length < n) return;
+    const hits = recent.filter(g => g.for >= threshold).length;
+    if (hits >= minHits) {
+      patterns.push({
+        sport, team, type: 'scoring',
+        headline: `${team} have scored ${threshold}+ in ${hits} of their last ${recent.length}`,
+        rating: realWorldRating(hits, recent.length),
+      });
+    }
+  });
+  return patterns;
+}
+
+// How recently (in days) the syndicate itself has picked each sport,
+// computed from state.raw via REAL_WORLD_SPORT_GROUPS. Used only to make
+// pattern *selection* activity-responsive - never to change what a rating
+// number means, which stays a pure statistical measure throughout.
+function computeActivityBySport() {
+  const latestBySport = {};
+  state.raw.forEach(r => {
+    const group = REAL_WORLD_SPORT_GROUPS[r.sport];
+    if (!group) return;
+    const d = parseDMY(r.date);
+    if (!d) return;
+    if (!latestBySport[group] || d > latestBySport[group]) latestBySport[group] = d;
+  });
+  const activity = {};
+  Object.keys(REAL_WORLD_SOURCES).forEach(sport => {
+    const latest = latestBySport[sport];
+    activity[sport] = latest ? Math.round((Date.now() - latest.getTime()) / 86400000) : Infinity;
+  });
+  return activity;
+}
+
+// Maps a Rate Your Pick "sport" field value (a competitionFamily() label, not
+// a raw Sheet Sport tag) onto one of the four real-world data sources. Not
+// the same mapping as REAL_WORLD_SPORT_GROUPS above (which keys off raw
+// Sheet tags for the activity signal) - competitionFamily deliberately keeps
+// old English football tags as an unmerged "mixed competitions" catch-all,
+// which still needs to resolve to the EPL/Championship data here.
+function realWorldSportForFamily(family) {
+  if (!family) return null;
+  if (family === 'Super Rugby') return 'Super Rugby';
+  if (family === 'Rugby League (NRL)' || family === 'Rugby Union (NRL)') return 'NRL';
+  if (family === 'American Football (NFL)') return 'NFL';
+  if (family.startsWith('Football (England Domestic') || family === 'Football (EPL)' || family.includes('English Championship') || family.startsWith('Football (English Domestic')) return 'EPL';
+  return null;
+}
+
+// Real-world signal(s) for one specific team, for Rate Your Pick. Unlike
+// Worth Watching, this deliberately shows whatever's found for the entered
+// team - no quality bar, no cap - consistent with Rate Your Pick's existing
+// "show everything that's known" philosophy (see comment above
+// ratePotentialPick). A boosted effective sample size is applied here (not
+// to the rating itself) so that when both a real-world and a syndicate
+// signal are present, real-world data pulls the overall 1-5 rating further
+// toward itself - reflecting that it's typically the far larger, more
+// reliable sample of the two.
+const REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER = 2;
+const REAL_WORLD_SIGNAL_WEIGHT_CAP = 100;
+function realWorldSignalsForTeam(name, sportFamily) {
+  const sport = realWorldSportForFamily(sportFamily);
+  if (!sport || !name) return [];
+  const games = state.realWorldGames[sport] || [];
+  if (!games.length) return [];
+  const log = realWorldTeamLog(games, name);
+  if (!log.length) return [];
+
+  const signals = [];
+  const current = isRealWorldTeamCurrent(log);
+  const staleNote = current ? '' : ` Their last real-world game was a while ago, so treat this as background context rather than current form.`;
+
+  let lastResult = null, streak = 0;
+  for (let i = log.length - 1; i >= 0; i--) {
+    const g = log[i];
+    if (g.for == null || g.against == null) continue;
+    const result = g.for > g.against ? 'W' : g.for < g.against ? 'L' : 'D';
+    if (lastResult === null) { lastResult = result; streak = 1; }
+    else if (result === lastResult) { streak += 1; }
+    else break;
+  }
+  if ((lastResult === 'W' || lastResult === 'L') && streak >= 2) {
+    const word = lastResult === 'W' ? 'won' : 'lost';
+    const success = lastResult === 'W' ? 1 : 0;
+    signals.push({
+      text: `Real-world data: ${name} have ${word} their last ${streak} in a row.${staleNote}`,
+      success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+    });
+  }
+
+  const recentGames = log.filter(g => g.for != null).slice(-10);
+  if (recentGames.length >= 5) {
+    const wins = recentGames.filter(g => g.for > g.against).length;
+    const success = wins / recentGames.length;
+    signals.push({
+      text: `Real-world data: ${name} have won ${wins} of their last ${recentGames.length} real-world games (any competition/venue).${staleNote}`,
+      success, sampleSize: Math.min(recentGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+    });
+  }
+
+  return signals;
+}
+
+// All real-world patterns currently worth showing, across all four sports.
+// Never padded to hit a target count - shows however many genuinely clear
+// the bar (capped at maxTotal). Sports the syndicate has picked more
+// recently get a small, smoothly-scaling discount on the quality bar (never
+// on the rating itself), so a sport members are actively engaged with right
+// now gets more chances to appear without any manual reconfiguration.
+function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivityBonus = 2, activityScaleDays = 60) {
+  const activityBySport = computeActivityBySport();
+  const allPatterns = [];
+  Object.entries(REAL_WORLD_SOURCES).forEach(([sport]) => {
+    const games = state.realWorldGames[sport] || [];
+    if (!games.length) return;
+    const threshold = dynamicScoringThreshold(games);
+    allPatterns.push(...findStreakPatterns(games, sport));
+    allPatterns.push(...findHomeAwayPatterns(games, sport));
+    allPatterns.push(...findScoringPatterns(games, sport, threshold));
+  });
+
+  const qualifying = allPatterns.filter(p => {
+    const daysSinceLastPick = activityBySport[p.sport] ?? Infinity;
+    const bonus = Math.max(0, maxActivityBonus - daysSinceLastPick / activityScaleDays);
+    return p.rating >= baseMinRating - bonus;
+  });
+  qualifying.sort((a, b) => b.rating - a.rating);
+  return qualifying.slice(0, maxTotal);
+}
+
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
 // thresholds (overall and per team+sport), and single-dimension fallbacks.
 // No minimum-picks restriction, but patterns whose most recent pick is more
@@ -2426,8 +2754,18 @@ function patternCardHtml(item, colorClass) {
   const sinceYear = item.firstDate ? item.firstDate.getFullYear() : null;
   return `<div class="pa-pattern-card ${colorClass}">
     <div class="pa-pattern-top"><span class="pa-pattern-label">${escapeHtml(item.label)}</span><span class="pa-pattern-success">${pct(item.success)}</span></div>
-    ${svgStatBar(item.success, '#4ade80')}
     <div class="pa-pattern-meta"><span>Based on ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}</span><span>Avg ${fmtMoney(item.avgOdds)}</span></div>
+  </div>`;
+}
+
+// Real-world pattern card - same visual family as patternCardHtml above, but
+// for real-world patterns from realWorldPatternsForDisplay(): a 1-10 rating
+// instead of a success %, and a sport tag instead of a pick-count/odds line,
+// since these patterns have no syndicate "picks" or "avg odds" to report.
+function realWorldPatternCardHtml(item) {
+  return `<div class="pa-pattern-card pa-pattern-realworld">
+    <div class="pa-pattern-top"><span class="pa-pattern-label">${escapeHtml(item.headline)}</span><span class="pa-pattern-success">${item.rating}/10</span></div>
+    <div class="pa-pattern-meta"><span>${escapeHtml(item.sport)}</span></div>
   </div>`;
 }
 
@@ -2543,6 +2881,16 @@ function shortSportLabel(sport) {
 function ratePotentialPick(name, betType, sport, odds) {
   const signals = [];
   const pool = state.raw.filter(isRealPick);
+
+  // Signal 0: real-world data for the entered team, if there is any - added
+  // first (both in array order and, via the weight boost inside
+  // realWorldSignalsForTeam, in influence on the final rating) since
+  // real-world data is generally the larger, more reliable sample of the
+  // two source types and should be weighted accordingly, not just shown
+  // alongside syndicate history as an equal alternative.
+  if (name && sport) {
+    signals.push(...realWorldSignalsForTeam(name, sport));
+  }
 
   // Signal 1: this team+bet type+sport. For point-start bets, matched the
   // same way Worth Watching computes its own threshold patterns ("X or
