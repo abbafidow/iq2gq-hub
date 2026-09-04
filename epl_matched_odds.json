@@ -1,13 +1,13 @@
 {
   "meta": {
-    "description": "IQ2GQ Hub - matched syndicate EPL (Premier League) picks against real-world match results and bookmaker odds",
-    "source_odds_data": "football-data.co.uk, Premier League (E0) season files, 2009/10-2026/27",
+    "description": "IQ2GQ Hub - matched syndicate EPL/English football picks against real-world match results and bookmaker odds",
+    "source_odds_data": "football-data.co.uk. Premier League (E0) season files 2009/10-2026/27, plus Championship (E1) season files 2017/18-2026/27.",
     "source_syndicate_data": "Raw_History tab, IQ2GQ 27 MM Database",
-    "matching_method": "Team name canonicalisation (Manchester City/United, West Ham United, Wolverhampton Wanderers, Stoke City shorthand) + nearest-date match within +/-10 days of the recorded pick date. Market odds field uses Bet365 (B365H/B365A) as the reference bookmaker price.",
-    "scope_note": "Premier League only. 9 rows excluded because the club was in a lower division (Championship/League One/Two) at the time of the pick, which this data source does not cover - Championship-tier (E1) files have not yet been added to this pipeline. These rows are NOT errors, just out of scope for now: Cambridge, Milwall (Millwall), Notts County, Bristol City x3, Derby County, Milton Kewin Don (Milton Keynes Dons), Brentworth.",
-    "excluded_rows_note": "2 rows excluded for Sport field mistagging (Bayern Munich, Real Madrid - European clubs mistagged as Football (England Domestic)). 7 rows unmatched: genuine Premier League clubs, but the specific pick fell in a season when that club was playing in the Championship (Norwich, Portsmouth, Newcastle x2, Brighton, Wolverhampton Wanderers) - will resolve once Championship-tier data is added.",
-    "draw_handling_note": "For H2H bet validation, a drawn match correctly counts as a loss (consistent with standard match-odds betting), not an automatic discrepancy - important distinction versus NRL/NFL/Super Rugby where draws are rare.",
-    "row_count": 203,
+    "matching_method": "Team name canonicalisation (Manchester City/United, West Ham United, Wolverhampton Wanderers -> Wolves, Stoke City, Derby County -> Derby) + nearest-date match within +/-10 days of the recorded pick date, searched across combined Premier League + Championship data. 'division' field on each record (E0/E1) shows which tier the matched game was actually played in. Market odds field uses Bet365 (B365H/B365A) as the reference bookmaker price.",
+    "scope_note": "Championship coverage currently only goes back to 2017/18. 6 rows remain unmatched because the pick predates that (2014/15-2016/17 seasons): Norwich x2, Portsmouth, Newcastle x2, Cambridge, Millwall. Not errors - just outside current data coverage, resolvable if earlier Championship season files are added later.",
+    "excluded_rows_note": "2 rows excluded for Sport field mistagging (Bayern Munich, Real Madrid). 3 rows excluded as genuinely out of scope even with Championship data added: Notts County (League Two in 2018), Milton Keynes Dons (League One in 2019), and one unclear club name ('Brentworth') that doesn't match any real Premier League or Championship club.",
+    "draw_handling_note": "For H2H bet validation, a drawn match correctly counts as a loss (consistent with standard match-odds betting), not an automatic discrepancy.",
+    "row_count": 208,
     "flagged_row_count": 19
   },
   "picks": [
@@ -26,6 +26,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.4,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -44,6 +45,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.17,
       "data_quality_flag": null
     },
@@ -62,6 +64,7 @@
       "home_score": 3,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -80,6 +83,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -98,6 +102,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -116,6 +121,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -134,6 +140,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -152,6 +159,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -170,6 +178,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -188,6 +197,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -206,6 +216,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.5,
       "data_quality_flag": null
     },
@@ -224,6 +235,7 @@
       "home_score": 5,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -242,6 +254,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.1,
       "data_quality_flag": null
     },
@@ -260,6 +273,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.65,
       "data_quality_flag": null
     },
@@ -278,6 +292,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -296,6 +311,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.67,
       "data_quality_flag": null
     },
@@ -314,6 +330,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -332,6 +349,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.75,
       "data_quality_flag": null
     },
@@ -350,6 +368,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -368,6 +387,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -386,6 +406,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -404,6 +425,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.3,
       "data_quality_flag": null
     },
@@ -422,6 +444,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.17,
       "data_quality_flag": null
     },
@@ -440,6 +463,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -458,6 +482,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -476,6 +501,7 @@
       "home_score": 7,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -494,6 +520,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -512,6 +539,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -530,6 +558,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.65,
       "data_quality_flag": null
     },
@@ -548,6 +577,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -566,6 +596,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.18,
       "data_quality_flag": null
     },
@@ -584,6 +615,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.45,
       "data_quality_flag": null
     },
@@ -602,6 +634,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -620,6 +653,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.17,
       "data_quality_flag": null
     },
@@ -638,6 +672,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -656,6 +691,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.0,
       "data_quality_flag": null
     },
@@ -674,6 +710,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.18,
       "data_quality_flag": null
     },
@@ -692,6 +729,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.17,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -710,6 +748,7 @@
       "home_score": 2,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -728,6 +767,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 4.33,
       "data_quality_flag": null
     },
@@ -746,6 +786,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -764,6 +805,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.85,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -782,6 +824,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -800,6 +843,7 @@
       "home_score": 2,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -818,6 +862,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.5,
       "data_quality_flag": null
     },
@@ -836,6 +881,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -854,6 +900,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.45,
       "data_quality_flag": null
     },
@@ -872,6 +919,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.55,
       "data_quality_flag": null
     },
@@ -890,6 +938,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.73,
       "data_quality_flag": null
     },
@@ -908,6 +957,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.5,
       "data_quality_flag": null
     },
@@ -926,6 +976,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -944,6 +995,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -962,6 +1014,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.0,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -980,6 +1033,7 @@
       "home_score": 3,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -998,6 +1052,7 @@
       "home_score": 5,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1016,6 +1071,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -1034,6 +1090,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -1052,6 +1109,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.83,
       "data_quality_flag": null
     },
@@ -1070,6 +1128,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.62,
       "data_quality_flag": null
     },
@@ -1088,6 +1147,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.9,
       "data_quality_flag": null
     },
@@ -1106,6 +1166,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.62,
       "data_quality_flag": null
     },
@@ -1124,6 +1185,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.91,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1142,6 +1204,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": null
     },
@@ -1160,6 +1223,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -1178,6 +1242,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -1196,6 +1261,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -1214,6 +1280,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -1232,6 +1299,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -1250,6 +1318,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.7,
       "data_quality_flag": null
     },
@@ -1268,6 +1337,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.73,
       "data_quality_flag": null
     },
@@ -1286,6 +1356,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -1304,6 +1375,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -1322,6 +1394,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -1340,6 +1413,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.05,
       "data_quality_flag": null
     },
@@ -1358,6 +1432,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.8,
       "data_quality_flag": null
     },
@@ -1376,6 +1451,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 11.0,
       "data_quality_flag": null
     },
@@ -1394,6 +1470,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.8,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1412,6 +1489,7 @@
       "home_score": 0,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.1,
       "data_quality_flag": null
     },
@@ -1430,6 +1508,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -1448,6 +1527,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.05,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1466,6 +1546,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.45,
       "data_quality_flag": null
     },
@@ -1484,6 +1565,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.75,
       "data_quality_flag": null
     },
@@ -1502,6 +1584,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.4,
       "data_quality_flag": null
     },
@@ -1520,6 +1603,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 6.0,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1538,6 +1622,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -1556,6 +1641,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -1574,6 +1660,7 @@
       "home_score": 5,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -1592,6 +1679,7 @@
       "home_score": 5,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.53,
       "data_quality_flag": null
     },
@@ -1610,6 +1698,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -1628,6 +1717,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.35,
       "data_quality_flag": null
     },
@@ -1646,6 +1736,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -1664,6 +1755,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -1682,6 +1774,7 @@
       "home_score": 4,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1700,6 +1793,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -1718,6 +1812,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.63,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1736,6 +1831,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -1754,6 +1850,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.18,
       "data_quality_flag": null
     },
@@ -1772,6 +1869,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 2.9,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1790,6 +1888,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -1808,6 +1907,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1826,6 +1926,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -1844,6 +1945,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 9.0,
       "data_quality_flag": null
     },
@@ -1862,6 +1964,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.29,
       "data_quality_flag": null
     },
@@ -1880,6 +1983,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1898,6 +2002,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1916,6 +2021,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.6,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -1934,6 +2040,7 @@
       "home_score": 3,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.67,
       "data_quality_flag": null
     },
@@ -1952,6 +2059,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1970,6 +2078,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -1988,6 +2097,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -2006,6 +2116,7 @@
       "home_score": 5,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.14,
       "data_quality_flag": null
     },
@@ -2024,6 +2135,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.73,
       "data_quality_flag": null
     },
@@ -2042,6 +2154,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.17,
       "data_quality_flag": null
     },
@@ -2060,6 +2173,7 @@
       "home_score": 7,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.14,
       "data_quality_flag": null
     },
@@ -2078,6 +2192,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -2096,6 +2211,7 @@
       "home_score": 2,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.28,
       "data_quality_flag": null
     },
@@ -2114,6 +2230,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.61,
       "data_quality_flag": null
     },
@@ -2132,6 +2249,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.19,
       "data_quality_flag": null
     },
@@ -2150,6 +2268,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.28,
       "data_quality_flag": null
     },
@@ -2168,6 +2287,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.55,
       "data_quality_flag": null
     },
@@ -2186,6 +2306,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.39,
       "data_quality_flag": null
     },
@@ -2204,6 +2325,7 @@
       "home_score": 0,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.66,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -2222,6 +2344,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -2240,6 +2363,7 @@
       "home_score": 5,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.16,
       "data_quality_flag": null
     },
@@ -2258,6 +2382,7 @@
       "home_score": 0,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -2276,6 +2401,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": null
     },
@@ -2294,6 +2420,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.6,
       "data_quality_flag": null
     },
@@ -2312,6 +2439,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": null
     },
@@ -2330,6 +2458,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -2348,6 +2477,7 @@
       "home_score": 0,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.3,
       "data_quality_flag": null
     },
@@ -2366,6 +2496,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.61,
       "data_quality_flag": null
     },
@@ -2384,6 +2515,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.3,
       "data_quality_flag": null
     },
@@ -2402,6 +2534,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 12.0,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -2420,6 +2553,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.64,
       "data_quality_flag": null
     },
@@ -2438,6 +2572,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.16,
       "data_quality_flag": null
     },
@@ -2456,7 +2591,27 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
+      "data_quality_flag": null
+    },
+    {
+      "raw_history_key": "1852",
+      "pick_date": "02/03/2018",
+      "member": "SB",
+      "team_picked": "Wolverhampton Wanderers",
+      "bet_type": "H2H",
+      "syndicate_result": "Yes",
+      "syndicate_odds": 1.4,
+      "game_date": "2018-03-07",
+      "date_offset_days": 5,
+      "home_team": "Leeds",
+      "away_team": "Wolves",
+      "home_score": 0,
+      "away_score": 3,
+      "team_was_home": false,
+      "division": "E1",
+      "market_odds_for_picked_team": 2.04,
       "data_quality_flag": null
     },
     {
@@ -2474,6 +2629,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -2492,6 +2648,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.18,
       "data_quality_flag": null
     },
@@ -2510,6 +2667,7 @@
       "home_score": 0,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.61,
       "data_quality_flag": null
     },
@@ -2528,6 +2686,7 @@
       "home_score": 6,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.1,
       "data_quality_flag": null
     },
@@ -2546,6 +2705,7 @@
       "home_score": 4,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.18,
       "data_quality_flag": null
     },
@@ -2564,6 +2724,7 @@
       "home_score": 0,
       "away_score": 5,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.16,
       "data_quality_flag": null
     },
@@ -2582,6 +2743,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -2600,6 +2762,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -2618,6 +2781,7 @@
       "home_score": 0,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.55,
       "data_quality_flag": null
     },
@@ -2636,6 +2800,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.11,
       "data_quality_flag": null
     },
@@ -2654,6 +2819,7 @@
       "home_score": 0,
       "away_score": 4,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.6,
       "data_quality_flag": null
     },
@@ -2672,6 +2838,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.5,
       "data_quality_flag": null
     },
@@ -2690,6 +2857,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -2708,6 +2876,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.57,
       "data_quality_flag": null
     },
@@ -2726,7 +2895,27 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
+      "data_quality_flag": null
+    },
+    {
+      "raw_history_key": "2238",
+      "pick_date": "28/12/2018",
+      "member": "AT",
+      "team_picked": "Bristol City",
+      "bet_type": "H2H",
+      "syndicate_result": "Yes",
+      "syndicate_odds": 1.6,
+      "game_date": "2018-12-29",
+      "date_offset_days": 1,
+      "home_team": "Bristol City",
+      "away_team": "Rotherham",
+      "home_score": 1,
+      "away_score": 0,
+      "team_was_home": true,
+      "division": "E1",
+      "market_odds_for_picked_team": 1.55,
       "data_quality_flag": null
     },
     {
@@ -2744,6 +2933,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -2762,6 +2952,7 @@
       "home_score": 0,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.28,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -2780,6 +2971,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.6,
       "data_quality_flag": null
     },
@@ -2798,6 +2990,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.75,
       "data_quality_flag": null
     },
@@ -2816,6 +3009,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -2834,7 +3028,27 @@
       "home_score": 0,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.65,
+      "data_quality_flag": null
+    },
+    {
+      "raw_history_key": "2267",
+      "pick_date": "18/01/2019",
+      "member": "LS",
+      "team_picked": "Derby County",
+      "bet_type": "H2H",
+      "syndicate_result": "Yes",
+      "syndicate_odds": 1.57,
+      "game_date": "2019-01-19",
+      "date_offset_days": 1,
+      "home_team": "Derby",
+      "away_team": "Reading",
+      "home_score": 2,
+      "away_score": 1,
+      "team_was_home": true,
+      "division": "E1",
+      "market_odds_for_picked_team": 1.7,
       "data_quality_flag": null
     },
     {
@@ -2852,6 +3066,7 @@
       "home_score": 0,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.16,
       "data_quality_flag": null
     },
@@ -2870,6 +3085,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 3.1,
       "data_quality_flag": null
     },
@@ -2888,6 +3104,7 @@
       "home_score": 4,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -2906,7 +3123,27 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.66,
+      "data_quality_flag": null
+    },
+    {
+      "raw_history_key": "2287",
+      "pick_date": "25/01/2019",
+      "member": "AT",
+      "team_picked": "Bristol City",
+      "bet_type": "H2H",
+      "syndicate_result": "Yes",
+      "syndicate_odds": 1.45,
+      "game_date": "2019-01-19",
+      "date_offset_days": -6,
+      "home_team": "Nott'm Forest",
+      "away_team": "Bristol City",
+      "home_score": 0,
+      "away_score": 1,
+      "team_was_home": false,
+      "division": "E1",
+      "market_odds_for_picked_team": 3.1,
       "data_quality_flag": null
     },
     {
@@ -2924,6 +3161,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -2942,6 +3180,7 @@
       "home_score": 5,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.2,
       "data_quality_flag": null
     },
@@ -2960,6 +3199,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -2978,6 +3218,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.6,
       "data_quality_flag": null
     },
@@ -2996,6 +3237,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.05,
       "data_quality_flag": "RESULT_DISCREPANCY_UNRESOLVED"
     },
@@ -3014,6 +3256,7 @@
       "home_score": 6,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.5,
       "data_quality_flag": null
     },
@@ -3032,6 +3275,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.95,
       "data_quality_flag": null
     },
@@ -3050,6 +3294,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.5,
       "data_quality_flag": null
     },
@@ -3068,6 +3313,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.85,
       "data_quality_flag": null
     },
@@ -3086,6 +3332,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.3,
       "data_quality_flag": null
     },
@@ -3104,6 +3351,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -3122,6 +3370,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.83,
       "data_quality_flag": null
     },
@@ -3140,6 +3389,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.16,
       "data_quality_flag": null
     },
@@ -3158,6 +3408,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 3.8,
       "data_quality_flag": null
     },
@@ -3176,6 +3427,7 @@
       "home_score": 4,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.55,
       "data_quality_flag": null
     },
@@ -3194,6 +3446,7 @@
       "home_score": 2,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -3212,6 +3465,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -3230,6 +3484,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.25,
       "data_quality_flag": null
     },
@@ -3248,6 +3503,7 @@
       "home_score": 4,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -3266,6 +3522,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.9,
       "data_quality_flag": null
     },
@@ -3284,6 +3541,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.85,
       "data_quality_flag": null
     },
@@ -3302,6 +3560,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -3320,6 +3579,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.66,
       "data_quality_flag": null
     },
@@ -3338,6 +3598,7 @@
       "home_score": 3,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
       "data_quality_flag": null
     },
@@ -3356,6 +3617,7 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.3,
       "data_quality_flag": null
     },
@@ -3374,6 +3636,7 @@
       "home_score": 0,
       "away_score": 5,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.22,
       "data_quality_flag": null
     },
@@ -3392,6 +3655,7 @@
       "home_score": 1,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.44,
       "data_quality_flag": null
     },
@@ -3410,6 +3674,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.72,
       "data_quality_flag": null
     },
@@ -3428,6 +3693,7 @@
       "home_score": 2,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": null
     },
@@ -3446,6 +3712,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 6.0,
       "data_quality_flag": null
     },
@@ -3464,6 +3731,7 @@
       "home_score": 3,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.7,
       "data_quality_flag": null
     },
@@ -3482,6 +3750,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.36,
       "data_quality_flag": null
     },
@@ -3500,6 +3769,7 @@
       "home_score": 1,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.95,
       "data_quality_flag": null
     },
@@ -3518,6 +3788,7 @@
       "home_score": 3,
       "away_score": 2,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.14,
       "data_quality_flag": null
     },
@@ -3536,6 +3807,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 2.05,
       "data_quality_flag": null
     },
@@ -3554,6 +3826,7 @@
       "home_score": 8,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.1,
       "data_quality_flag": null
     },
@@ -3572,6 +3845,7 @@
       "home_score": 1,
       "away_score": 3,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.3,
       "data_quality_flag": null
     },
@@ -3590,6 +3864,7 @@
       "home_score": 0,
       "away_score": 1,
       "team_was_home": false,
+      "division": "E0",
       "market_odds_for_picked_team": 1.33,
       "data_quality_flag": null
     },
@@ -3608,7 +3883,27 @@
       "home_score": 2,
       "away_score": 0,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.4,
+      "data_quality_flag": null
+    },
+    {
+      "raw_history_key": "2678",
+      "pick_date": "04/10/2019",
+      "member": "AT",
+      "team_picked": "Bristol City",
+      "bet_type": "H2H",
+      "syndicate_result": "Yes",
+      "syndicate_odds": 2.0,
+      "game_date": "2019-10-05",
+      "date_offset_days": 1,
+      "home_team": "Bristol City",
+      "away_team": "Reading",
+      "home_score": 1,
+      "away_score": 0,
+      "team_was_home": true,
+      "division": "E1",
+      "market_odds_for_picked_team": 2.0,
       "data_quality_flag": null
     },
     {
@@ -3626,6 +3921,7 @@
       "home_score": 0,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.12,
       "data_quality_flag": null
     },
@@ -3644,6 +3940,7 @@
       "home_score": 1,
       "away_score": 1,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.8,
       "data_quality_flag": null
     },
@@ -3662,6 +3959,7 @@
       "home_score": 2,
       "away_score": 2,
       "team_was_home": true,
+      "division": "E0",
       "market_odds_for_picked_team": 1.45,
       "data_quality_flag": null
     }
