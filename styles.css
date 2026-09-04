@@ -523,51 +523,59 @@ tr:last-child td { border-bottom: 0; }
     margin-bottom: 6px;
 }
 
-.pa-pattern-columns {
+.flip-tile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-.pa-pattern-col .pa-label { margin-bottom: 10px; grid-column: 1 / -1; }
-.pa-pattern-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
-  align-content: start;
 }
-.pa-pattern-card {
+.flip-tile { perspective: 1000px; height: 108px; cursor: pointer; }
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+.flip-tile.is-flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 10px;
   padding: 10px 12px;
   border: 1px solid var(--line);
 }
-.pa-pattern-card:last-child { margin-bottom: 0; }
-.pa-pattern-you { background: rgba(74, 154, 216, 0.10); border-color: rgba(74, 154, 216, 0.35); }
-.pa-pattern-syndicate { background: rgba(216, 162, 74, 0.10); border-color: rgba(216, 162, 74, 0.35); }
-.pa-pattern-realworld { background: rgba(168, 85, 247, 0.10); border-color: rgba(168, 85, 247, 0.35); }
-.pa-pattern-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 12px;
-  color: var(--text);
-  margin-bottom: 6px;
-  gap: 8px;
-}
-.pa-pattern-label { font-weight: 600; }
-.pa-pattern-success { color: #4ade80; font-weight: 700; white-space: nowrap; }
-.pa-pattern-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 6px;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.flip-front { display: flex; flex-direction: column; justify-content: space-between; }
+.flip-back { transform: rotateY(180deg); display: flex; align-items: center; }
+.flip-pick { font-size: 12px; font-weight: 600; margin: 0; line-height: 1.35; color: var(--text); }
+.flip-front-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.flip-sport { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.flip-rating { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.flip-rationale { font-size: 12px; margin: 0; line-height: 1.5; color: var(--text); }
+
+.sport-league { background: rgba(73, 189, 165, 0.10); border-color: rgba(73, 189, 165, 0.35); }
+.sport-league .flip-rating { color: rgb(73, 189, 165); }
+.sport-union { background: rgba(147, 112, 219, 0.10); border-color: rgba(147, 112, 219, 0.35); }
+.sport-union .flip-rating { color: rgb(147, 112, 219); }
+.sport-nfl { background: rgba(216, 121, 74, 0.10); border-color: rgba(216, 121, 74, 0.35); }
+.sport-nfl .flip-rating { color: rgb(216, 121, 74); }
+.sport-football { background: rgba(74, 154, 216, 0.10); border-color: rgba(74, 154, 216, 0.35); }
+.sport-football .flip-rating { color: rgb(74, 154, 216); }
+.sport-basketball { background: rgba(216, 74, 154, 0.10); border-color: rgba(216, 74, 154, 0.35); }
+.sport-basketball .flip-rating { color: rgb(216, 74, 154); }
+.sport-afl { background: rgba(200, 170, 60, 0.10); border-color: rgba(200, 170, 60, 0.35); }
+.sport-afl .flip-rating { color: rgb(200, 170, 60); }
+.sport-mma { background: rgba(216, 74, 74, 0.10); border-color: rgba(216, 74, 74, 0.35); }
+.sport-mma .flip-rating { color: rgb(216, 74, 74); }
+.sport-olympics { background: rgba(74, 190, 216, 0.10); border-color: rgba(74, 190, 216, 0.35); }
+.sport-olympics .flip-rating { color: rgb(74, 190, 216); }
+.sport-other { background: rgba(140, 140, 140, 0.10); border-color: rgba(140, 140, 140, 0.35); }
+.sport-other .flip-rating { color: rgb(140, 140, 140); }
 
 @media (max-width: 640px) {
-  .pa-pattern-columns { grid-template-columns: 1fr; }
-  .pa-pattern-col { grid-template-columns: 1fr; }
+  .flip-tile-grid { grid-template-columns: 1fr 1fr; }
 }
 
 .pa-placeholder {

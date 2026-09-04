@@ -1932,6 +1932,7 @@ function pickAssistant(data) {
   const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
   const realWorldPatterns = realWorldPatternsForDisplay();
+  const blendedPatterns = worthWatchingBlendedList(yourPatterns, syndicatePatterns, realWorldPatterns);
 
   const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
   const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
@@ -1939,6 +1940,7 @@ function pickAssistant(data) {
   const nameToTopSport = mostCommonSportByName(state.raw);
 
   setTimeout(() => {
+    bindFlipTiles();
     const changeLink = document.querySelector('.change-member-link');
     if (changeLink) {
       changeLink.onclick = (e) => {
@@ -1991,20 +1993,10 @@ function pickAssistant(data) {
       <div class="pa-card">
 
         <div class="pa-title">THIS WEEK - WORTH WATCHING</div>
+        <div class="pa-label">Your picks, syndicate picks, and real-world data, blended and ranked by confidence. Tap a tile for the full story.</div>
 
-        <div class="pa-pattern-columns">
-          <div class="pa-pattern-col">
-            <div class="pa-label">Based on your past picks you could consider these picks</div>
-            ${yourPatterns.length ? yourPatterns.map(item => patternCardHtml(item, 'pa-pattern-you')).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
-          </div>
-          <div class="pa-pattern-col">
-            <div class="pa-label">Based on everyone else's picks, you could consider these picks</div>
-            ${syndicatePatterns.length ? syndicatePatterns.map(item => patternCardHtml(item, 'pa-pattern-syndicate')).join('') : '<div class="pa-watch">Not enough syndicate-wide data yet to identify a strong pattern.</div>'}
-          </div>
-          <div class="pa-pattern-col">
-            <div class="pa-label">Real-world patterns worth knowing about, whether or not anyone's picked them</div>
-            ${realWorldPatterns.length ? realWorldPatterns.map(item => realWorldPatternCardHtml(item)).join('') : '<div class="pa-watch">No strong real-world patterns clearing the bar this week.</div>'}
-          </div>
+        <div class="flip-tile-grid">
+          ${blendedPatterns.length ? blendedPatterns.map(item => flipTileHtml(item)).join('') : '<div class="pa-watch">Not enough data yet to identify a strong pattern.</div>'}
         </div>
 
       </div>
@@ -2393,7 +2385,13 @@ function isRealWorldTeamCurrent(log) {
   return daysSince <= REAL_WORLD_STALENESS_DAYS;
 }
 
-function realWorldRating(successes, total) {
+// Maps a Wilson lower-bound score onto a 1-10 display rating, used
+// consistently across all three Worth Watching sources (your picks,
+// syndicate picks, real-world data) so a "7" always means the same thing
+// regardless of which source it came from - previously syndicate patterns
+// showed a raw success % while real-world patterns showed this 1-10 scale,
+// which weren't directly comparable at a glance.
+function wilsonRating(successes, total) {
   const wilson = wilsonLowerBound(successes, total);
   return Math.max(1, Math.min(10, Math.round(1 + wilson * 9)));
 }
@@ -2417,9 +2415,9 @@ function findStreakPatterns(games, sport, minLength = 5) {
     if ((lastResult === 'W' || lastResult === 'L') && streak >= minLength) {
       const word = lastResult === 'W' ? 'won' : 'lost';
       patterns.push({
-        sport, team, type: 'streak',
-        headline: `${team} have ${word} their last ${streak}`,
-        rating: realWorldRating(streak, streak),
+        sport, team, type: 'streak', pick: team, betOption: 'H2H',
+        rationale: `${team} have ${word} their last ${streak} in a row.`,
+        rating: wilsonRating(streak, streak),
       });
     }
   });
@@ -2439,9 +2437,9 @@ function findHomeAwayPatterns(games, sport, n = 10, minHits = 8) {
       const wins = venueGames.filter(g => g.for > g.against).length;
       if (wins >= minHits) {
         patterns.push({
-          sport, team, type: 'home_away',
-          headline: `${team} have won ${wins} of their last ${venueGames.length} ${label}`,
-          rating: realWorldRating(wins, venueGames.length),
+          sport, team, type: 'home_away', pick: team, betOption: `H2H (${label})`,
+          rationale: `${team} have won ${wins} of their last ${venueGames.length} ${label}.`,
+          rating: wilsonRating(wins, venueGames.length),
         });
       }
     });
@@ -2467,7 +2465,60 @@ function dynamicScoringThreshold(games, windowDays = 365, percentile = 75) {
   return scores[Math.floor(scores.length * percentile / 100)];
 }
 
+// The syndicate already distinguishes "Total Points" (rugby union, rugby
+// league, NRL) from "Total Goals" (football) as the bet-type label for this
+// kind of market - matched here rather than inventing a new label.
+function scoringBetTypeLabel(sport) {
+  return sport === 'EPL' ? 'Total Goals' : 'Total Points';
+}
+
 function findScoringPatterns(games, sport, threshold, n = 10, minHits = 8) {
+  if (threshold == null) return [];
+  const teams = new Set();
+  games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
+  const patterns = [];
+  const betTypeLabel = scoringBetTypeLabel(sport);
+  teams.forEach(team => {
+    const log = realWorldTeamLog(games, team);
+    if (!isRealWorldTeamCurrent(log)) return;
+    const recent = log.filter(g => g.for != null).slice(-n);
+    if (recent.length < n) return;
+    const hits = recent.filter(g => g.for >= threshold).length;
+    if (hits >= minHits) {
+      patterns.push({
+        sport, team, type: 'scoring', pick: team, betOption: `${betTypeLabel} over ${threshold - 0.5}`,
+        rationale: `${team} have scored ${threshold}+ in ${hits} of their last ${recent.length} games.`,
+        rating: wilsonRating(hits, recent.length),
+      });
+    }
+  });
+  return patterns;
+}
+
+// A team's own winning margin - not the same thing as a true "point start"
+// (handicap) bet, which depends on a market-set line I don't have access to
+// (the line reflects both teams' relative strength as judged by the market
+// at the time, not just one team's own history). What IS honestly
+// computable from match results alone is a team's actual margin of
+// victory - "have they been winning by X+ consistently" - which the
+// syndicate already tracks as a distinct "Winning Margins" bet-type
+// category (see betTypeGroup), separate from Point Starts. That's what
+// this computes; Point Starts itself isn't attempted here for that reason.
+function dynamicMarginThreshold(games, windowDays = 365, percentile = 70) {
+  const cutoff = Date.now() - windowDays * 86400000;
+  const margins = [];
+  games.forEach(g => {
+    if (!g.dateObj || g.dateObj.getTime() < cutoff) return;
+    if (g.home_score == null || g.away_score == null) return;
+    const diff = Math.abs(g.home_score - g.away_score);
+    if (diff > 0) margins.push(diff);
+  });
+  if (margins.length < 20) return null;
+  margins.sort((a, b) => a - b);
+  return margins[Math.floor(margins.length * percentile / 100)];
+}
+
+function findMarginPatterns(games, sport, threshold, n = 10, minHits = 7) {
   if (threshold == null) return [];
   const teams = new Set();
   games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
@@ -2477,12 +2528,12 @@ function findScoringPatterns(games, sport, threshold, n = 10, minHits = 8) {
     if (!isRealWorldTeamCurrent(log)) return;
     const recent = log.filter(g => g.for != null).slice(-n);
     if (recent.length < n) return;
-    const hits = recent.filter(g => g.for >= threshold).length;
+    const hits = recent.filter(g => (g.for - g.against) >= threshold).length;
     if (hits >= minHits) {
       patterns.push({
-        sport, team, type: 'scoring',
-        headline: `${team} have scored ${threshold}+ in ${hits} of their last ${recent.length}`,
-        rating: realWorldRating(hits, recent.length),
+        sport, team, type: 'margin', pick: team, betOption: `Winning Margin over ${threshold - 0.5}`,
+        rationale: `${team} have won by ${threshold}+ points/goals in ${hits} of their last ${recent.length} games.`,
+        rating: wilsonRating(hits, recent.length),
       });
     }
   });
@@ -2591,10 +2642,12 @@ function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivit
   Object.entries(REAL_WORLD_SOURCES).forEach(([sport]) => {
     const games = state.realWorldGames[sport] || [];
     if (!games.length) return;
-    const threshold = dynamicScoringThreshold(games);
+    const scoringThreshold = dynamicScoringThreshold(games);
+    const marginThreshold = dynamicMarginThreshold(games);
     allPatterns.push(...findStreakPatterns(games, sport));
     allPatterns.push(...findHomeAwayPatterns(games, sport));
-    allPatterns.push(...findScoringPatterns(games, sport, threshold));
+    allPatterns.push(...findScoringPatterns(games, sport, scoringThreshold));
+    allPatterns.push(...findMarginPatterns(games, sport, marginThreshold));
   });
 
   const qualifying = allPatterns.filter(p => {
@@ -2723,15 +2776,15 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
 // Up to 3 detailed "Your pattern" items for the given member.
 function buildYourPatterns(pool, allMemberRowsSorted) {
   const diverse = selectDiversePatterns(pool, 4);
-  const items = diverse.map(c => ({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate }));
+  const items = diverse.map(c => ({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group }));
   const usedKeys = new Set(diverse.map(c => c.key));
 
   const recent = recencyPattern(allMemberRowsSorted, usedKeys);
   if (recent) {
-    items.push({ source: 'Your pattern', label: recent.label, success: recent.success, picks: recent.picks, avgOdds: recent.avgOdds, lastDate: recent.lastDate, firstDate: recent.firstDate, isRecent: true });
+    items.push({ source: 'Your pattern', label: recent.label, success: recent.success, picks: recent.picks, avgOdds: recent.avgOdds, lastDate: recent.lastDate, firstDate: recent.firstDate, isRecent: true, group: recent.group });
   } else {
     const extra = pool.find(c => !usedKeys.has(c.key));
-    if (extra) items.push({ source: 'Your pattern', label: extra.label, success: extra.success, picks: extra.picks, avgOdds: extra.avgOdds, lastDate: extra.lastDate, firstDate: extra.firstDate });
+    if (extra) items.push({ source: 'Your pattern', label: extra.label, success: extra.success, picks: extra.picks, avgOdds: extra.avgOdds, lastDate: extra.lastDate, firstDate: extra.firstDate, group: extra.group });
   }
 
   return items.slice(0, 5);
@@ -2742,31 +2795,113 @@ function buildYourPatterns(pool, allMemberRowsSorted) {
 // or season-window restriction.
 function buildSyndicatePatterns(pool) {
   const diverse = selectDiversePatterns(pool, 5);
-  return diverse.map(c => ({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate }));
+  return diverse.map(c => ({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group }));
 }
 
 // ----------------------------------------------------------------------
-// Small inline SVG visuals for Corroboration/Conflict, Fade Alerts, and
-// Streak Watch, so those read as graphics rather than lines of text.
+// Worth Watching: one blended list, all three sources (your picks,
+// syndicate picks, real-world data), sorted purely by rating - not three
+// separate columns. Every pattern is rated on the same 1-10 scale via
+// wilsonRating(), so a "7" means the same thing regardless of source.
+// Tiles are colour-coded by SPORT, not by source - "your pattern" /
+// "syndicate pattern" / "real-world data" is evidence for why the pick is
+// being surfaced (shown on the tile back), not what visually categorises
+// it on the front.
 // ----------------------------------------------------------------------
 
-function patternCardHtml(item, colorClass) {
+const SPORT_COLOR_CLASS = {
+  'Rugby League': 'sport-league',
+  'Rugby Union': 'sport-union',
+  'American Football': 'sport-nfl',
+  'Football': 'sport-football',
+  'Basketball': 'sport-basketball',
+  'AFL': 'sport-afl',
+  'MMA': 'sport-mma',
+  'Olympics': 'sport-olympics',
+};
+function sportColorClass(group) {
+  return SPORT_COLOR_CLASS[group] || 'sport-other';
+}
+// Maps a real-world data source (NRL, NFL, Super Rugby, EPL) onto the same
+// broader sportGroup() category syndicate patterns use, so a real-world
+// Man City pattern and an EPL-tagged syndicate pattern land on the same
+// colour despite coming from different underlying data.
+const REAL_WORLD_TO_SPORT_GROUP = { NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football' };
+
+// Real-world patterns get a small, flat rating boost before entering the
+// blended list (never on the syndicate side) - reflecting that real-world
+// data is generally the larger, more complete sample of the two source
+// types and should be weighted accordingly, not treated as an equal
+// alternative to syndicate history.
+const REAL_WORLD_RATING_BOOST = 1;
+
+// Converts a syndicate pattern item (from buildYourPatterns/
+// buildSyndicatePatterns - success/picks/avgOdds shape) into the same
+// {pickAndBet, rating, rationale, source, colorClass} shape used by
+// real-world patterns, so both can sit in one blended, consistently-sorted
+// list. wins is reconstructed from success*picks (rounded) since the
+// display-ready pattern items don't carry the raw win count separately -
+// fine here since it only needs to land in the right 1-10 bucket, not be
+// exact to the pick.
+function syndicatePatternToUnified(item, source) {
+  const wins = Math.round(item.success * item.picks);
   const sinceYear = item.firstDate ? item.firstDate.getFullYear() : null;
-  return `<div class="pa-pattern-card ${colorClass}">
-    <div class="pa-pattern-top"><span class="pa-pattern-label">${escapeHtml(item.label)}</span><span class="pa-pattern-success">${pct(item.success)}</span></div>
-    <div class="pa-pattern-meta"><span>Based on ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}</span><span>Avg ${fmtMoney(item.avgOdds)}</span></div>
+  return {
+    pickAndBet: item.label,
+    rating: wilsonRating(wins, item.picks),
+    rationale: `${source}: ${pct(item.success)} success rate from ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}, average odds ${fmtMoney(item.avgOdds)}.`,
+    colorClass: sportColorClass(item.group),
+    sportLabel: item.group || 'Other',
+  };
+}
+
+function realWorldPatternToUnified(item) {
+  const sportGroup = REAL_WORLD_TO_SPORT_GROUP[item.sport] || null;
+  return {
+    pickAndBet: `${item.pick} ${item.betOption}`,
+    rating: Math.min(10, item.rating + REAL_WORLD_RATING_BOOST),
+    rationale: `Real-world data: ${item.rationale} (${item.sport})`,
+    colorClass: sportColorClass(sportGroup),
+    sportLabel: item.sport,
+  };
+}
+
+function worthWatchingBlendedList(yourPatterns, syndicatePatterns, realWorldPatterns) {
+  const unified = [
+    ...yourPatterns.map(item => syndicatePatternToUnified(item, 'Your pattern')),
+    ...syndicatePatterns.map(item => syndicatePatternToUnified(item, 'Syndicate pattern')),
+    ...realWorldPatterns.map(realWorldPatternToUnified),
+  ];
+  unified.sort((a, b) => b.rating - a.rating);
+  return unified;
+}
+
+let flipTileIdCounter = 0;
+function flipTileHtml(item) {
+  flipTileIdCounter += 1;
+  const id = `flip-tile-${flipTileIdCounter}`;
+  return `<div class="flip-tile" id="${id}">
+    <div class="flip-inner">
+      <div class="flip-face flip-front ${item.colorClass}">
+        <p class="flip-pick">${escapeHtml(item.pickAndBet)}</p>
+        <div class="flip-front-bottom">
+          <span class="flip-sport">${escapeHtml(item.sportLabel)}</span>
+          <span class="flip-rating">${item.rating}/10</span>
+        </div>
+      </div>
+      <div class="flip-face flip-back ${item.colorClass}">
+        <p class="flip-rationale">${escapeHtml(item.rationale)}</p>
+      </div>
+    </div>
   </div>`;
 }
 
-// Real-world pattern card - same visual family as patternCardHtml above, but
-// for real-world patterns from realWorldPatternsForDisplay(): a 1-10 rating
-// instead of a success %, and a sport tag instead of a pick-count/odds line,
-// since these patterns have no syndicate "picks" or "avg odds" to report.
-function realWorldPatternCardHtml(item) {
-  return `<div class="pa-pattern-card pa-pattern-realworld">
-    <div class="pa-pattern-top"><span class="pa-pattern-label">${escapeHtml(item.headline)}</span><span class="pa-pattern-success">${item.rating}/10</span></div>
-    <div class="pa-pattern-meta"><span>${escapeHtml(item.sport)}</span></div>
-  </div>`;
+function bindFlipTiles() {
+  document.querySelectorAll('.flip-tile').forEach(tile => {
+    if (tile.dataset.bound) return;
+    tile.dataset.bound = '1';
+    tile.addEventListener('click', () => tile.classList.toggle('is-flipped'));
+  });
 }
 
 function svgStatBar(success, color) {
