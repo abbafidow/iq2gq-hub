@@ -2396,6 +2396,20 @@ function wilsonRating(successes, total) {
   return Math.max(1, Math.min(10, Math.round(1 + wilson * 9)));
 }
 
+// The break-even price for a pattern, using the same conservative Wilson
+// lower-bound estimate as the rating itself (not the raw observed rate,
+// which would overstate confidence for a small sample). Betting at any
+// odds above this represents positive expected value relative to what
+// this pattern has actually demonstrated - "the ideal odds to maximise
+// value while keeping the rating where it's at" is exactly this number:
+// go lower and the edge the rating represents is given back to the price;
+// go higher and there's genuine value beyond what the pattern requires.
+function fairOddsFromWinRate(successes, total) {
+  const wilson = wilsonLowerBound(successes, total);
+  if (wilson <= 0) return null;
+  return Math.round((1 / wilson) * 100) / 100;
+}
+
 function findStreakPatterns(games, sport, minLength = 5) {
   const teams = new Set();
   games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
@@ -2417,7 +2431,7 @@ function findStreakPatterns(games, sport, minLength = 5) {
       patterns.push({
         sport, team, type: 'streak', pick: team, betOption: 'H2H',
         rationale: `${team} have ${word} their last ${streak} in a row.`,
-        rating: wilsonRating(streak, streak),
+        rating: wilsonRating(streak, streak), fairOdds: fairOddsFromWinRate(streak, streak),
       });
     }
   });
@@ -2439,7 +2453,7 @@ function findHomeAwayPatterns(games, sport, n = 10, minHits = 8) {
         patterns.push({
           sport, team, type: 'home_away', pick: team, betOption: `H2H (${label})`,
           rationale: `${team} have won ${wins} of their last ${venueGames.length} ${label}.`,
-          rating: wilsonRating(wins, venueGames.length),
+          rating: wilsonRating(wins, venueGames.length), fairOdds: fairOddsFromWinRate(wins, venueGames.length),
         });
       }
     });
@@ -2488,7 +2502,7 @@ function findScoringPatterns(games, sport, threshold, n = 10, minHits = 8) {
       patterns.push({
         sport, team, type: 'scoring', pick: team, betOption: `${betTypeLabel} over ${threshold - 0.5}`,
         rationale: `${team} have scored ${threshold}+ in ${hits} of their last ${recent.length} games.`,
-        rating: wilsonRating(hits, recent.length),
+        rating: wilsonRating(hits, recent.length), fairOdds: fairOddsFromWinRate(hits, recent.length),
       });
     }
   });
@@ -2533,7 +2547,7 @@ function findMarginPatterns(games, sport, threshold, n = 10, minHits = 7) {
       patterns.push({
         sport, team, type: 'margin', pick: team, betOption: `Winning Margin over ${threshold - 0.5}`,
         rationale: `${team} have won by ${threshold}+ points/goals in ${hits} of their last ${recent.length} games.`,
-        rating: wilsonRating(hits, recent.length),
+        rating: wilsonRating(hits, recent.length), fairOdds: fairOddsFromWinRate(hits, recent.length),
       });
     }
   });
@@ -2849,37 +2863,86 @@ function syndicatePatternToUnified(item, source) {
   return {
     pickAndBet: item.label,
     rating: wilsonRating(wins, item.picks),
+    fairOdds: fairOddsFromWinRate(wins, item.picks),
     rationale: `${source}: ${pct(item.success)} success rate from ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}, average odds ${fmtMoney(item.avgOdds)}.`,
     colorClass: sportColorClass(item.group),
     sportLabel: item.group || 'Other',
   };
 }
 
+// Looks up the syndicate's own resulted-pick record on a team, regardless of
+// bet type - used to corroborate (or not) a real-world pattern on the tile
+// back. Only resulted picks count (win or loss recorded); "Not enough
+// syndicate history on this team to say either way" below a small minimum
+// avoids treating one or two picks as meaningful corroboration.
+function syndicateRecordForTeam(team) {
+  const picks = state.raw.filter(r => r.name === team && (r.win || r.loss));
+  if (picks.length < 3) return null;
+  const wins = picks.filter(r => r.win).length;
+  return { wins, total: picks.length, rate: wins / picks.length };
+}
+
 function realWorldPatternToUnified(item) {
   const sportGroup = REAL_WORLD_TO_SPORT_GROUP[item.sport] || null;
+  const record = syndicateRecordForTeam(item.team);
+  let corroboration;
+  if (!record) {
+    corroboration = ' The syndicate doesn\'t have enough history on this team to say whether that lines up.';
+  } else if (record.rate >= 0.6) {
+    corroboration = ` The syndicate's own record on ${item.team} backs this up too: ${record.wins} wins from ${record.total} picks.`;
+  } else if (record.rate <= 0.4) {
+    corroboration = ` Worth noting: the syndicate's own record on ${item.team} has actually been mixed (${record.wins} wins from ${record.total} picks) - real-world data and syndicate history don't fully agree here.`;
+  } else {
+    corroboration = ` The syndicate's own record on ${item.team} is fairly even (${record.wins} wins from ${record.total} picks) - not a strong signal either way.`;
+  }
   return {
     pickAndBet: `${item.pick} ${item.betOption}`,
     rating: Math.min(10, item.rating + REAL_WORLD_RATING_BOOST),
-    rationale: `Real-world data: ${item.rationale} (${item.sport})`,
+    fairOdds: item.fairOdds,
+    rationale: `Real-world data: ${item.rationale} (${item.sport}).${corroboration}`,
     colorClass: sportColorClass(sportGroup),
     sportLabel: item.sport,
+    bucket: 'real-world',
   };
 }
 
+// Worth Watching's composition is deliberately split by source, not purely
+// by rating: up to 66% of tiles are real-world-data-led (member picks shown
+// only as corroborating evidence on the flip side - see
+// realWorldPatternToUnified), the remaining up to 33% are member-driven
+// (your own picks and syndicate picks combined, real-world data absent from
+// the front of these tiles entirely). "Up to" is deliberate - if a source
+// doesn't have enough genuinely qualifying patterns to fill its share, that
+// share is simply smaller rather than backfilled with weaker patterns or
+// handed to the other source, consistent with never forcing a target count.
+const WORTH_WATCHING_MAX_TOTAL = 12;
+const WORTH_WATCHING_REAL_WORLD_SHARE = 2 / 3;
+
 function worthWatchingBlendedList(yourPatterns, syndicatePatterns, realWorldPatterns) {
-  const unified = [
-    ...yourPatterns.map(item => syndicatePatternToUnified(item, 'Your pattern')),
-    ...syndicatePatterns.map(item => syndicatePatternToUnified(item, 'Syndicate pattern')),
-    ...realWorldPatterns.map(realWorldPatternToUnified),
+  const memberDriven = [
+    ...yourPatterns.map(item => ({ ...syndicatePatternToUnified(item, 'Your pattern'), bucket: 'member' })),
+    ...syndicatePatterns.map(item => ({ ...syndicatePatternToUnified(item, 'Syndicate pattern'), bucket: 'member' })),
   ];
-  unified.sort((a, b) => b.rating - a.rating);
-  return unified;
+  const realWorld = realWorldPatterns.map(realWorldPatternToUnified);
+
+  memberDriven.sort((a, b) => b.rating - a.rating);
+  realWorld.sort((a, b) => b.rating - a.rating);
+
+  const realWorldCap = Math.round(WORTH_WATCHING_MAX_TOTAL * WORTH_WATCHING_REAL_WORLD_SHARE);
+  const memberCap = WORTH_WATCHING_MAX_TOTAL - realWorldCap;
+
+  const selected = [...realWorld.slice(0, realWorldCap), ...memberDriven.slice(0, memberCap)];
+  selected.sort((a, b) => b.rating - a.rating);
+  return selected;
 }
 
 let flipTileIdCounter = 0;
 function flipTileHtml(item) {
   flipTileIdCounter += 1;
   const id = `flip-tile-${flipTileIdCounter}`;
+  const valueLine = item.fairOdds
+    ? `<p class="flip-fair-odds">Worth it at $${item.fairOdds.toFixed(2)} or higher.</p>`
+    : '';
   return `<div class="flip-tile" id="${id}">
     <div class="flip-inner">
       <div class="flip-face flip-front ${item.colorClass}">
@@ -2890,7 +2953,10 @@ function flipTileHtml(item) {
         </div>
       </div>
       <div class="flip-face flip-back ${item.colorClass}">
-        <p class="flip-rationale">${escapeHtml(item.rationale)}</p>
+        <div>
+          <p class="flip-rationale">${escapeHtml(item.rationale)}</p>
+          ${valueLine}
+        </div>
       </div>
     </div>
   </div>`;
