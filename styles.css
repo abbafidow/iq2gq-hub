@@ -528,7 +528,7 @@ tr:last-child td { border-bottom: 0; }
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
 }
-.flip-tile { perspective: 1000px; height: 120px; cursor: pointer; }
+.flip-tile { perspective: 1000px; height: 210px; cursor: pointer; }
 .flip-inner {
   position: relative;
   width: 100%;
@@ -546,6 +546,7 @@ tr:last-child td { border-bottom: 0; }
   border-radius: 10px;
   padding: 10px 12px;
   border: 1px solid var(--line);
+  overflow: hidden;
 }
 .flip-front { display: flex; flex-direction: column; justify-content: space-between; }
 .flip-back { transform: rotateY(180deg); display: flex; align-items: center; }
@@ -576,7 +577,8 @@ tr:last-child td { border-bottom: 0; }
 .sport-other .flip-rating { color: rgb(140, 140, 140); }
 
 @media (max-width: 640px) {
-  .flip-tile-grid { grid-template-columns: 1fr 1fr; }
+  .flip-tile-grid { grid-template-columns: 1fr; }
+  .flip-tile { height: 170px; }
 }
 
 .pa-placeholder {
