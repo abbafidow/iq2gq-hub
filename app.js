@@ -2929,7 +2929,10 @@ function extractBetOption(label, team) {
 // fact, not yet a tile. team/wins now threaded through from the underlying
 // candidate objects (see buildYourPatterns/buildSyndicatePatterns) rather
 // than reconstructed by rounding, so the rating is exact, not approximated.
-function syndicatePatternToOption(item, sourceLabel) {
+// sourceType is tracked explicitly (not inferred from rationale text later)
+// so the "at least one Your pattern tile" guarantee in
+// worthWatchingFocusList can check it reliably.
+function syndicatePatternToOption(item, sourceLabel, sourceType) {
   const sinceYear = item.firstDate ? item.firstDate.getFullYear() : null;
   const betOption = extractBetOption(item.label, item.team);
   return {
@@ -2940,6 +2943,7 @@ function syndicatePatternToOption(item, sourceLabel) {
     rationale: `${sourceLabel}: ${pct(item.success)} success rate from ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}, average odds ${fmtMoney(item.avgOdds)}.`,
     colorClass: sportColorClass(item.group),
     sportLabel: item.group || 'Other',
+    sourceType: sourceType || 'syndicate',
   };
 }
 
@@ -2975,6 +2979,7 @@ function realWorldPatternToOption(item) {
     rationale: `${item.rationale}${corroboration}`,
     colorClass: sportColorClass(sportGroup),
     sportLabel: item.sport,
+    sourceType: 'real-world',
   };
 }
 
@@ -3016,6 +3021,7 @@ function consolidateOptions(options) {
   return [...byKey.values()].map(tile => {
     tile.options.sort((a, b) => b.rating - a.rating);
     tile.rating = tile.options[0].rating;
+    tile.hasYourPattern = tile.options.some(o => o.sourceType === 'your');
     return tile;
   });
 }
@@ -3057,8 +3063,8 @@ function focusSyndicateOptions(sportTag, sportLabel) {
 
 function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
   const memberOptions = [
-    ...yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern')),
-    ...syndicatePatterns.map(item => syndicatePatternToOption(item, 'Syndicate pattern')),
+    ...yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern', 'your')),
+    ...syndicatePatterns.map(item => syndicatePatternToOption(item, 'Syndicate pattern', 'syndicate')),
   ];
   const pools = {
     EPL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'EPL').map(realWorldPatternToOption)],
@@ -3091,6 +3097,28 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
     }
     if (!addedThisRound) break;
   }
+
+  // Real-world data's rating boost and generally larger sample sizes mean
+  // a personal "Your pattern" tile almost never wins a slot on rating
+  // alone - without this guarantee, Worth Watching would show identical
+  // tiles to every member regardless of who's actually logged in, which
+  // defeats the point of it being personalised at all. Only swaps in a
+  // tile if a genuinely qualifying "Your pattern" exists for this member;
+  // never fabricates one just to fill the guarantee.
+  const alreadyHasYourPattern = selected.some(t => t.hasYourPattern);
+  if (!alreadyHasYourPattern) {
+    const yourPatternTiles = consolidateOptions(yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern', 'your')))
+      .sort((a, b) => b.rating - a.rating);
+    if (yourPatternTiles.length) {
+      if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
+        let lowestIdx = 0;
+        selected.forEach((t, i) => { if (t.rating < selected[lowestIdx].rating) lowestIdx = i; });
+        selected.splice(lowestIdx, 1);
+      }
+      selected.push(yourPatternTiles[0]);
+    }
+  }
+
   selected.sort((a, b) => b.rating - a.rating);
   return selected;
 }
