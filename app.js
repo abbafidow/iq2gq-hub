@@ -1846,8 +1846,6 @@ function search(data) {
   const resultSelectHtml = () =>
     `<label>Result<select data-filter-key="result"><option value="">All</option><option${f.result === 'Win' ? ' selected' : ''}>Win</option><option${f.result === 'Loss' ? ' selected' : ''}>Loss</option></select></label>`;
 
-  const activeCount = ['member', 'group', 'betType', 'year', 'odds', 'result', 'query'].filter(k => f[k]).length;
-
   const filtersHtml = `<div class="page-header"><h1>Search</h1><p>Filter and search through every pick the syndicate has ever made.</p></div><div class="panel search-filters">
     <div class="search-filters-grid">
       ${selectHtml('member', 'Member', memberOptions, f.member)}
@@ -1859,10 +1857,46 @@ function search(data) {
       <label class="search-text-label">Search text<input data-filter-key="query" type="text" value="${escapeHtml(f.query)}" placeholder="Warriors, Bunnings, McCaw..."></label>
     </div>
     <div class="search-filters-actions">
-      <span class="muted">${activeCount ? `${activeCount} filter${activeCount === 1 ? '' : 's'} active` : 'No filters active - showing everything, all-time'}</span>
+      <span class="muted" id="searchActiveCount"></span>
       <button type="button" id="searchResetBtn">Reset</button>
     </div>
   </div>`;
+
+  setTimeout(() => {
+    updateSearchResults(data);
+    document.querySelectorAll('[data-filter-key]').forEach(el => {
+      if (el.dataset.bound) return;
+      el.dataset.bound = '1';
+      const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(evt, () => {
+        state.filters[el.dataset.filterKey] = el.value;
+        // Deliberately NOT calling the global render() here - that would
+        // replace this input's own DOM node on every keystroke, which
+        // knocks a text input out of focus after every single character
+        // typed (the exact bug this was built to avoid). Only the results
+        // table and the active-filter count update; every filter control
+        // itself stays untouched in the DOM for the life of this page.
+        updateSearchResults(filtered());
+      });
+    });
+    const resetBtn = document.getElementById('searchResetBtn');
+    if (resetBtn && !resetBtn.dataset.bound) {
+      resetBtn.dataset.bound = '1';
+      resetBtn.onclick = () => {
+        state.filters = { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' };
+        render();
+      };
+    }
+  }, 0);
+
+  return `${filtersHtml}<div id="searchResultsContainer"></div>`;
+}
+
+function updateSearchResults(data) {
+  const f = state.filters;
+  const activeCount = ['member', 'group', 'betType', 'year', 'odds', 'result', 'query'].filter(k => f[k]).length;
+  const countEl = document.getElementById('searchActiveCount');
+  if (countEl) countEl.textContent = activeCount ? `${activeCount} filter${activeCount === 1 ? '' : 's'} active` : 'No filters active - showing everything, all-time';
 
   const rows = data.slice(0, 500).map((r, i) => ({
     rank: i + 1,
@@ -1875,7 +1909,9 @@ function search(data) {
     year: r.year,
   }));
 
-  const resultsHtml = `<div class="panel"><h2>Results</h2><p class="muted">${data.length.toLocaleString()} matching pick${data.length === 1 ? '' : 's'}${data.length > 500 ? ' (showing first 500)' : ''}.</p>${table(rows, 'search', [
+  const container = document.getElementById('searchResultsContainer');
+  if (!container) return;
+  container.innerHTML = `<div class="panel"><h2>Results</h2><p class="muted">${data.length.toLocaleString()} matching pick${data.length === 1 ? '' : 's'}${data.length > 500 ? ' (showing first 500)' : ''}.</p>${table(rows, 'search', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
     { key: 'bet', label: 'Bet' },
@@ -1885,25 +1921,6 @@ function search(data) {
     { key: 'result', label: 'Result' },
     { key: 'year', label: 'Year' },
   ])}</div>`;
-
-  setTimeout(() => {
-    document.querySelectorAll('[data-filter-key]').forEach(el => {
-      const evt = el.tagName === 'SELECT' ? 'change' : 'input';
-      el.addEventListener(evt, () => {
-        state.filters[el.dataset.filterKey] = el.value;
-        render();
-      });
-    });
-    const resetBtn = document.getElementById('searchResetBtn');
-    if (resetBtn) {
-      resetBtn.onclick = () => {
-        state.filters = { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' };
-        render();
-      };
-    }
-  }, 0);
-
-  return `${filtersHtml}${resultsHtml}`;
 }
 function pickAssistant(data) {
   const member = state.selectedMember;
@@ -1931,8 +1948,7 @@ function pickAssistant(data) {
   const syndicatePool = patternCandidatePool(otherMembersRows);
   const yourPatterns = buildYourPatterns(yourPool, allMemberRows);
   const syndicatePatterns = buildSyndicatePatterns(syndicatePool);
-  const realWorldPatterns = realWorldPatternsForDisplay();
-  const blendedPatterns = worthWatchingBlendedList(yourPatterns, syndicatePatterns, realWorldPatterns);
+  const blendedPatterns = worthWatchingFocusList(yourPatterns, syndicatePatterns);
 
   const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
   const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
@@ -2825,21 +2841,21 @@ function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
     .sort(byBestStory);
   const top = candidates[0];
   if (!top) return null;
-  return { label: top.label, success: top.success, picks: top.picks, avgOdds: top.avgOdds, lastDate: top.lastDate, firstDate: top.firstDate };
+  return { label: top.label, success: top.success, picks: top.picks, avgOdds: top.avgOdds, lastDate: top.lastDate, firstDate: top.firstDate, group: top.group, wins: top.wins, team: top.team || null };
 }
 
 // Up to 3 detailed "Your pattern" items for the given member.
 function buildYourPatterns(pool, allMemberRowsSorted) {
   const diverse = selectDiversePatterns(pool, 4);
-  const items = diverse.map(c => ({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group }));
+  const items = diverse.map(c => ({ source: 'Your pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group, wins: c.wins, team: c.team }));
   const usedKeys = new Set(diverse.map(c => c.key));
 
   const recent = recencyPattern(allMemberRowsSorted, usedKeys);
   if (recent) {
-    items.push({ source: 'Your pattern', label: recent.label, success: recent.success, picks: recent.picks, avgOdds: recent.avgOdds, lastDate: recent.lastDate, firstDate: recent.firstDate, isRecent: true, group: recent.group });
+    items.push({ source: 'Your pattern', label: recent.label, success: recent.success, picks: recent.picks, avgOdds: recent.avgOdds, lastDate: recent.lastDate, firstDate: recent.firstDate, isRecent: true, group: recent.group, wins: recent.wins, team: recent.team });
   } else {
     const extra = pool.find(c => !usedKeys.has(c.key));
-    if (extra) items.push({ source: 'Your pattern', label: extra.label, success: extra.success, picks: extra.picks, avgOdds: extra.avgOdds, lastDate: extra.lastDate, firstDate: extra.firstDate, group: extra.group });
+    if (extra) items.push({ source: 'Your pattern', label: extra.label, success: extra.success, picks: extra.picks, avgOdds: extra.avgOdds, lastDate: extra.lastDate, firstDate: extra.firstDate, group: extra.group, wins: extra.wins, team: extra.team });
   }
 
   return items.slice(0, 5);
@@ -2850,18 +2866,20 @@ function buildYourPatterns(pool, allMemberRowsSorted) {
 // or season-window restriction.
 function buildSyndicatePatterns(pool) {
   const diverse = selectDiversePatterns(pool, 5);
-  return diverse.map(c => ({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group }));
+  return diverse.map(c => ({ source: 'Syndicate pattern', label: c.label, success: c.success, picks: c.picks, avgOdds: c.avgOdds, lastDate: c.lastDate, firstDate: c.firstDate, group: c.group, wins: c.wins, team: c.team }));
 }
 
 // ----------------------------------------------------------------------
-// Worth Watching: one blended list, all three sources (your picks,
-// syndicate picks, real-world data), sorted purely by rating - not three
-// separate columns. Every pattern is rated on the same 1-10 scale via
-// wilsonRating(), so a "7" means the same thing regardless of source.
-// Tiles are colour-coded by SPORT, not by source - "your pattern" /
-// "syndicate pattern" / "real-world data" is evidence for why the pick is
-// being surfaced (shown on the tile back), not what visually categorises
-// it on the front.
+// Worth Watching: 4-6 tiles total, one tile per team (or per sport-wide
+// family like "Point Starts") rather than one tile per bet-type option -
+// if a team has several genuinely strong options (H2H, a home/away split,
+// a scoring threshold), they're bundled onto that team's single tile as a
+// list, not spread across several tiles. Every option is rated on the same
+// 1-10 scale via wilsonRating(), consistent across every source. Tiles are
+// colour-coded by SPORT, not by source - "your pattern" / "syndicate
+// pattern" / "real-world data" is evidence for why an option is being
+// surfaced (shown per-option on the tile back), not what visually
+// categorises the tile.
 // ----------------------------------------------------------------------
 
 const SPORT_COLOR_CLASS = {
@@ -2883,38 +2901,51 @@ function sportColorClass(group) {
 // colour despite coming from different underlying data.
 const REAL_WORLD_TO_SPORT_GROUP = { NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football' };
 
-// Real-world patterns get a small, flat rating boost before entering the
-// blended list (never on the syndicate side) - reflecting that real-world
-// data is generally the larger, more complete sample of the two source
-// types and should be weighted accordingly, not treated as an equal
-// alternative to syndicate history.
+// Real-world options get a small, flat rating boost (never the syndicate
+// side) - reflecting that real-world data is generally the larger, more
+// complete sample of the two source types and should be weighted
+// accordingly, not treated as an equal alternative to syndicate history.
 const REAL_WORLD_RATING_BOOST = 1;
 
-// Converts a syndicate pattern item (from buildYourPatterns/
-// buildSyndicatePatterns - success/picks/avgOdds shape) into the same
-// {pickAndBet, rating, rationale, source, colorClass} shape used by
-// real-world patterns, so both can sit in one blended, consistently-sorted
-// list. wins is reconstructed from success*picks (rounded) since the
-// display-ready pattern items don't carry the raw win count separately -
-// fine here since it only needs to land in the right 1-10 bucket, not be
-// exact to the pick.
-function syndicatePatternToUnified(item, source) {
-  const wins = Math.round(item.success * item.picks);
+// Extracts just the bet-type portion from a syndicate pattern's pre-built
+// label string, which comes in several different shapes depending on which
+// candidate-building function produced it (see comboCandidates/
+// thresholdsFromPool) - naive string replacement breaks on the point-start
+// team-specific format in particular ("Team (Group - N point start or
+// higher)"), so each known shape is matched explicitly instead.
+function extractBetOption(label, team) {
+  if (team) {
+    const escaped = team.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const comboMatch = label.match(new RegExp(`^${escaped} \\([^)]*\\)\\s*-\\s*(.+)$`));
+    if (comboMatch) return comboMatch[1];
+    const pointStartMatch = label.match(new RegExp(`^${escaped} \\([^-]*-\\s*(.+)\\)$`));
+    if (pointStartMatch) return pointStartMatch[1];
+    return label.replace(`${team} `, '');
+  }
+  return label;
+}
+
+// Converts one syndicate pattern item into an "option" - a single bet-type
+// fact, not yet a tile. team/wins now threaded through from the underlying
+// candidate objects (see buildYourPatterns/buildSyndicatePatterns) rather
+// than reconstructed by rounding, so the rating is exact, not approximated.
+function syndicatePatternToOption(item, sourceLabel) {
   const sinceYear = item.firstDate ? item.firstDate.getFullYear() : null;
+  const betOption = extractBetOption(item.label, item.team);
   return {
-    pickAndBet: item.label,
-    rating: wilsonRating(wins, item.picks),
-    fairOdds: fairOddsFromWinRate(wins, item.picks),
-    rationale: `${source}: ${pct(item.success)} success rate from ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}, average odds ${fmtMoney(item.avgOdds)}.`,
+    team: item.team || null,
+    betOption,
+    rating: wilsonRating(item.wins, item.picks),
+    fairOdds: fairOddsFromWinRate(item.wins, item.picks),
+    rationale: `${sourceLabel}: ${pct(item.success)} success rate from ${item.picks.toLocaleString()} pick${item.picks === 1 ? '' : 's'}${sinceYear ? ` since ${sinceYear}` : ''}, average odds ${fmtMoney(item.avgOdds)}.`,
     colorClass: sportColorClass(item.group),
     sportLabel: item.group || 'Other',
   };
 }
 
 // Looks up the syndicate's own resulted-pick record on a team, regardless of
-// bet type - used to corroborate (or not) a real-world pattern on the tile
-// back. Only resulted picks count (win or loss recorded); "Not enough
-// syndicate history on this team to say either way" below a small minimum
+// bet type - used to corroborate (or not) a real-world option on the tile
+// back. Only resulted picks count (win or loss recorded); a small minimum
 // avoids treating one or two picks as meaningful corroboration.
 function syndicateRecordForTeam(team) {
   const picks = state.raw.filter(r => r.name === team && (r.win || r.loss));
@@ -2923,7 +2954,7 @@ function syndicateRecordForTeam(team) {
   return { wins, total: picks.length, rate: wins / picks.length };
 }
 
-function realWorldPatternToUnified(item) {
+function realWorldPatternToOption(item) {
   const sportGroup = REAL_WORLD_TO_SPORT_GROUP[item.sport] || null;
   const record = syndicateRecordForTeam(item.team);
   let corroboration;
@@ -2937,67 +2968,157 @@ function realWorldPatternToUnified(item) {
     corroboration = ` The syndicate's own record on ${item.team} is fairly even (${record.wins} wins from ${record.total} picks) - not a strong signal either way.`;
   }
   return {
-    pickAndBet: `${item.pick} ${item.betOption}`,
+    team: item.team,
+    betOption: item.betOption,
     rating: Math.min(10, item.rating + REAL_WORLD_RATING_BOOST),
     fairOdds: item.fairOdds,
-    rationale: `Real-world data: ${item.rationale} (${item.sport}).${corroboration}`,
+    rationale: `${item.rationale}${corroboration}`,
     colorClass: sportColorClass(sportGroup),
     sportLabel: item.sport,
-    bucket: 'real-world',
   };
 }
 
-// Worth Watching's composition is deliberately split by source, not purely
-// by rating: up to 66% of tiles are real-world-data-led (member picks shown
-// only as corroborating evidence on the flip side - see
-// realWorldPatternToUnified), the remaining up to 33% are member-driven
-// (your own picks and syndicate picks combined, real-world data absent from
-// the front of these tiles entirely). "Up to" is deliberate - if a source
-// doesn't have enough genuinely qualifying patterns to fill its share, that
-// share is simply smaller rather than backfilled with weaker patterns or
-// handed to the other source, consistent with never forcing a target count.
-const WORTH_WATCHING_MAX_TOTAL = 12;
-const WORTH_WATCHING_REAL_WORLD_SHARE = 2 / 3;
+// Consolidates a flat list of options into one tile per team - or, for
+// sport-wide options with no specific team (e.g. "12.5 point start" and
+// "22.5 point start or higher" for Rugby League generally), one tile per
+// sport+family, so multiple thresholds for the same underlying pattern
+// don't produce separate tiles. This is what actually fixes duplicate
+// tiles like "Seattle Seahawks H2H" and "Seattle Seahawks H2H (away)"
+// showing up separately - both become one Seahawks tile with two options.
+function consolidationKey(option) {
+  if (option.team) return `team:${option.team}`;
+  if (/point start/i.test(option.betOption)) return `pointstart:${option.sportLabel}`;
+  return `label:${option.sportLabel}:${option.betOption}`;
+}
+function consolidateOptions(options) {
+  const byKey = new Map();
+  options.forEach(opt => {
+    const key = consolidationKey(opt);
+    if (!byKey.has(key)) {
+      // Sport-wide options (no team) fall back to a title derived from the
+      // bet option itself. Only strip a threshold number when this is
+      // genuinely a point-start pattern - a blanket digit-stripping regex
+      // here previously also matched the "2" inside "H2H" bet-type labels
+      // and mangled them, since "H2H" and "12.5 point start" both contain
+      // digits but only one of them has a threshold worth removing.
+      const fallbackTitle = /point start/i.test(opt.betOption)
+        ? opt.betOption.replace(/[\d.]+\s*point start( or higher)?/i, 'Point Starts').trim()
+        : opt.betOption.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      byKey.set(key, {
+        title: opt.team || fallbackTitle,
+        sportLabel: opt.sportLabel,
+        colorClass: opt.colorClass,
+        options: [],
+      });
+    }
+    byKey.get(key).options.push(opt);
+  });
+  return [...byKey.values()].map(tile => {
+    tile.options.sort((a, b) => b.rating - a.rating);
+    tile.rating = tile.options[0].rating;
+    return tile;
+  });
+}
 
-function worthWatchingBlendedList(yourPatterns, syndicatePatterns, realWorldPatterns) {
-  const memberDriven = [
-    ...yourPatterns.map(item => ({ ...syndicatePatternToUnified(item, 'Your pattern'), bucket: 'member' })),
-    ...syndicatePatterns.map(item => ({ ...syndicatePatternToUnified(item, 'Syndicate pattern'), bucket: 'member' })),
+// Worth Watching is capped tightly (4-6 tiles) and deliberately spread
+// across named focus sports rather than picked purely by rating - without
+// this, a handful of high-volume sports would crowd out newer or
+// currently-relevant ones. Real-world data is used where it exists (NRL,
+// NFL, EPL); where it doesn't yet (NZ domestic rugby / NPC, AFL), syndicate
+// history for that exact Sport tag is used instead, scoped narrowly rather
+// than folded into the broader "Rugby Union"/generic syndicate pools - this
+// specifically ensures currently-live competitions the syndicate can bet on
+// right now aren't crowded out just because they lack a full real-world
+// data pipeline yet. Never forced: a focus sport with nothing genuinely
+// qualifying this week simply doesn't appear.
+const WORTH_WATCHING_MAX_TOTAL = 6;
+const FOCUS_SYNDICATE_SPORTS = {
+  'NZ Domestic Rugby': 'Rugby Union (NPC)',
+  'AFL': 'AFL',
+};
+
+// Builds options from syndicate history for one specific, narrow Sport tag
+// (not the broader sportGroup() bucket) - reuses the exact same candidate
+// pipeline (comboCandidates/thresholdsFromPool/selectDiversePatterns) as
+// the main syndicate patterns, just scoped to rows matching this one tag.
+function focusSyndicateOptions(sportTag, sportLabel) {
+  const rows = state.raw.filter(r => r.sport === sportTag && isRealPick(r));
+  if (!rows.length) return [];
+  const combos = comboCandidates(rows);
+  const pointStarts = pointThresholdCandidates(rows, null, null);
+  const candidates = selectDiversePatterns([...combos, ...pointStarts], 6);
+  return candidates.map(c => {
+    const opt = syndicatePatternToOption({ ...c, group: sportLabel }, 'Syndicate pattern');
+    opt.sportLabel = sportLabel;
+    opt.colorClass = sportColorClass(sportLabel === 'AFL' ? 'AFL' : 'Rugby Union');
+    return opt;
+  });
+}
+
+function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
+  const memberOptions = [
+    ...yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern')),
+    ...syndicatePatterns.map(item => syndicatePatternToOption(item, 'Syndicate pattern')),
   ];
-  const realWorld = realWorldPatterns.map(realWorldPatternToUnified);
+  const pools = {
+    EPL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'EPL').map(realWorldPatternToOption)],
+    NFL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NFL').map(realWorldPatternToOption)],
+    NRL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NRL').map(realWorldPatternToOption)],
+    'NZ Domestic Rugby': focusSyndicateOptions('Rugby Union (NPC)', 'Rugby Union'),
+    AFL: focusSyndicateOptions('AFL', 'AFL'),
+  };
+  // Member-driven options (your/syndicate patterns not already captured by
+  // the focus-sport syndicate pools above) fold into whichever focus
+  // sport's pool they belong to, so a strong syndicate pattern for, say,
+  // NFL still has a chance to appear alongside the real-world NFL options.
+  memberOptions.forEach(opt => {
+    if (pools[opt.sportLabel]) pools[opt.sportLabel].push(opt);
+    else if (REAL_WORLD_TO_SPORT_GROUP.NFL === opt.sportLabel && pools.NFL) pools.NFL.push(opt);
+  });
 
-  memberDriven.sort((a, b) => b.rating - a.rating);
-  realWorld.sort((a, b) => b.rating - a.rating);
+  const consolidatedPools = Object.fromEntries(
+    Object.entries(pools).map(([sport, opts]) => [sport, consolidateOptions(opts).sort((a, b) => b.rating - a.rating)])
+  );
 
-  const realWorldCap = Math.round(WORTH_WATCHING_MAX_TOTAL * WORTH_WATCHING_REAL_WORLD_SHARE);
-  const memberCap = WORTH_WATCHING_MAX_TOTAL - realWorldCap;
-
-  const selected = [...realWorld.slice(0, realWorldCap), ...memberDriven.slice(0, memberCap)];
+  const focusOrder = ['EPL', 'NFL', 'NRL', 'NZ Domestic Rugby', 'AFL'];
+  const selected = [];
+  for (let round = 0; selected.length < WORTH_WATCHING_MAX_TOTAL; round++) {
+    let addedThisRound = false;
+    for (const sport of focusOrder) {
+      if (selected.length >= WORTH_WATCHING_MAX_TOTAL) break;
+      const tile = consolidatedPools[sport] && consolidatedPools[sport][round];
+      if (tile) { selected.push(tile); addedThisRound = true; }
+    }
+    if (!addedThisRound) break;
+  }
   selected.sort((a, b) => b.rating - a.rating);
   return selected;
 }
 
+
+
 let flipTileIdCounter = 0;
-function flipTileHtml(item) {
+function flipTileHtml(tile) {
   flipTileIdCounter += 1;
   const id = `flip-tile-${flipTileIdCounter}`;
-  const valueLine = item.fairOdds
-    ? `<p class="flip-fair-odds">Worth it at $${item.fairOdds.toFixed(2)} or higher.</p>`
-    : '';
+  const optionsHtml = tile.options.map(opt => {
+    const valueLine = opt.fairOdds ? ` Worth it at $${opt.fairOdds.toFixed(2)} or higher.` : '';
+    return `<div class="flip-option">
+      <p class="flip-option-header"><span>${escapeHtml(opt.betOption)}</span><span class="flip-rating">${opt.rating}/10</span></p>
+      <p class="flip-rationale">${escapeHtml(opt.rationale)}${valueLine}</p>
+    </div>`;
+  }).join('');
   return `<div class="flip-tile" id="${id}">
     <div class="flip-inner">
-      <div class="flip-face flip-front ${item.colorClass}">
-        <p class="flip-pick">${escapeHtml(item.pickAndBet)}</p>
+      <div class="flip-face flip-front ${tile.colorClass}">
+        <p class="flip-pick">${escapeHtml(tile.title)}</p>
         <div class="flip-front-bottom">
-          <span class="flip-sport">${escapeHtml(item.sportLabel)}</span>
-          <span class="flip-rating">${item.rating}/10</span>
+          <span class="flip-sport">${escapeHtml(tile.sportLabel)}</span>
+          <span class="flip-rating">${tile.rating}/10</span>
         </div>
       </div>
-      <div class="flip-face flip-back ${item.colorClass}">
-        <div>
-          <p class="flip-rationale">${escapeHtml(item.rationale)}</p>
-          ${valueLine}
-        </div>
+      <div class="flip-face flip-back ${tile.colorClass}">
+        <div class="flip-options-list">${optionsHtml}</div>
       </div>
     </div>
   </div>`;
