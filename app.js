@@ -2426,11 +2426,16 @@ function findStreakPatterns(games, sport, minLength = 5) {
       else if (result === lastResult) { streak += 1; }
       else break;
     }
-    if ((lastResult === 'W' || lastResult === 'L') && streak >= minLength) {
-      const word = lastResult === 'W' ? 'won' : 'lost';
+    // Only winning streaks are surfaced as a standalone pick. A losing
+    // streak isn't actionable without knowing who the team plays next (see
+    // the parked opponent-substitution feature) - showing it here would
+    // read as "back this team", which is the opposite of what a losing
+    // streak actually supports. Backing a team on a genuine cold run stays
+    // out of Worth Watching until that opponent lookup exists.
+    if (lastResult === 'W' && streak >= minLength) {
       patterns.push({
         sport, team, type: 'streak', pick: team, betOption: 'H2H',
-        rationale: `${team} have ${word} their last ${streak} in a row.`,
+        rationale: `${team} have won their last ${streak} in a row.`,
         rating: wilsonRating(streak, streak), fairOdds: fairOddsFromWinRate(streak, streak),
       });
     }
@@ -2438,7 +2443,7 @@ function findStreakPatterns(games, sport, minLength = 5) {
   return patterns;
 }
 
-function findHomeAwayPatterns(games, sport, n = 10, minHits = 8) {
+function findHomeAwayPatterns(games, sport, n = 12, minHits = 10) {
   const teams = new Set();
   games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
   const patterns = [];
@@ -2486,7 +2491,7 @@ function scoringBetTypeLabel(sport) {
   return sport === 'EPL' ? 'Total Goals' : 'Total Points';
 }
 
-function findScoringPatterns(games, sport, threshold, n = 10, minHits = 8) {
+function findScoringPatterns(games, sport, threshold, n = 12, minHits = 10) {
   if (threshold == null) return [];
   const teams = new Set();
   games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
@@ -2532,7 +2537,7 @@ function dynamicMarginThreshold(games, windowDays = 365, percentile = 70) {
   return margins[Math.floor(margins.length * percentile / 100)];
 }
 
-function findMarginPatterns(games, sport, threshold, n = 10, minHits = 7) {
+function findMarginPatterns(games, sport, threshold, n = 12, minHits = 8) {
   if (threshold == null) return [];
   const teams = new Set();
   games.forEach(g => { if (g.home_team) teams.add(g.home_team); if (g.away_team) teams.add(g.away_team); });
@@ -2631,7 +2636,7 @@ function realWorldSignalsForTeam(name, sportFamily) {
     });
   }
 
-  const recentGames = log.filter(g => g.for != null).slice(-10);
+  const recentGames = log.filter(g => g.for != null).slice(-12);
   if (recentGames.length >= 5) {
     const wins = recentGames.filter(g => g.for > g.against).length;
     const success = wins / recentGames.length;
@@ -2650,6 +2655,43 @@ function realWorldSignalsForTeam(name, sportFamily) {
 // recently get a small, smoothly-scaling discount on the quality bar (never
 // on the rating itself), so a sport members are actively engaged with right
 // now gets more chances to appear without any manual reconfiguration.
+// Groups real-world patterns into bet-type buckets - H2H (streaks and
+// home/away splits are both fundamentally win/loss picks), Totals (Points
+// or Goals depending on sport), and Winning Margin - then takes turns
+// pulling the best-rated pattern from each bucket in round-robin order.
+// This is the same round-robin mechanic selectDiversePatterns() already
+// uses for syndicate patterns (there, keyed by sport), applied here to bet
+// type instead: without it, H2H patterns would naturally dominate the list
+// on rating alone, since streaks and home/away splits are statistically
+// easier to satisfy than a margin or scoring threshold - not because H2H is
+// actually a stronger or more common bet type worth surfacing more often.
+function betTypeBucket(pattern) {
+  if (pattern.type === 'streak' || pattern.type === 'home_away') return 'H2H';
+  if (pattern.type === 'scoring') return 'Totals';
+  if (pattern.type === 'margin') return 'Winning Margin';
+  return 'Other';
+}
+function selectDiverseByBetType(candidates, count) {
+  const byBetType = new Map();
+  candidates.forEach(c => {
+    const bucket = betTypeBucket(c);
+    if (!byBetType.has(bucket)) byBetType.set(bucket, []);
+    byBetType.get(bucket).push(c);
+  });
+  byBetType.forEach(list => list.sort((a, b) => b.rating - a.rating));
+  const buckets = [...byBetType.values()];
+  const selected = [];
+  for (let round = 0; selected.length < count; round++) {
+    let addedThisRound = false;
+    for (const list of buckets) {
+      if (selected.length >= count) break;
+      if (list[round]) { selected.push(list[round]); addedThisRound = true; }
+    }
+    if (!addedThisRound) break;
+  }
+  return selected;
+}
+
 function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivityBonus = 2, activityScaleDays = 60) {
   const activityBySport = computeActivityBySport();
   const allPatterns = [];
@@ -2669,8 +2711,7 @@ function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivit
     const bonus = Math.max(0, maxActivityBonus - daysSinceLastPick / activityScaleDays);
     return p.rating >= baseMinRating - bonus;
   });
-  qualifying.sort((a, b) => b.rating - a.rating);
-  return qualifying.slice(0, maxTotal);
+  return selectDiverseByBetType(qualifying, maxTotal);
 }
 
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
