@@ -962,27 +962,35 @@ function teamQuarterFormPanel() {
 
 function yearInsightStrip(currentSeasonRows) {
   const MIN_PICKS = 5;
-  const topBy = key => {
+  // Ranked by Wilson lower bound, not raw success rate - "weighted towards
+  // more picks" per the brief, so a 1-from-1 record doesn't outrank a
+  // 9-from-10 record just because its raw percentage happens to be higher.
+  const topThreeBy = key => {
     const rows = aggregate(currentSeasonRows, key).filter(x => x.picks >= MIN_PICKS);
-    if (!rows.length) return null;
-    return rows.slice().sort((a, b) => b.success - a.success || b.picks - a.picks)[0];
+    return rows
+      .slice()
+      .sort((a, b) => wilsonLowerBound(b.wins, b.picks) - wilsonLowerBound(a.wins, a.picks))
+      .slice(0, 3);
   };
-  const topPick = topBy('name');
-  const topBetType = topBy('betTypeGroup');
-  const topSport = topBy('group');
+  const topPicks = topThreeBy('name');
+  const topBetTypes = topThreeBy('betTypeGroup');
+  const topSports = topThreeBy('group');
 
-  const flipTile = (colorClass, label, item) => {
-    if (!item) {
-      return `<div class="flip-tile"><div class="flip-inner"><div class="flip-face flip-front ${colorClass}"><p class="flip-pick">${escapeHtml(label)}</p><p class="flip-rationale muted">Not enough data yet (min ${MIN_PICKS} picks)</p></div></div></div>`;
+  const flipTile = (colorClass, label, ranked) => {
+    if (!ranked.length) {
+      return `<div class="flip-tile"><div class="flip-inner"><div class="flip-face flip-front ${colorClass}"><p class="tile-label">${escapeHtml(label)}</p><p class="tile-hint">Not enough data yet (min ${MIN_PICKS} picks)</p></div></div></div>`;
     }
+    const top = ranked[0];
+    const backList = ranked.map((item, i) => `<div class="flip-option"><p class="flip-option-header"><span>${i + 1}. ${escapeHtml(item.name)}</span><span class="flip-rating">${pct(item.success)}</span></p><p class="flip-rationale">${item.wins} from ${item.picks}</p></div>`).join('');
     return `<div class="flip-tile">
       <div class="flip-inner">
         <div class="flip-face flip-front ${colorClass}">
-          <p class="flip-pick">${escapeHtml(label)}</p>
-          <div class="flip-front-bottom"><span class="flip-sport">${escapeHtml(item.name)}</span><span class="flip-rating">${pct(item.success)}</span></div>
+          <p class="tile-label">${escapeHtml(label)}</p>
+          <p class="tile-value">${escapeHtml(top.name)}</p>
+          <p class="tile-hint">${top.wins} from ${top.picks}</p>
         </div>
         <div class="flip-face flip-back ${colorClass}">
-          <p class="flip-rationale">${escapeHtml(item.name)}, ${item.wins} win${item.wins === 1 ? '' : 's'} out of ${item.picks} pick${item.picks === 1 ? '' : 's'}, ${pct(item.success)}.</p>
+          <div class="flip-options-list">${backList}</div>
         </div>
       </div>
     </div>`;
@@ -991,9 +999,9 @@ function yearInsightStrip(currentSeasonRows) {
   setTimeout(bindFlipTiles, 0);
 
   return `<div class="panel"><h3>Insights this year</h3><div class="flip-tile-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-    ${flipTile('sport-football', 'Top pick option', topPick)}
-    ${flipTile('sport-league', 'Top bet option', topBetType)}
-    ${flipTile('sport-union', 'Top sport', topSport)}
+    ${flipTile('sport-football', 'Top pick option', topPicks)}
+    ${flipTile('sport-league', 'Top bet option', topBetTypes)}
+    ${flipTile('sport-union', 'Top sport', topSports)}
   </div></div>`;
 }
 
@@ -1022,7 +1030,7 @@ function dashboard(data) {
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
-${financialTilesStrip(data)}
+${financialTilesStrip(data, previousSeasonToDateRows)}
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
@@ -2002,7 +2010,7 @@ const MM_COST_PER_TEAM_PER_WEEK = 25;
 // revenue, outstanding fines, YTD position), reusing currentSeasonFines()
 // (built and validated for the earlier standalone Financials tab, now
 // relocated here instead) rather than a separate calculation.
-function financialTilesStrip(data) {
+function financialTilesStrip(data, previousSeasonRows) {
   const { season, members } = currentSeasonFines(data);
   const seasonRows = data.filter(r => seasonEqual(r.year, season));
 
@@ -2017,11 +2025,31 @@ function financialTilesStrip(data) {
   const mmCosts = roundsSoFar * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
   const netPosition = grossRevenue - mmCosts;
 
-  const tile = (id, colorClass, frontTitle, frontValue, backHtml) => `<div class="flip-tile">
+  // Same-time-last-year comparison for YTD position, reusing the same
+  // round-count-matched previous-season rows already computed for the
+  // Wins & losses / Money & people / Odds tiles above (seasonToDateComparison),
+  // not a fresh season lookup - keeps "same time last year" consistent with
+  // what those other tiles mean by it. Last year's fines/costs use the same
+  // $25/team/week methodology as this year, for a like-for-like comparison,
+  // not an attempt at exact historical accuracy (which needs real AGM figures).
+  let lastYearHint = '';
+  if (previousSeasonRows && previousSeasonRows.length) {
+    const prevMmWinnings = previousSeasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+    const prevFinesCollected = previousSeasonRows
+      .filter(r => Number(r.row?.Fines) > 0 && clean(r.row?.['Date MM / Fine Paid']))
+      .reduce((sum, r) => sum + Number(r.row.Fines), 0);
+    const prevRounds = uniq(previousSeasonRows.filter(r => r.result).map(r => r.date)).length;
+    const prevMmCosts = prevRounds * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
+    const prevNet = prevMmWinnings + prevFinesCollected - prevMmCosts;
+    lastYearHint = `vs ${fmtMoney(prevNet)} same time last year`;
+  }
+
+  const tile = (colorClass, label, value, hint, backHtml) => `<div class="flip-tile">
     <div class="flip-inner">
       <div class="flip-face flip-front ${colorClass}">
-        <p class="flip-pick">${escapeHtml(frontTitle)}</p>
-        <div class="flip-front-bottom"><span class="flip-sport">${escapeHtml(season)}</span><span class="flip-rating">${frontValue}</span></div>
+        <p class="tile-label">${escapeHtml(label)}</p>
+        <p class="tile-value">${value}</p>
+        <p class="tile-hint">${hint}</p>
       </div>
       <div class="flip-face flip-back ${colorClass}">${backHtml}</div>
     </div>
@@ -2042,9 +2070,9 @@ function financialTilesStrip(data) {
   setTimeout(bindFlipTiles, 0);
 
   return `<div class="panel"><h3>Financial position</h3><div class="flip-tile-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-    ${tile('gross', 'sport-football', 'Gross revenue', fmtMoney(grossRevenue), grossBack)}
-    ${tile('outstanding', 'sport-afl', 'Outstanding fines', fmtMoney(totalOutstanding), outstandingBack)}
-    ${tile('position', positionCls, 'YTD position', (netPosition >= 0 ? '+' : '') + fmtMoney(netPosition), positionBack)}
+    ${tile('sport-football', 'Gross revenue', fmtMoney(grossRevenue), `${fmtMoney(mmWinnings)} winnings + ${fmtMoney(finesCollected)} fines`, grossBack)}
+    ${tile('sport-afl', 'Outstanding fines', fmtMoney(totalOutstanding), `${outstandingFines.length} fine${outstandingFines.length === 1 ? '' : 's'} owing`, outstandingBack)}
+    ${tile(positionCls, 'YTD position', (netPosition >= 0 ? '+' : '') + fmtMoney(netPosition), lastYearHint, positionBack)}
   </div></div>`;
 }
 
