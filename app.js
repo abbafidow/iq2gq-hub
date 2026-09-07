@@ -205,7 +205,12 @@ function normalise(row, index) {
 
   const mmReturn = num(row["MM Return"]) || 0;
 
-  const resultRaw = lower(row["Result"]);
+  // Raw_Live's "Result" column header has a trailing space ("Result "),
+  // unlike Raw_History's clean "Result" - if the two tabs get merged
+  // server-side without normalising this, every current-season row would
+  // silently fail to resolve a result at all. Checked defensively here
+  // regardless of which tab a row actually came from.
+  const resultRaw = lower(row["Result"] ?? row["Result "]);
 
   let result = "";
 
@@ -982,6 +987,7 @@ function render() {
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
+  if (page === 'financials') app.innerHTML = financials(data);
 }
 
 function dashboard(data) {
@@ -1922,6 +1928,131 @@ function updateSearchResults(data) {
     { key: 'year', label: 'Year' },
   ])}</div>`;
 }
+
+// ----------------------------------------------------------------------
+// Financials - current-season fine tracking, plus a historical summary
+// sourced directly from Raw_History (already-finalised, never
+// recalculated). The escalating fine rule only applies to the current
+// season, since past seasons' Fines/Date MM / Fine Paid columns are
+// settled historical fact:
+//   - A loss increments a per-member consecutive-loss streak; that
+//     week's fine is streak x $10.
+//   - Any win resets the streak to 0 for that member.
+//   - Paying an outstanding fine does NOT reset the streak - only a win
+//     does. Summing all unpaid per-week fines together naturally
+//     produces the correct cumulative total for an ongoing bad run.
+// ----------------------------------------------------------------------
+
+function currentSeasonFines(data) {
+  const season = currentYear(data);
+  const seasonRows = data.filter(r => seasonEqual(r.year, season) && r.result);
+  const byMember = new Map();
+  seasonRows.forEach(r => {
+    if (!byMember.has(r.member)) byMember.set(r.member, []);
+    byMember.get(r.member).push(r);
+  });
+
+  const results = [];
+  byMember.forEach((rows, member) => {
+    const sorted = [...rows].sort((a, b) => (parseDMY(a.date) || 0) - (parseDMY(b.date) || 0));
+    let streak = 0;
+    const fines = [];
+    sorted.forEach(r => {
+      if (r.win) { streak = 0; return; }
+      if (r.loss) {
+        streak += 1;
+        fines.push({ date: r.date, amount: streak * 10, paid: Boolean(clean(r.row['Date MM / Fine Paid'])) });
+      }
+    });
+    if (fines.length) {
+      const outstanding = fines.filter(f => !f.paid).reduce((sum, f) => sum + f.amount, 0);
+      const totalFined = fines.reduce((sum, f) => sum + f.amount, 0);
+      results.push({ member, fines, outstanding, totalFined });
+    }
+  });
+  return { season, members: results };
+}
+
+function financials(data) {
+  const { season, members } = currentSeasonFines(data);
+  const totalOutstanding = members.reduce((sum, m) => sum + m.outstanding, 0);
+  const outstandingMembers = members.filter(m => m.outstanding > 0);
+  const totalFinedThisSeason = members.reduce((sum, m) => sum + m.totalFined, 0);
+
+  const seasonRows = data.filter(r => seasonEqual(r.year, season));
+  const mmWinningsThisSeason = seasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+
+  const outstandingTileHtml = () => {
+    if (!outstandingMembers.length) {
+      return `<div class="pa-watch">No outstanding fines this season - everyone's square.</div>`;
+    }
+    const backList = outstandingMembers
+      .sort((a, b) => b.outstanding - a.outstanding)
+      .map(m => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(m.member)}</span><span class="flip-rating">${fmtMoney(m.outstanding)}</span></p></div>`)
+      .join('');
+    return `<div class="flip-tile" style="max-width: 260px;">
+      <div class="flip-inner">
+        <div class="flip-face flip-front sport-other">
+          <p class="flip-pick">Outstanding fines</p>
+          <div class="flip-front-bottom">
+            <span class="flip-sport">${outstandingMembers.length} member${outstandingMembers.length === 1 ? '' : 's'}</span>
+            <span class="flip-rating">${fmtMoney(totalOutstanding)}</span>
+          </div>
+        </div>
+        <div class="flip-face flip-back sport-other">
+          <div class="flip-options-list">${backList}</div>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  const paymentStatusHtml = () => {
+    const allMembersThisSeason = uniq(seasonRows.map(r => r.member)).filter(Boolean).sort();
+    return allMembersThisSeason.map(member => {
+      const record = members.find(m => m.member === member);
+      const owing = record ? record.outstanding : 0;
+      const cls = owing > 0 ? 'bg-warning' : 'bg-success';
+      const textCls = owing > 0 ? 'text-warning' : 'text-success';
+      const icon = owing > 0 ? 'ti-clock' : 'ti-check';
+      const label = owing > 0 ? `${escapeHtml(member)} - ${fmtMoney(owing)} owing` : `${escapeHtml(member)} - paid`;
+      return `<div style="display: flex; align-items: center; gap: 8px; background: var(--${cls}); border-radius: var(--radius); padding: 8px 12px;"><i class="ti ${icon}" style="color: var(--${textCls}); font-size: 16px;" aria-hidden="true"></i><span style="font-size: 13px; color: var(--${textCls});">${label}</span></div>`;
+    }).join('');
+  };
+
+  setTimeout(bindFlipTiles, 0);
+
+  return `
+    <div class="page-header">
+      <h1>Financials</h1>
+      <p>Current season (${escapeHtml(season)}) fines and MM position. Historical seasons (in Raw_History) are shown as finalised record, not recalculated.</p>
+    </div>
+
+    <div class="pa-card">
+      <div class="pa-title">FINE PAYMENT STATUS</div>
+      <div class="pa-label">Current season (${escapeHtml(season)}) - a loss escalates the fine if it follows another loss without a win in between; paying a fine does not reset that streak, only a win does.</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 1.5rem;">
+        ${paymentStatusHtml() || '<div class="pa-watch">No resulted picks recorded yet this season.</div>'}
+      </div>
+      ${outstandingTileHtml()}
+    </div>
+
+    <div class="pa-card" style="margin-top: 1.5rem;">
+      <div class="pa-title">SEASON SUMMARY</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+        <div style="background: var(--surface-1); border-radius: var(--radius); padding: 1rem;">
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 4px;">MM winnings (${escapeHtml(season)})</p>
+          <p style="font-size: 24px; font-weight: 500; margin: 0;">${fmtMoney(mmWinningsThisSeason)}</p>
+        </div>
+        <div style="background: var(--surface-1); border-radius: var(--radius); padding: 1rem;">
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 4px;">Total fines issued (${escapeHtml(season)})</p>
+          <p style="font-size: 24px; font-weight: 500; margin: 0;">${fmtMoney(totalFinedThisSeason)}</p>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top: 1rem;">Monthly MM costs (\$25/team/week) and historical seasons' figures aren't shown yet - MM costs varied year to year historically and need real annual figures from past AGM reports before that can be shown accurately, rather than assuming a flat rate retroactively.</p>
+    </div>
+  `;
+}
+
 function pickAssistant(data) {
   const member = state.selectedMember;
   if (!member) {
