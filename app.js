@@ -967,15 +967,34 @@ function yearInsightStrip(currentSeasonRows) {
     if (!rows.length) return null;
     return rows.slice().sort((a, b) => b.success - a.success || b.picks - a.picks)[0];
   };
-  const topSport = topBy('group');
-  const topBetType = topBy('betTypeGroup');
   const topPick = topBy('name');
+  const topBetType = topBy('betTypeGroup');
+  const topSport = topBy('group');
 
-  const card = (cls, label, item) => item
-    ? `<div class="insight-mini ${cls}"><div class="insight-mini-label">${escapeHtml(label)}</div><div class="insight-mini-value">${escapeHtml(item.name)} ${pct(item.success)}</div></div>`
-    : `<div class="insight-mini ${cls}"><div class="insight-mini-label">${escapeHtml(label)}</div><div class="insight-mini-value muted">Not enough data yet (min ${MIN_PICKS} picks)</div></div>`;
+  const flipTile = (colorClass, label, item) => {
+    if (!item) {
+      return `<div class="flip-tile"><div class="flip-inner"><div class="flip-face flip-front ${colorClass}"><p class="flip-pick">${escapeHtml(label)}</p><p class="flip-rationale muted">Not enough data yet (min ${MIN_PICKS} picks)</p></div></div></div>`;
+    }
+    return `<div class="flip-tile">
+      <div class="flip-inner">
+        <div class="flip-face flip-front ${colorClass}">
+          <p class="flip-pick">${escapeHtml(label)}</p>
+          <div class="flip-front-bottom"><span class="flip-sport">${escapeHtml(item.name)}</span><span class="flip-rating">${pct(item.success)}</span></div>
+        </div>
+        <div class="flip-face flip-back ${colorClass}">
+          <p class="flip-rationale">${escapeHtml(item.name)}, ${item.wins} win${item.wins === 1 ? '' : 's'} out of ${item.picks} pick${item.picks === 1 ? '' : 's'}, ${pct(item.success)}.</p>
+        </div>
+      </div>
+    </div>`;
+  };
 
-  return `<div class="panel"><h3>Insights this year</h3><div class="insight-mini-row">${card('insight-accent', 'Top sport', topSport)}${card('insight-good', 'Top bet option', topBetType)}${card('insight-warn', 'Top pick option', topPick)}</div></div>`;
+  setTimeout(bindFlipTiles, 0);
+
+  return `<div class="panel"><h3>Insights this year</h3><div class="flip-tile-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    ${flipTile('sport-football', 'Top pick option', topPick)}
+    ${flipTile('sport-league', 'Top bet option', topBetType)}
+    ${flipTile('sport-union', 'Top sport', topSport)}
+  </div></div>`;
 }
 
 function render() {
@@ -1003,6 +1022,7 @@ function dashboard(data) {
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
+${financialTilesStrip(data)}
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
     { key: 'rank', label: '#', type: 'num' },
     { key: 'name', label: 'Member', primary: true },
@@ -1011,8 +1031,7 @@ ${yearInsightStrip(currentSeasonRows)}
     { key: 'sport', label: 'Sport' },
     { key: 'odds', label: 'Odds', type: 'odds' },
     { key: 'result', label: 'Result' },
-  ])}</div>
-${financialTilesStrip(data)}`;
+  ])}</div>`;
 }
 
 function statsBallSelector() {
