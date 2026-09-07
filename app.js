@@ -987,7 +987,6 @@ function render() {
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
-  if (page === 'financials') app.innerHTML = financials(data);
 }
 
 function dashboard(data) {
@@ -1012,7 +1011,8 @@ ${yearInsightStrip(currentSeasonRows)}
     { key: 'sport', label: 'Sport' },
     { key: 'odds', label: 'Odds', type: 'odds' },
     { key: 'result', label: 'Result' },
-  ])}</div>`;
+  ])}</div>
+${financialTilesStrip(data)}`;
 }
 
 function statsBallSelector() {
@@ -1973,84 +1973,60 @@ function currentSeasonFines(data) {
   return { season, members: results };
 }
 
-function financials(data) {
+// Number of teams sharing the $25/team/week MM cost - assumed 4, matching
+// the syndicate's rotating four-team structure. Flagged clearly here since
+// it's an assumption, not something confirmed from the data itself.
+const MM_COST_TEAM_COUNT = 4;
+const MM_COST_PER_TEAM_PER_WEEK = 25;
+
+// Financial summary strip for the Dashboard - three flip-tiles (gross
+// revenue, outstanding fines, YTD position), reusing currentSeasonFines()
+// (built and validated for the earlier standalone Financials tab, now
+// relocated here instead) rather than a separate calculation.
+function financialTilesStrip(data) {
   const { season, members } = currentSeasonFines(data);
-  const totalOutstanding = members.reduce((sum, m) => sum + m.outstanding, 0);
-  const outstandingMembers = members.filter(m => m.outstanding > 0);
-  const totalFinedThisSeason = members.reduce((sum, m) => sum + m.totalFined, 0);
-
   const seasonRows = data.filter(r => seasonEqual(r.year, season));
-  const mmWinningsThisSeason = seasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
 
-  const outstandingTileHtml = () => {
-    if (!outstandingMembers.length) {
-      return `<div class="pa-watch">No outstanding fines this season - everyone's square.</div>`;
-    }
-    const backList = outstandingMembers
-      .sort((a, b) => b.outstanding - a.outstanding)
-      .map(m => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(m.member)}</span><span class="flip-rating">${fmtMoney(m.outstanding)}</span></p></div>`)
-      .join('');
-    return `<div class="flip-tile" style="max-width: 260px;">
-      <div class="flip-inner">
-        <div class="flip-face flip-front sport-other">
-          <p class="flip-pick">Outstanding fines</p>
-          <div class="flip-front-bottom">
-            <span class="flip-sport">${outstandingMembers.length} member${outstandingMembers.length === 1 ? '' : 's'}</span>
-            <span class="flip-rating">${fmtMoney(totalOutstanding)}</span>
-          </div>
-        </div>
-        <div class="flip-face flip-back sport-other">
-          <div class="flip-options-list">${backList}</div>
-        </div>
+  const mmWinnings = seasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+  const allFines = members.flatMap(m => m.fines.map(f => ({ member: m.member, ...f })));
+  const finesCollected = allFines.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0);
+  const outstandingFines = allFines.filter(f => !f.paid);
+  const totalOutstanding = outstandingFines.reduce((sum, f) => sum + f.amount, 0);
+  const grossRevenue = mmWinnings + finesCollected;
+
+  const roundsSoFar = uniq(seasonRows.filter(r => r.result).map(r => r.date)).length;
+  const mmCosts = roundsSoFar * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
+  const netPosition = grossRevenue - mmCosts;
+
+  const tile = (id, colorClass, frontTitle, frontValue, backHtml) => `<div class="flip-tile">
+    <div class="flip-inner">
+      <div class="flip-face flip-front ${colorClass}">
+        <p class="flip-pick">${escapeHtml(frontTitle)}</p>
+        <div class="flip-front-bottom"><span class="flip-sport">${escapeHtml(season)}</span><span class="flip-rating">${frontValue}</span></div>
       </div>
-    </div>`;
-  };
+      <div class="flip-face flip-back ${colorClass}">${backHtml}</div>
+    </div>
+  </div>`;
 
-  const paymentStatusHtml = () => {
-    const allMembersThisSeason = uniq(seasonRows.map(r => r.member)).filter(Boolean).sort();
-    return allMembersThisSeason.map(member => {
-      const record = members.find(m => m.member === member);
-      const owing = record ? record.outstanding : 0;
-      const cls = owing > 0 ? 'bg-warning' : 'bg-success';
-      const textCls = owing > 0 ? 'text-warning' : 'text-success';
-      const icon = owing > 0 ? 'ti-clock' : 'ti-check';
-      const label = owing > 0 ? `${escapeHtml(member)} - ${fmtMoney(owing)} owing` : `${escapeHtml(member)} - paid`;
-      return `<div style="display: flex; align-items: center; gap: 8px; background: var(--${cls}); border-radius: var(--radius); padding: 8px 12px;"><i class="ti ${icon}" style="color: var(--${textCls}); font-size: 16px;" aria-hidden="true"></i><span style="font-size: 13px; color: var(--${textCls});">${label}</span></div>`;
-    }).join('');
-  };
+  const grossBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) plus fines collected (${fmtMoney(finesCollected)}) = ${fmtMoney(grossRevenue)}.</p>`;
+
+  const outstandingBack = outstandingFines.length
+    ? `<div class="flip-options-list">${outstandingFines
+        .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
+        .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
+        .join('')}</div>`
+    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`;
+
+  const positionCls = netPosition >= 0 ? 'sport-league' : 'sport-nfl';
+  const positionBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) + fines collected (${fmtMoney(finesCollected)}) - MM costs (${fmtMoney(mmCosts)}, ${MM_COST_TEAM_COUNT} teams &times; ${roundsSoFar} rounds &times; $${MM_COST_PER_TEAM_PER_WEEK}) = ${fmtMoney(netPosition)}.</p>`;
 
   setTimeout(bindFlipTiles, 0);
 
-  return `
-    <div class="page-header">
-      <h1>Financials</h1>
-      <p>Current season (${escapeHtml(season)}) fines and MM position. Historical seasons (in Raw_History) are shown as finalised record, not recalculated.</p>
-    </div>
-
-    <div class="pa-card">
-      <div class="pa-title">FINE PAYMENT STATUS</div>
-      <div class="pa-label">Current season (${escapeHtml(season)}) - a loss escalates the fine if it follows another loss without a win in between; paying a fine does not reset that streak, only a win does.</div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 1.5rem;">
-        ${paymentStatusHtml() || '<div class="pa-watch">No resulted picks recorded yet this season.</div>'}
-      </div>
-      ${outstandingTileHtml()}
-    </div>
-
-    <div class="pa-card" style="margin-top: 1.5rem;">
-      <div class="pa-title">SEASON SUMMARY</div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
-        <div style="background: var(--surface-1); border-radius: var(--radius); padding: 1rem;">
-          <p style="font-size: 13px; color: var(--muted); margin: 0 0 4px;">MM winnings (${escapeHtml(season)})</p>
-          <p style="font-size: 24px; font-weight: 500; margin: 0;">${fmtMoney(mmWinningsThisSeason)}</p>
-        </div>
-        <div style="background: var(--surface-1); border-radius: var(--radius); padding: 1rem;">
-          <p style="font-size: 13px; color: var(--muted); margin: 0 0 4px;">Total fines issued (${escapeHtml(season)})</p>
-          <p style="font-size: 24px; font-weight: 500; margin: 0;">${fmtMoney(totalFinedThisSeason)}</p>
-        </div>
-      </div>
-      <p class="muted small" style="margin-top: 1rem;">Monthly MM costs (\$25/team/week) and historical seasons' figures aren't shown yet - MM costs varied year to year historically and need real annual figures from past AGM reports before that can be shown accurately, rather than assuming a flat rate retroactively.</p>
-    </div>
-  `;
+  return `<div class="panel"><h3>Financial position</h3><div class="flip-tile-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    ${tile('gross', 'sport-football', 'Gross revenue', fmtMoney(grossRevenue), grossBack)}
+    ${tile('outstanding', 'sport-afl', 'Outstanding fines', fmtMoney(totalOutstanding), outstandingBack)}
+    ${tile('position', positionCls, 'YTD position', (netPosition >= 0 ? '+' : '') + fmtMoney(netPosition), positionBack)}
+  </div></div>`;
 }
 
 function pickAssistant(data) {
