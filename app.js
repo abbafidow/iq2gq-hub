@@ -1135,9 +1135,14 @@ function render() {
 function dashboard(data) {
   const cy = currentYear(state.raw);
   const { current: currentSeasonRows, previous: previousSeasonToDateRows, roundCount } = seasonToDateComparison(cy);
-  const presRows = presidentialRace(currentSeasonRows);
-  const presidents = presRows.filter(r => r.rank === 1).map(r => r.name);
-  const seasonHeading = `<p class="dashboard-season-heading">${escapeHtml(cy || 'Current season')}${presidents.length ? ` | President: ${escapeHtml(presidents.join(', '))}` : ''}</p>`;
+  // President is a fixed role held for the whole syndicate year, decided
+  // separately from (and unrelated to) Presidential Race standing - it is
+  // NOT "whoever's leading the race right now". Reuses the same static
+  // PRESIDENTS_DIAL_DATA already hardcoded for the Records page dial, so
+  // there is only one place to update once a year, not two.
+  const currentTermInfo = PRESIDENTS_DIAL_DATA.find(d => d.term === cy);
+  const currentPresident = currentTermInfo && currentTermInfo.president !== 'N/A' ? currentTermInfo.president : '';
+  const seasonHeading = `<p class="dashboard-season-heading">${escapeHtml(cy || 'Current season')}${currentPresident ? ` | President: ${escapeHtml(currentPresident)}` : ''}</p>`;
   const pageHeader = `<div class="page-header"><h1>Dashboard</h1><p>See how this season is going for the Syndicate - the race for the Presidency, which team is doing best, and our top Sport, Bet and Pick options.</p></div>`;
   const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
@@ -1759,6 +1764,70 @@ function teamWinningsTally(rows) {
     .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity));
 }
 
+// One flip-tile per record type shared by both scopes: front is this
+// season (green, matching the Hub's existing record-gold-current colour),
+// back is all-time (gold, matching record-gold-alltime) - tap to flip.
+// Reuses the global bindFlipTiles() binder already used everywhere else in
+// the Hub, so no new interaction code is needed.
+function recordFlipTile(label, seasonValue, allTimeValue) {
+  return `<div class="flip-tile record-flip-tile">
+    <div class="flip-inner">
+      <div class="flip-face flip-front record-flip-front">
+        <p class="tile-label">${escapeHtml(label)}</p>
+        <p class="tile-value">${escapeHtml(seasonValue)}</p>
+      </div>
+      <div class="flip-face flip-back record-flip-back">
+        <p class="tile-label">${escapeHtml(label)} - all-time</p>
+        <p class="tile-value">${escapeHtml(allTimeValue)}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function recordFlipTilesHtml(seasonData, allTimeData, cy) {
+  const winPctText = (r) => r ? `${r.names.join(', ')} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')})` : 'Not enough data yet.';
+  const annualWinPctText = (r) => r ? `${r.member} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.';
+  const mostWinsText = (r) => r ? `${r.names.join(', ')} - ${r.wins.toLocaleString()}` : 'Not enough data yet.';
+  const streakText = (r) => r.streak ? `${r.streak} - ${r.ranges.join(', ')}` : 'Not enough data yet.';
+  const mmKillersText = (r) => r.count ? `${r.count} - ${r.members.join(', ')}` : 'Not enough data yet.';
+  const lonesomeText = (r) => r.total ? `${r.total} - ${r.names.join(', ')}` : 'Not enough data yet.';
+  const crashesText = (r) => r ? `${r.member} - ${r.crashes}${r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.';
+
+  const tiles = [
+    recordFlipTile('Highest successful odds', formatOddsRecord(extremeOddsRecord(seasonData, true, 'max')), formatOddsRecord(extremeOddsRecord(allTimeData, true, 'max'))),
+    recordFlipTile('Lowest unsuccessful odds', formatOddsRecord(extremeOddsRecord(seasonData, false, 'min')), formatOddsRecord(extremeOddsRecord(allTimeData, false, 'min'))),
+    // Season side uses the live trailing streak over full history (not
+    // truncated by the season boundary), matching how this was already
+    // computed before the flip-tile conversion.
+    recordFlipTile('Longest winning streak', streakText(currentTrailingStreakRecord(allTimeData, true)), streakText(longestStreakRecord(allTimeData, true))),
+    recordFlipTile('Longest losing streak', streakText(currentTrailingStreakRecord(allTimeData, false)), streakText(longestStreakRecord(allTimeData, false))),
+    recordFlipTile('Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), annualWinPctText(bestAnnualWinPercentRecord(allTimeData, 10))),
+    recordFlipTile('Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsText(mostWinsRecord(allTimeData))),
+    recordFlipTile('Most MM Killers', mmKillersText(memberFieldLeaderboard(seasonData, 'mmKiller')), mmKillersText(memberFieldLeaderboard(allTimeData, 'mmKiller'))),
+    recordFlipTile('Lonesome Loser(s)', lonesomeText(fieldEventTotal(seasonData, 'lonesomeLoser')), lonesomeText(fieldEventTotal(allTimeData, 'lonesomeLoser'))),
+    recordFlipTile('Tier Crashers (all members crash)', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
+    recordFlipTile('Perfect Rounds (all members successful)', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
+    // Season side only counts once the season's past its halfway point (not
+    // enough signal before then); all-time side is simply the best ever.
+    recordFlipTile('Most crashes in a season', crashesText(isPastSeasonHalfway(seasonData) ? memberCrashesBySeasonRecord(seasonData) : null), crashesText(memberCrashesBySeasonRecord(allTimeData))),
+  ].join('');
+
+  // Losing season doesn't have a natural "other scope" counterpart (a
+  // season isn't compared against its own best-ever single season), and
+  // Highest IM Winnings is a static, manually maintained figure not
+  // computed from the data at all - so these two stay as plain, unflipped
+  // entries rather than being forced into an ill-fitting front/back pairing.
+  const losingSeasonText = losingSeasonRecord(seasonData, 1);
+  const extras = [
+    losingSeasonText ? `<div class="record-shield record-gold-current"><span>Member with a losing season</span><strong>${escapeHtml(losingSeasonText)}</strong></div>` : '',
+    `<div class="record-shield record-gold-alltime"><span>Highest IM Winnings</span><strong>TP - $2,595</strong></div>`,
+  ].join('');
+
+  setTimeout(bindFlipTiles, 0);
+
+  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p><div class="flip-tile-grid">${tiles}</div><div class="record-list" style="margin-top:16px;">${extras}</div></div>`;
+}
+
 function recordsColumnHtml(title, data, opts, scope) {
   const minPicks = opts.minPicks || 10;
   const highWin = extremeOddsRecord(data, true, 'max');
@@ -1832,7 +1901,7 @@ function records(data) {
   const memberSection = member
     ? recordsColumnHtml(`${member} records`, allTimeData.filter(r => r.member === member), { minPicks: 1, includeWinPercent: true, includeLosingStreak: true, perMemberBestSeason: true }, 'alltime')
     : '';
-  const officialRecords = `<section class="two">${recordsColumnHtml(`${cy || 'This season'} records`, seasonData, { minPicks: 1, includeWinPercent: true, includeLosingSeason: true, includeSyndicateEvents: true, includeCrashesThisYear: true, trailingStreakData: allTimeData }, 'current')}${recordsColumnHtml('All-time records', allTimeData, { minPicks: 10, includeLosingStreak: true, includeSyndicateEvents: true, includeAnnualBest: true }, 'alltime')}</section>${memberSection}`;
+  const officialRecords = `${recordFlipTilesHtml(seasonData, allTimeData, cy)}${memberSection}`;
 
   const streakMiniTable = (rows) => sortableMiniTable('bestStreaks', rows.slice(0, 6), [
     { key: 'rank', label: 'Rank', numeric: true, render: r => `<td class="num">${r.rank}</td>` },
