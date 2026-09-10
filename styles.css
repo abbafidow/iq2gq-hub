@@ -597,6 +597,43 @@ tr:last-child td { border-bottom: 0; }
 .sport-other { background: rgba(140, 140, 140, 0.10); border-color: rgba(140, 140, 140, 0.35); }
 .sport-other .flip-rating { color: rgb(140, 140, 140); }
 
+/* ---------- President / Benson year dial (Records page) ---------- */
+.pres-dial-panel { text-align: center; }
+.pres-dial-stage { padding: 4px 0; user-select: none; }
+.pres-dial-label { margin: 0 0 4px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.pres-dial-label.good { color: var(--good); }
+.pres-dial-label.bad { color: var(--bad); }
+.pres-dial-name { margin: 0 0 2px; font-size: 18px; font-weight: 700; color: var(--text); min-height: 24px; }
+.pres-dial-honorific { margin: 0 0 18px; font-size: 12px; font-style: italic; color: var(--good); min-height: 16px; }
+.pres-dial-nav { display: flex; align-items: center; gap: 10px; }
+.pres-dial-arrow {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+  font-size: 18px; line-height: 1; cursor: pointer;
+}
+.pres-dial-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.pres-dial-ruler {
+  flex: 1; display: flex; align-items: flex-end; gap: 10px; height: 24px;
+  overflow-x: auto; padding: 0 4px; scrollbar-width: none;
+}
+.pres-dial-ruler::-webkit-scrollbar { display: none; }
+.pres-dial-tick {
+  flex-shrink: 0; width: 2px; height: 10px; padding: 0; border: none;
+  background: var(--line); cursor: pointer;
+}
+.pres-dial-tick.active { height: 18px; background: var(--accent); }
+.pres-dial-year { margin: 8px 0 18px; font-size: 13px; font-weight: 600; color: var(--text); }
+.pres-dial-info { display: flex; gap: 8px; margin-top: 16px; }
+.pres-dial-box {
+  flex: 1; min-width: 0; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px;
+}
+.pres-dial-box span { display: block; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.pres-dial-box strong { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
+@media (max-width: 640px) {
+  .pres-dial-info { flex-direction: column; }
+}
+
 @media (max-width: 640px) {
   .flip-tile-grid { grid-template-columns: 1fr; }
 }
