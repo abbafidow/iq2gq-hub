@@ -44,10 +44,126 @@ const state = {
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
+  presidentDialIndex: null, // Records page President/Benson dial - null until first touched, then persists across re-renders
 };
 
 const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
 const PRESIDENT_COUNTS = { TP: 1, LS: 2, MA: 2, TF: 1, MV: 2, SB: 3 };
+
+// Presidents & Benson (last place) by syndicate term - static syndicate
+// history, confirmed against the "Syndicate Records" sheet tab, that
+// changes at most once a year. Hardcoded directly here rather than pulled
+// through Website_Data since it doesn't need to interact with any other
+// data. Honorifics are only bestowed at the end of a term, so a term still
+// in progress shows 'TBC'; empty strings (not 'N/A') for venue/activity/
+// winner mean no AGM process was held that year, and the Records page
+// hides that info entirely rather than showing blank fields.
+const PRESIDENTS_DIAL_DATA = [
+  { term: '2011/12', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
+  { term: '2012/13', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
+  { term: '2013/14', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
+  { term: '2014/15', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
+  { term: '2015/16', president: 'Tony Paki', honorific: 'Te Pioneer', benson: 'Tuaopepe Abba Fidow', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Stanley Bradbrook' },
+  { term: '2016/17', president: "Fa'aolatane Lemi Siitia", honorific: 'Wayfinder', benson: 'John Fenika', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Tony Paki' },
+  { term: '2017/18', president: "Fa'aolatane Lemi Siitia", honorific: 'Wayfinder', benson: 'Misa Malaesila Tupu Fidow', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Stanley Bradbrook' },
+  { term: '2018/19', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Paul Nanai', venue: 'Mt Maunganui', activity: 'Tauranga Mini Golf', winner: 'Tony Paki' },
+  { term: '2019/20', president: 'Misa Malaesila Tupu Fidow', honorific: 'Reformer', benson: 'Shane Fenika', venue: 'Nelson', activity: 'Pro Combat Laser Tag', winner: 'Aiono Matthew Aileone' },
+  { term: '2020/21', president: 'Mano Mau Vili', honorific: 'Ace', benson: 'Stanley Bradbrook', venue: 'Taupo', activity: 'Hole in One Challenge', winner: 'Tuaopepe Abba Fidow' },
+  { term: '2021/22', president: 'Mano Mau Vili', honorific: 'Ace', benson: "Fa'aolatane Lemi Siitia", venue: 'Queenstown (Rebel AGM)', activity: '', winner: '' },
+  { term: '2022/23', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Tuaopepe Abba Fidow', venue: 'Mt Maunganui', activity: 'Spin the Wheel', winner: 'Shane Fenika' },
+  { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Tupu Fidow' },
+  { term: '2024/25', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Tuaopepe Abba Fidow', venue: 'Christchurch', activity: 'Clay Shooting', winner: 'Stanley Bradbrook' },
+  { term: '2025/26', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Aiono Matthew Aileone', venue: 'Wellington', activity: 'Pistol Shooting', winner: "Fa'aolatane Lemi Siitia" },
+  { term: '2026/27', president: 'Andrew Amituanai', honorific: 'TBC', benson: 'TBC', venue: 'Gold Coast', activity: 'Top Golf', winner: 'Aiono Matthew Aileone' },
+];
+
+// Swipeable/tappable year dial for Records - President above the line,
+// Benson below, AGM venue/activity/immunity winner as small info boxes
+// underneath (each omitted individually when that term has no value).
+// Position persists in state.presidentDialIndex so it survives re-renders
+// triggered by other page interactions, without needing a full page
+// re-render on every swipe (see bindPresidentDial).
+function presidentDialHtml() {
+  if (state.presidentDialIndex === null || state.presidentDialIndex === undefined) {
+    state.presidentDialIndex = PRESIDENTS_DIAL_DATA.length - 1;
+  }
+  const idx = Math.max(0, Math.min(PRESIDENTS_DIAL_DATA.length - 1, state.presidentDialIndex));
+  const d = PRESIDENTS_DIAL_DATA[idx];
+  const hasInfo = Boolean(d.venue || d.activity || d.winner);
+
+  const infoBox = (label, value) => value
+    ? `<div class="pres-dial-box"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+    : '';
+
+  const ticks = PRESIDENTS_DIAL_DATA.map((row, i) =>
+    `<button type="button" class="pres-dial-tick${i === idx ? ' active' : ''}" data-idx="${i}" aria-label="${escapeHtml(row.term)}"></button>`
+  ).join('');
+
+  return `<div class="panel pres-dial-panel">
+    <h3>Presidents &amp; Benson</h3>
+    <div class="pres-dial-stage" id="presDialStage">
+      <p class="pres-dial-label good">President</p>
+      <p class="pres-dial-name" id="presDialName">${escapeHtml(d.president)}</p>
+      <p class="pres-dial-honorific" id="presDialHonorific">${d.honorific ? `&ldquo;${escapeHtml(d.honorific)}&rdquo;` : ''}</p>
+      <div class="pres-dial-nav">
+        <button type="button" class="pres-dial-arrow" id="presDialPrev" aria-label="Previous year">&#8249;</button>
+        <div class="pres-dial-ruler" id="presDialRuler">${ticks}</div>
+        <button type="button" class="pres-dial-arrow" id="presDialNext" aria-label="Next year">&#8250;</button>
+      </div>
+      <p class="pres-dial-year" id="presDialYear">${escapeHtml(d.term)}</p>
+      <p class="pres-dial-name" id="presDialBenson">${escapeHtml(d.benson)}</p>
+      <p class="pres-dial-label bad">Benson</p>
+    </div>
+    <div class="pres-dial-info" id="presDialInfo" style="${hasInfo ? '' : 'display:none;'}">${infoBox('AGM venue', d.venue)}${infoBox('Immunity activity', d.activity)}${infoBox('Immunity winner', d.winner)}</div>
+  </div>`;
+}
+
+function bindPresidentDial() {
+  const stage = document.getElementById('presDialStage');
+  const ruler = document.getElementById('presDialRuler');
+  const info = document.getElementById('presDialInfo');
+  if (!stage || !ruler || !info) return;
+
+  const infoBox = (label, value) => value
+    ? `<div class="pres-dial-box"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+    : '';
+
+  const setIndex = (idx) => {
+    idx = Math.max(0, Math.min(PRESIDENTS_DIAL_DATA.length - 1, idx));
+    state.presidentDialIndex = idx;
+    const d = PRESIDENTS_DIAL_DATA[idx];
+
+    document.getElementById('presDialName').textContent = d.president;
+    document.getElementById('presDialHonorific').textContent = d.honorific ? `\u201c${d.honorific}\u201d` : '';
+    document.getElementById('presDialBenson').textContent = d.benson;
+    document.getElementById('presDialYear').textContent = d.term;
+
+    const hasInfo = Boolean(d.venue || d.activity || d.winner);
+    info.style.display = hasInfo ? '' : 'none';
+    info.innerHTML = `${infoBox('AGM venue', d.venue)}${infoBox('Immunity activity', d.activity)}${infoBox('Immunity winner', d.winner)}`;
+
+    ruler.querySelectorAll('.pres-dial-tick').forEach(t => {
+      const active = Number(t.dataset.idx) === idx;
+      t.classList.toggle('active', active);
+      if (active && t.scrollIntoView) t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    });
+  };
+
+  const prevBtn = document.getElementById('presDialPrev');
+  const nextBtn = document.getElementById('presDialNext');
+  if (prevBtn) prevBtn.onclick = () => setIndex(state.presidentDialIndex - 1);
+  if (nextBtn) nextBtn.onclick = () => setIndex(state.presidentDialIndex + 1);
+  ruler.querySelectorAll('.pres-dial-tick').forEach(t => { t.onclick = () => setIndex(Number(t.dataset.idx)); });
+
+  let touchStartX = null;
+  stage.ontouchstart = (e) => { touchStartX = e.touches[0].clientX; };
+  stage.ontouchend = (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) setIndex(state.presidentDialIndex + (dx > 0 ? -1 : 1));
+    touchStartX = null;
+  };
+}
 
 function svgTrophy() {
   return `<svg viewBox="0 0 24 24" width="10" height="10" fill="#ffd700"><path d="M7,3 L17,3 L17,6 C17,9 15,11 12.5,11.5 L12.5,15 L15,15 L15,17 L9,17 L9,15 L11.5,15 L11.5,11.5 C9,11 7,9 7,6 Z M5,4 L7,4 L7,7.2 C6,6.6 5,5.5 5,4 Z M17,4 L19,4 C19,5.5 18,6.6 17,7.2 Z"/></svg>`;
@@ -1819,7 +1935,9 @@ function records(data) {
     <div class="mini-table-wrap">${teamTable}</div>
   </div>`;
 
-  return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
+  setTimeout(bindPresidentDial, 0);
+
+  return `<div class="page-header"><h1>Records</h1><p>See the syndicate's biggest milestones, records and best-ever streaks.</p></div>${officialRecords}${presidentDialHtml()}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
 }
 
 function monthYearLabel(date) {
@@ -2398,6 +2516,49 @@ function byBestStory(a, b) {
   return wilsonLowerBound(b.wins, b.picks) - wilsonLowerBound(a.wins, a.picks);
 }
 
+// ISO week number (Mon-Sun weeks, first week of a year is the one
+// containing that year's first Thursday) - standard, unambiguous, and
+// changes on a fixed schedule regardless of when picks were last entered.
+function isoWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// Combines year + ISO week into one integer so the seed doesn't repeat
+// across years and changes exactly once a week, every Monday.
+function currentWeekSeed() {
+  const now = new Date();
+  return now.getUTCFullYear() * 100 + isoWeekNumber(now);
+}
+
+// Takes a list already sorted best-first, groups consecutive entries that
+// share the same rounded rating (ratingFn) into tiers, and rotates the
+// order within each tier using the week seed - so near-equally-rated
+// patterns take turns filling a slot week to week instead of the single
+// highest-rated one permanently crowding out the rest. A clear leader with
+// no other candidate sharing its rating is never displaced, and which
+// candidate fills a given round only ever changes among genuine ties.
+function applyWeeklyRotation(sortedList, ratingFn, weekSeed) {
+  const result = [];
+  let i = 0;
+  while (i < sortedList.length) {
+    let j = i + 1;
+    while (j < sortedList.length && ratingFn(sortedList[j]) === ratingFn(sortedList[i])) j++;
+    const tier = sortedList.slice(i, j);
+    if (tier.length > 1) {
+      const offset = weekSeed % tier.length;
+      result.push(...tier.slice(offset), ...tier.slice(0, offset));
+    } else {
+      result.push(tier[0]);
+    }
+    i = j;
+  }
+  return result;
+}
+
 // Groups rows by an arbitrary composite key and returns picks/wins/success
 // per group, alongside a human-readable label for each group. Also tracks
 // the most recent pick date and average odds per group, so callers can
@@ -2890,7 +3051,12 @@ function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivit
 // than ~2 years old are dropped - a team/market can change enough over that
 // time that an old pattern isn't something to act on this week.
 function patternCandidatePool(rows) {
-  rows = rows.filter(isRealPick);
+  // Only resulted picks count toward success rates and Wilson scoring - a
+  // pending pick (no win/loss recorded yet) previously still counted in
+  // the "picks" denominator with nothing in "wins", which silently treated
+  // it as a loss and could unfairly drag down or exclude a genuinely
+  // strong pattern until that pick actually resolved.
+  rows = rows.filter(isRealPick).filter(r => r.win || r.loss);
 
   // Point-Starts rows filtered and grouped by team+sport in one pass each,
   // rather than re-scanning the full row set once per distinct combination.
@@ -2954,17 +3120,23 @@ function patternCandidatePool(rows) {
 // a proxy for "currently in season" since there's no real fixture calendar
 // to check against yet.
 function selectDiversePatterns(candidates, count) {
+  const weekSeed = currentWeekSeed();
   const bySport = new Map();
   candidates.forEach(c => {
     const sport = c.group || 'Other';
     if (!bySport.has(sport)) bySport.set(sport, []);
     bySport.get(sport).push(c);
   });
-  const sportsByRecency = [...bySport.entries()].sort((a, b) => {
-    const aDate = Math.max(0, ...a[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
-    const bDate = Math.max(0, ...b[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
-    return bDate - aDate;
-  });
+  const sportsByRecency = [...bySport.entries()]
+    .sort((a, b) => {
+      const aDate = Math.max(0, ...a[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
+      const bDate = Math.max(0, ...b[1].map(c => c.lastDate ? c.lastDate.getTime() : 0));
+      return bDate - aDate;
+    })
+    // Each sport's list arrives already sorted best-first (candidates was
+    // sorted by byBestStory before being grouped here) - rotate ties among
+    // that existing order rather than re-sorting.
+    .map(([sport, list]) => [sport, applyWeeklyRotation(list, c => wilsonRating(c.wins, c.picks), weekSeed)]);
   const selected = [];
   for (let round = 0; selected.length < count; round++) {
     let addedThisRound = false;
@@ -2980,7 +3152,10 @@ function selectDiversePatterns(candidates, count) {
 // Best pattern from a member's most recent picks (last N) - surfaces
 // "what's working right now" as one of the 3 "Your pattern" slots.
 function recencyPattern(memberRowsSorted, usedKeys, windowSize = 15) {
-  const pool = memberRowsSorted.filter(isRealPick).slice(-windowSize);
+  // Resulted picks only - see patternCandidatePool for why. Without this, a
+  // pending pick sitting in the member's last 15 would water down "what's
+  // working right now" before it's even had a chance to resolve.
+  const pool = memberRowsSorted.filter(isRealPick).filter(r => r.win || r.loss).slice(-windowSize);
   const pointStartsBySport = new Map();
   pool.filter(r => r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && r.group).forEach(r => {
     if (!pointStartsBySport.has(r.group)) pointStartsBySport.set(r.group, []);
@@ -3202,7 +3377,8 @@ const FOCUS_SYNDICATE_SPORTS = {
 // pipeline (comboCandidates/thresholdsFromPool/selectDiversePatterns) as
 // the main syndicate patterns, just scoped to rows matching this one tag.
 function focusSyndicateOptions(sportTag, sportLabel) {
-  const rows = state.raw.filter(r => r.sport === sportTag && isRealPick(r));
+  // Resulted picks only - see patternCandidatePool for why.
+  const rows = state.raw.filter(r => r.sport === sportTag && isRealPick(r) && (r.win || r.loss));
   if (!rows.length) return [];
   const combos = comboCandidates(rows);
   const pointStarts = pointThresholdCandidates(rows, null, null);
@@ -3236,8 +3412,11 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
     else if (REAL_WORLD_TO_SPORT_GROUP.NFL === opt.sportLabel && pools.NFL) pools.NFL.push(opt);
   });
 
+  const weekSeed = currentWeekSeed();
   const consolidatedPools = Object.fromEntries(
-    Object.entries(pools).map(([sport, opts]) => [sport, consolidateOptions(opts).sort((a, b) => b.rating - a.rating)])
+    Object.entries(pools).map(([sport, opts]) =>
+      [sport, applyWeeklyRotation(consolidateOptions(opts).sort((a, b) => b.rating - a.rating), t => t.rating, weekSeed)]
+    )
   );
 
   const focusOrder = ['EPL', 'NFL', 'NRL', 'NZ Domestic Rugby', 'AFL'];
