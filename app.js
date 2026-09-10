@@ -74,6 +74,16 @@ const MEMBER_FULL_NAMES = {
 function expandMemberCodes(str) {
   return str.replace(/\b([A-Z]{2})\b/g, code => MEMBER_FULL_NAMES[code] || code);
 }
+// Single-code lookup, for the one-member case.
+function fullName(code) {
+  return MEMBER_FULL_NAMES[code] || code;
+}
+// More than two members in a list reads better as initials (LS, MA, TP)
+// than a wall of full names - one or two members still get the full-name
+// treatment used everywhere else on the Records page.
+function namesOrInitials(codes) {
+  return codes.length > 2 ? codes.join(', ') : codes.map(fullName).join(', ');
+}
 
 // Presidents & Benson (last place) by syndicate term - static syndicate
 // history, confirmed against the "Syndicate Records" sheet tab, that
@@ -1717,8 +1727,9 @@ function fieldEventTotal(data, field) {
   const counts = {};
   data.forEach(r => { if (r[field]) counts[r[field]] = (counts[r[field]] || 0) + 1; });
   const total = Object.values(counts).reduce((s, c) => s + c, 0);
-  const names = Object.entries(counts).map(([m, c]) => c > 1 ? `${m} (x${c})` : m);
-  return { total, names };
+  const codes = Object.keys(counts);
+  const names = codes.map(m => counts[m] > 1 ? `${m} (x${counts[m]})` : m);
+  return { total, names, codes, counts };
 }
 
 function tierCrasherCount(data) {
@@ -1998,15 +2009,27 @@ function recordPlaqueTile(label, seasonValue, allTimeValue, opts) {
 }
 
 function recordFlipTilesHtml(seasonData, allTimeData, cy) {
-  const winPctText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')})` : 'Not enough data yet.');
-  const annualWinPctText = (r) => expandMemberCodes(r ? `${r.member} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.');
-  const mostWinsText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${r.wins.toLocaleString()}` : 'Not enough data yet.');
-  const mmKillersText = (r) => expandMemberCodes(r.count ? `${r.count} - ${r.members.join(', ')}` : 'Not enough data yet.');
-  const lonesomeText = (r) => expandMemberCodes(r.total ? `${r.total} - ${r.names.join(', ')}` : 'Not enough data yet.');
+  const winPctText = (r) => {
+    if (!r) return 'Not enough data yet.';
+    const tiedText = r.tied.length > 2
+      ? r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')
+      : r.tied.map(x => `${fullName(x.name)} ${x.wins}/${x.picks}`).join(', ');
+    return `${namesOrInitials(r.names)} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : tiedText})`;
+  };
+  const annualWinPctText = (r) => r ? `${fullName(r.member)} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.';
+  const mostWinsText = (r) => r ? `${namesOrInitials(r.names)} - ${r.wins.toLocaleString()}` : 'Not enough data yet.';
+  const mmKillersText = (r) => r.count ? `${r.count} - ${namesOrInitials(r.members)}` : 'Not enough data yet.';
+  const lonesomeText = (r) => {
+    if (!r.total) return 'Not enough data yet.';
+    const list = r.codes.length > 2
+      ? r.names
+      : r.codes.map(m => r.counts[m] > 1 ? `${fullName(m)} (x${r.counts[m]})` : fullName(m));
+    return `${r.total} - ${list.join(', ')}`;
+  };
   // Season shown only when there's exactly one tied record-holder - with
   // several tied members (possibly from different seasons), naming one
   // season would misleadingly imply it applies to all of them.
-  const crashesText = (r) => expandMemberCodes(r ? `${r.members.join(', ')} - ${r.crashes}${r.members.length === 1 && r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.');
+  const crashesText = (r) => r ? `${namesOrInitials(r.members)} - ${r.crashes}${r.members.length === 1 && r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.';
   // { main, detail } rather than one combined string, so ribbon tiles can
   // show the headline figure bold and the supporting context (bet option
   // and date for odds; date range for streaks) smaller underneath. detail
@@ -2018,10 +2041,15 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
     if (!rec) return { main: 'Not enough data yet.', detail: null };
     const counts = {};
     rec.matches.forEach(r => { counts[r.member] = (counts[r.member] || 0) + 1; });
-    const names = Object.entries(counts).map(([m, c]) => c > 1 ? `${m} (x${c})` : m).join(', ');
+    const codes = Object.keys(counts);
+    const useInitials = codes.length > 2;
+    const names = codes.map(m => {
+      const label = useInitials ? m : fullName(m);
+      return counts[m] > 1 ? `${label} (x${counts[m]})` : label;
+    }).join(', ');
     const single = rec.matches.length === 1 ? rec.matches[0] : null;
     return {
-      main: expandMemberCodes(`${oddsFmt(rec.odds)} - ${names}`),
+      main: `${oddsFmt(rec.odds)} - ${names}`,
       detail: single ? `${single.name}, ${single.date}` : null,
     };
   };
@@ -2036,7 +2064,7 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
       detail = match ? match[1] : null;
     }
     return {
-      main: expandMemberCodes(`${r.streak} - ${r.members.join(', ')}`),
+      main: `${r.streak} - ${namesOrInitials(r.members)}`,
       detail,
     };
   };
@@ -2085,15 +2113,15 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   const topTeamSeason = currentTeamRanked[0];
   const bestTeamEver = bestTeamSeasonRecord(allTimeData);
   const plaqueRow = [
-    recordPlaqueTile('Tier Crashers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
+    recordPlaqueTile('Tier Killers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
     recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
     recordPlaqueTile(
       'Top earning team',
       topTeamSeason ? `${topTeamSeason.team} - ${fmtMoney(topTeamSeason.amount)}` : 'Not enough data yet.',
       bestTeamEver ? `${bestTeamEver.team} (${bestTeamEver.season}) - ${fmtMoney(bestTeamEver.amount)}` : 'Not enough data yet.',
       {
-        seasonDetail: topTeamSeason ? expandMemberCodes(TEAM_MAP_AS_ROSTER()[topTeamSeason.team].join(', ')) : null,
-        allTimeDetail: bestTeamEver ? expandMemberCodes(bestTeamEver.members.join(', ')) : null,
+        seasonDetail: topTeamSeason ? namesOrInitials(TEAM_MAP_AS_ROSTER()[topTeamSeason.team]) : null,
+        allTimeDetail: bestTeamEver ? namesOrInitials(bestTeamEver.members) : null,
         backLabelSuffix: ' - best season since 2021/22',
       }
     ),
