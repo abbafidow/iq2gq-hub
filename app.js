@@ -96,7 +96,7 @@ const PRESIDENTS_DIAL_DATA = [
   { term: '2020/21', president: 'Mano Mau Vili', honorific: 'Ace', benson: 'Stanley Bradbrook', venue: 'Taupo', activity: 'Hole in One Challenge', winner: 'Tuaopepe Abba Fidow' },
   { term: '2021/22', president: 'Mano Mau Vili', honorific: 'Ace', benson: "Fa'aolatane Lemi Siitia", venue: 'Queenstown (Rebel AGM)', activity: '', winner: '' },
   { term: '2022/23', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Tuaopepe Abba Fidow', venue: 'Mt Maunganui', activity: 'Spin the Wheel', winner: 'Shane Fenika' },
-  { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Tupu Fidow' },
+  { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Misa Malaesilia Tupu Fidow' },
   { term: '2024/25', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Tuaopepe Abba Fidow', venue: 'Christchurch', activity: 'Clay Shooting', winner: 'Stanley Bradbrook' },
   { term: '2025/26', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Aiono Matthew Aileone', venue: 'Wellington', activity: 'Pistol Shooting', winner: "Fa'aolatane Lemi Siitia" },
   { term: '2026/27', president: "Andrew Amituana'i", honorific: 'TBC', benson: 'TBC', venue: 'Gold Coast', activity: 'Top Golf', winner: 'Aiono Matthew Aileone' },
@@ -2049,9 +2049,9 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   // off to one side.
   const topRow = [
     recordRibbonTile('good', 'Highest successful odds', oddsParts(extremeOddsRecord(seasonData, true, 'max')), oddsParts(extremeOddsRecord(allTimeData, true, 'max'))),
-    recordRibbonTile('good', 'Longest winning streak', streakParts(currentTrailingStreakRecord(allTimeData, true)), streakParts(longestStreakRecord(allTimeData, true))),
+    recordRibbonTile('good', 'Longest winning streak', streakParts(longestStreakRecord(seasonData, true)), streakParts(longestStreakRecord(allTimeData, true))),
     recordRibbonTile('bad', 'Lowest unsuccessful odds', oddsParts(extremeOddsRecord(seasonData, false, 'min')), oddsParts(extremeOddsRecord(allTimeData, false, 'min'))),
-    recordRibbonTile('bad', 'Longest losing streak', streakParts(currentTrailingStreakRecord(allTimeData, false)), streakParts(longestStreakRecord(allTimeData, false))),
+    recordRibbonTile('bad', 'Longest losing streak', streakParts(longestStreakRecord(seasonData, false)), streakParts(longestStreakRecord(allTimeData, false))),
     // Static - IMs aren't tracked in the Sheet, so this is a manually
     // maintained figure rather than something computed from the data, and
     // it's inherently an all-time record (there's no "this season's IM
