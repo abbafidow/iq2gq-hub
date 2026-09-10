@@ -50,6 +50,31 @@ const state = {
 const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
 const PRESIDENT_COUNTS = { TP: 1, LS: 2, MA: 2, TF: 1, MV: 2, SB: 3 };
 
+// Full names for all 12 member codes, confirmed against the Syndicate
+// Records sheet and AGM packs - used to show award-worthy full names on
+// the Records page instead of bare 2-letter codes.
+const MEMBER_FULL_NAMES = {
+  MA: 'Aiono Matthew Aileone',
+  AA: 'Andrew Amituanai',
+  SB: 'Stanley Bradbrook',
+  AF: 'Tuaopepe Abba Fidow',
+  LS: "Fa'aolatane Lemi Siitia",
+  SF: 'Shane Fenika',
+  AT: "Fa'aofonu'u Va'aulu Atapana Togiaso",
+  PN: 'Paul Nanai',
+  TP: 'Tony Paki',
+  MV: 'Mano Mau Vili',
+  JF: 'John Fenika',
+  TF: 'Misa Malaesila Tupu Fidow',
+};
+// Replaces any standalone 2-letter member code in a string with that
+// member's full name, leaving everything else untouched - safe against
+// unrelated 2-letter uppercase tokens (e.g. "MM", "IM") since those never
+// match a key in MEMBER_FULL_NAMES.
+function expandMemberCodes(str) {
+  return str.replace(/\b([A-Z]{2})\b/g, code => MEMBER_FULL_NAMES[code] || code);
+}
+
 // Presidents & Benson (last place) by syndicate term - static syndicate
 // history, confirmed against the "Syndicate Records" sheet tab, that
 // changes at most once a year. Hardcoded directly here rather than pulled
@@ -1769,47 +1794,149 @@ function teamWinningsTally(rows) {
 // back is all-time (gold, matching record-gold-alltime) - tap to flip.
 // Reuses the global bindFlipTiles() binder already used everywhere else in
 // the Hub, so no new interaction code is needed.
-function recordFlipTile(label, seasonValue, allTimeValue) {
-  return `<div class="flip-tile record-flip-tile">
+// Shared SVG gradient definitions for the medal/seal icons below - injected
+// once per Records page render (not once per tile) since gradients are
+// referenced by id via url(#...).
+function recordMedalDefs() {
+  return `<svg width="0" height="0" style="position:absolute;" aria-hidden="true"><defs>
+    <radialGradient id="gLaurelGood" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#8bf0ad"/><stop offset="55%" stop-color="#2f9e5c"/><stop offset="100%" stop-color="#155c34"/></radialGradient>
+    <radialGradient id="gLaurelBad" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffb3a8"/><stop offset="55%" stop-color="#d8503f"/><stop offset="100%" stop-color="#7a2318"/></radialGradient>
+    <radialGradient id="gPlaqueSeal" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#cdeeff"/><stop offset="60%" stop-color="#4aa8d8"/><stop offset="100%" stop-color="#1c5a80"/></radialGradient>
+  </defs></svg>`;
+}
+
+const RECORD_TROPHY_PATH = 'M7,3 L17,3 L17,6 C17,9 15,11 12.5,11.5 L12.5,15 L15,15 L15,17 L9,17 L9,15 L11.5,15 L11.5,11.5 C9,11 7,9 7,6 Z M5,4 L7,4 L7,7.2 C6,6.6 5,5.5 5,4 Z M17,4 L19,4 C19,5.5 18,6.6 17,7.2 Z';
+
+// Laurel medal - used for records tied to a specific member's personal
+// performance. tone 'good' (green) for achievements, 'bad' (red) for
+// records nobody wants to hold (MM Killers, Lonesome Loser(s), losing
+// streaks, most crashes) - the medal shape stays the same, only the
+// gradient/colour changes, so red still reads as "a medal" rather than a
+// generic warning.
+function svgLaurelMedal(tone) {
+  const gradId = tone === 'bad' ? 'gLaurelBad' : 'gLaurelGood';
+  const ring = tone === 'bad' ? '#ffd0c9' : '#bfffd4';
+  const star = tone === 'bad' ? '#fff1ee' : '#eaffef';
+  const leaf = tone === 'bad' ? '#7d3a35' : '#3a7d52';
+  const tail = tone === 'bad' ? '#5c1a1a' : '#1a5c34';
+  return `<svg width="44" height="44" viewBox="0 0 64 64" class="record-icon" aria-hidden="true">
+    <path d="M18,30 Q10,26 9,18 Q15,20 18,26 Z M18,34 Q9,35 5,29 Q12,28 18,32 Z" fill="${leaf}"/>
+    <path d="M46,30 Q54,26 55,18 Q49,20 46,26 Z M46,34 Q55,35 59,29 Q52,28 46,32 Z" fill="${leaf}"/>
+    <path d="M24,44 L20,58 L32,52 L44,58 L40,44 Z" fill="${tail}"/>
+    <circle cx="32" cy="27" r="17" fill="url(#${gradId})" stroke="${ring}" stroke-width="1"/>
+    <circle cx="32" cy="27" r="12.5" fill="none" stroke="${star}" stroke-width="0.75" opacity="0.6"/>
+    <path d="M32,19 L34,25 L40,25.5 L35.3,29.3 L37,35.3 L32,31.8 L27,35.3 L28.7,29.3 L24,25.5 L30,25 Z" fill="${star}"/>
+  </svg>`;
+}
+
+// Blue seal - used for whole-syndicate events (everyone crashes, everyone
+// succeeds) rather than one member's personal record.
+function svgPlaqueSeal() {
+  return `<svg width="28" height="28" viewBox="0 0 34 34" class="record-icon" aria-hidden="true">
+    <circle cx="17" cy="17" r="15.5" fill="url(#gPlaqueSeal)" stroke="#dff3ff" stroke-width="1"/>
+    <path d="M17,10 L18.6,15 L24,15.4 L19.9,18.7 L21.3,23.8 L17,20.7 L12.7,23.8 L14.1,18.7 L10,15.4 L15.4,15 Z" fill="#eaf8ff"/>
+  </svg>`;
+}
+
+// Ribbon medal - used for the two odds records. seasonParts/allTimeParts
+// are { main, detail } - detail (the bet option and date) is only shown
+// when there's a single clear record-holder; a tie across several members
+// with no one option/date to point to falls back to just the main line.
+function recordRibbonTile(label, seasonParts, allTimeParts) {
+  const face = (parts, backSuffix) => `<div class="record-ribbon-shape">
+    <svg width="18" height="18" viewBox="0 0 24 24" class="record-icon" aria-hidden="true"><path d="${RECORD_TROPHY_PATH}" fill="currentColor"/></svg>
+    <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
+    <p class="record-ribbon-main">${escapeHtml(parts.main)}</p>
+    ${parts.detail ? `<p class="record-ribbon-detail">${escapeHtml(parts.detail)}</p>` : ''}
+  </div>`;
+  return `<div class="flip-tile record-ribbon-tile">
     <div class="flip-inner">
-      <div class="flip-face flip-front record-flip-front">
-        <p class="tile-label">${escapeHtml(label)}</p>
-        <p class="tile-value">${escapeHtml(seasonValue)}</p>
-      </div>
-      <div class="flip-face flip-back record-flip-back">
-        <p class="tile-label">${escapeHtml(label)} - all-time</p>
-        <p class="tile-value">${escapeHtml(allTimeValue)}</p>
-      </div>
+      <div class="flip-face flip-front record-ribbon-front">${face(seasonParts, '')}</div>
+      <div class="flip-face flip-back record-ribbon-back">${face(allTimeParts, ' - all-time')}</div>
+    </div>
+  </div>`;
+}
+
+function recordLaurelTile(tone, label, seasonValue, allTimeValue) {
+  const toneClass = tone === 'bad' ? 'record-laurel-bad' : 'record-laurel-good';
+  const face = (value, backSuffix) => `
+    ${svgLaurelMedal(tone)}
+    <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
+    <p class="record-laurel-value">${escapeHtml(value)}</p>
+  `;
+  return `<div class="flip-tile record-laurel-tile ${toneClass}">
+    <div class="flip-inner">
+      <div class="flip-face flip-front record-laurel-front">${face(seasonValue, '')}</div>
+      <div class="flip-face flip-back record-laurel-back">${face(allTimeValue, ' - all-time')}</div>
+    </div>
+  </div>`;
+}
+
+function recordPlaqueTile(label, seasonValue, allTimeValue) {
+  const face = (value, backSuffix) => `
+    ${svgPlaqueSeal()}
+    <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
+    <p class="record-plaque-value">${escapeHtml(value)}</p>
+  `;
+  return `<div class="flip-tile record-plaque-tile">
+    <div class="flip-inner">
+      <div class="flip-face flip-front record-plaque-front">${face(seasonValue, '')}</div>
+      <div class="flip-face flip-back record-plaque-back">${face(allTimeValue, ' - all-time')}</div>
     </div>
   </div>`;
 }
 
 function recordFlipTilesHtml(seasonData, allTimeData, cy) {
-  const winPctText = (r) => r ? `${r.names.join(', ')} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')})` : 'Not enough data yet.';
-  const annualWinPctText = (r) => r ? `${r.member} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.';
-  const mostWinsText = (r) => r ? `${r.names.join(', ')} - ${r.wins.toLocaleString()}` : 'Not enough data yet.';
-  const streakText = (r) => r.streak ? `${r.streak} - ${r.ranges.join(', ')}` : 'Not enough data yet.';
-  const mmKillersText = (r) => r.count ? `${r.count} - ${r.members.join(', ')}` : 'Not enough data yet.';
-  const lonesomeText = (r) => r.total ? `${r.total} - ${r.names.join(', ')}` : 'Not enough data yet.';
-  const crashesText = (r) => r ? `${r.member} - ${r.crashes}${r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.';
+  const winPctText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')})` : 'Not enough data yet.');
+  const annualWinPctText = (r) => expandMemberCodes(r ? `${r.member} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.');
+  const mostWinsText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${r.wins.toLocaleString()}` : 'Not enough data yet.');
+  const streakText = (r) => expandMemberCodes(r.streak ? `${r.streak} - ${r.ranges.join(', ')}` : 'Not enough data yet.');
+  const mmKillersText = (r) => expandMemberCodes(r.count ? `${r.count} - ${r.members.join(', ')}` : 'Not enough data yet.');
+  const lonesomeText = (r) => expandMemberCodes(r.total ? `${r.total} - ${r.names.join(', ')}` : 'Not enough data yet.');
+  const crashesText = (r) => expandMemberCodes(r ? `${r.member} - ${r.crashes}${r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.');
+  // { main, detail } rather than one combined string, so the ribbon tile
+  // can show odds+member bold and the bet option/date smaller underneath.
+  // detail is only ever populated when there is exactly one record-holder
+  // row to point to - a tie across several members has no single option
+  // or date to show, so the detail line is simply omitted for those.
+  const oddsParts = (rec) => {
+    if (!rec) return { main: 'Not enough data yet.', detail: null };
+    const counts = {};
+    rec.matches.forEach(r => { counts[r.member] = (counts[r.member] || 0) + 1; });
+    const names = Object.entries(counts).map(([m, c]) => c > 1 ? `${m} (x${c})` : m).join(', ');
+    const single = rec.matches.length === 1 ? rec.matches[0] : null;
+    return {
+      main: expandMemberCodes(`${oddsFmt(rec.odds)} - ${names}`),
+      detail: single ? `${single.name}, ${single.date}` : null,
+    };
+  };
 
-  const tiles = [
-    recordFlipTile('Highest successful odds', formatOddsRecord(extremeOddsRecord(seasonData, true, 'max')), formatOddsRecord(extremeOddsRecord(allTimeData, true, 'max'))),
-    recordFlipTile('Lowest unsuccessful odds', formatOddsRecord(extremeOddsRecord(seasonData, false, 'min')), formatOddsRecord(extremeOddsRecord(allTimeData, false, 'min'))),
-    // Season side uses the live trailing streak over full history (not
-    // truncated by the season boundary), matching how this was already
-    // computed before the flip-tile conversion.
-    recordFlipTile('Longest winning streak', streakText(currentTrailingStreakRecord(allTimeData, true)), streakText(longestStreakRecord(allTimeData, true))),
-    recordFlipTile('Longest losing streak', streakText(currentTrailingStreakRecord(allTimeData, false)), streakText(longestStreakRecord(allTimeData, false))),
-    recordFlipTile('Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), annualWinPctText(bestAnnualWinPercentRecord(allTimeData, 10))),
-    recordFlipTile('Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsText(mostWinsRecord(allTimeData))),
-    recordFlipTile('Most MM Killers', mmKillersText(memberFieldLeaderboard(seasonData, 'mmKiller')), mmKillersText(memberFieldLeaderboard(allTimeData, 'mmKiller'))),
-    recordFlipTile('Lonesome Loser(s)', lonesomeText(fieldEventTotal(seasonData, 'lonesomeLoser')), lonesomeText(fieldEventTotal(allTimeData, 'lonesomeLoser'))),
-    recordFlipTile('Tier Crashers (all members crash)', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
-    recordFlipTile('Perfect Rounds (all members successful)', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
-    // Season side only counts once the season's past its halfway point (not
-    // enough signal before then); all-time side is simply the best ever.
-    recordFlipTile('Most crashes in a season', crashesText(isPastSeasonHalfway(seasonData) ? memberCrashesBySeasonRecord(seasonData) : null), crashesText(memberCrashesBySeasonRecord(allTimeData))),
+  // Grouped into rows by what the record is about, rather than one
+  // undifferentiated grid: odds records (ribbon), positive personal
+  // records (green laurel), negative personal records (red laurel), and
+  // whole-syndicate events (blue plaque) - each row centred so a
+  // shorter final row doesn't trail off to one side.
+  const ribbonRow = [
+    recordRibbonTile('Highest successful odds', oddsParts(extremeOddsRecord(seasonData, true, 'max')), oddsParts(extremeOddsRecord(allTimeData, true, 'max'))),
+    recordRibbonTile('Lowest unsuccessful odds', oddsParts(extremeOddsRecord(seasonData, false, 'min')), oddsParts(extremeOddsRecord(allTimeData, false, 'min'))),
+  ].join('');
+
+  const goodRow = [
+    recordLaurelTile('good', 'Longest winning streak', streakText(currentTrailingStreakRecord(allTimeData, true)), streakText(longestStreakRecord(allTimeData, true))),
+    recordLaurelTile('good', 'Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), annualWinPctText(bestAnnualWinPercentRecord(allTimeData, 10))),
+    recordLaurelTile('good', 'Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsText(mostWinsRecord(allTimeData))),
+  ].join('');
+
+  const badRow = [
+    recordLaurelTile('bad', 'Longest losing streak', streakText(currentTrailingStreakRecord(allTimeData, false)), streakText(longestStreakRecord(allTimeData, false))),
+    recordLaurelTile('bad', 'Most crashes in a season', crashesText(isPastSeasonHalfway(seasonData) ? memberCrashesBySeasonRecord(seasonData) : null), crashesText(memberCrashesBySeasonRecord(allTimeData))),
+    recordLaurelTile('bad', 'Most MM Killers', mmKillersText(memberFieldLeaderboard(seasonData, 'mmKiller')), mmKillersText(memberFieldLeaderboard(allTimeData, 'mmKiller'))),
+    recordLaurelTile('bad', 'Lonesome Loser(s)', lonesomeText(fieldEventTotal(seasonData, 'lonesomeLoser')), lonesomeText(fieldEventTotal(allTimeData, 'lonesomeLoser'))),
+  ].join('');
+
+  const plaqueRow = [
+    recordPlaqueTile('Tier Crashers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
+    recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
   ].join('');
 
   // Losing season doesn't have a natural "other scope" counterpart (a
@@ -1819,13 +1946,13 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   // entries rather than being forced into an ill-fitting front/back pairing.
   const losingSeasonText = losingSeasonRecord(seasonData, 1);
   const extras = [
-    losingSeasonText ? `<div class="record-shield record-gold-current"><span>Member with a losing season</span><strong>${escapeHtml(losingSeasonText)}</strong></div>` : '',
-    `<div class="record-shield record-gold-alltime"><span>Highest IM Winnings</span><strong>TP - $2,595</strong></div>`,
+    losingSeasonText ? `<div class="record-shield record-gold-current"><span>Member with a losing season</span><strong>${escapeHtml(expandMemberCodes(losingSeasonText))}</strong></div>` : '',
+    `<div class="record-shield record-gold-alltime"><span>Highest IM Winnings</span><strong>${escapeHtml(expandMemberCodes('TP - $2,595'))}</strong></div>`,
   ].join('');
 
   setTimeout(bindFlipTiles, 0);
 
-  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p><div class="flip-tile-grid">${tiles}</div><div class="record-list" style="margin-top:16px;">${extras}</div></div>`;
+  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p>${recordMedalDefs()}<div class="record-rows"><div class="record-row">${ribbonRow}</div><div class="record-row">${goodRow}</div><div class="record-row">${badRow}</div><div class="record-row">${plaqueRow}</div></div><div class="record-list" style="margin-top:16px;">${extras}</div></div>`;
 }
 
 function recordsColumnHtml(title, data, opts, scope) {
