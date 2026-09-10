@@ -602,51 +602,88 @@ tr:last-child td { border-bottom: 0; }
 .record-row { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:14px; width:100%; }
 .record-icon { display:block; margin:0 auto 5px; }
 .record-tile-label { font-size:10px; margin:0 0 4px; line-height:1.3; }
-.record-ribbon-value { color:#fff; }
 
-.record-ribbon-tile { width:170px; display:flex; }
+/* Ribbon - top-level records (odds, streaks, IM Winnings). Fixed height on
+   every face regardless of content length or front/back state, so the
+   detail line never causes tiles to drift out of alignment with each
+   other. All-time (back) is always gold, with the tone (green/red) carried
+   through as icon and text colour rather than the background. */
+.record-ribbon-tile { width:170px; height:168px; display:flex; }
 .record-ribbon-tile .flip-inner { flex:1; display:flex; }
 .record-ribbon-front, .record-ribbon-back {
   clip-path: polygon(0 0,100% 0,100% 88%,50% 100%,0 88%);
   padding: 12px 10px 26px;
   flex: 1;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
+  box-sizing: border-box;
 }
-.record-ribbon-front { background:#1a5c34; border-color:#4ade80; color:#4ade80; }
-.record-ribbon-back { background:#0e3d23; border-color:#4ade80; color:#4ade80; }
 .record-ribbon-shape { display:flex; flex-direction:column; align-items:center; width:100%; }
-.record-ribbon-front .record-tile-label, .record-ribbon-back .record-tile-label { color:#bfe3cc; }
 .record-ribbon-main { font-size:12px; font-weight:700; color:#fff; margin:0 0 3px; line-height:1.3; }
-.record-ribbon-detail { font-size:9px; color:#8fc9a3; margin:0; line-height:1.35; }
+.record-ribbon-detail { font-size:8.5px; margin:0; line-height:1.3; min-height:11px; }
 
+.record-ribbon-good .record-ribbon-front { background:#1a5c34; border-color:#4ade80; color:#4ade80; }
+.record-ribbon-good .record-ribbon-front .record-tile-label { color:#bfe3cc; }
+.record-ribbon-good .record-ribbon-front .record-ribbon-detail { color:#8fc9a3; }
+.record-ribbon-good .record-ribbon-back { color:#4ade80; }
+
+.record-ribbon-bad .record-ribbon-front { background:#5c1a1a; border-color:#ff6b5e; color:#ff8a7a; }
+.record-ribbon-bad .record-ribbon-front .record-tile-label { color:#f0b3ac; }
+.record-ribbon-bad .record-ribbon-front .record-ribbon-detail { color:#e0a89f; }
+.record-ribbon-bad .record-ribbon-back { color:#ff8a7a; }
+
+.record-ribbon-gold .record-ribbon-front { background:#4a3908; border-color:#ffd700; color:#ffd700; }
+.record-ribbon-gold .record-ribbon-front .record-tile-label { color:#f0d98a; }
+.record-ribbon-gold .record-ribbon-front .record-ribbon-detail { color:#e0c878; }
+
+.record-ribbon-back { background:#4a3908; border-color:#ffd700; }
+.record-ribbon-back .record-tile-label { color:#f0d98a; }
+.record-ribbon-back .record-ribbon-detail { color:#e0c878; }
+
+/* Laurel - individual member records. Medal graphic itself already carries
+   the green/red tone (see svgLaurelMedal); the card background switches to
+   gold on the back face to match the ribbon/plaque all-time convention. */
 .record-laurel-tile { width:150px; display:flex; }
 .record-laurel-tile .flip-inner { flex:1; display:flex; }
 .record-laurel-front, .record-laurel-back {
   flex: 1;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
   padding: 12px 8px 10px;
-  background: var(--panel2);
-  border-color: var(--line);
+  box-sizing: border-box;
 }
-.record-laurel-good .record-tile-label { color:#bfe3cc; }
-.record-laurel-bad .record-tile-label { color:#f0b3ac; }
+.record-laurel-front { background: var(--panel2); border-color: var(--line); }
+.record-laurel-back { background:#4a3908; border-color:#ffd700; }
+.record-laurel-good .record-laurel-front .record-tile-label { color:#bfe3cc; }
+.record-laurel-bad .record-laurel-front .record-tile-label { color:#f0b3ac; }
+.record-laurel-back .record-tile-label { color:#f0d98a; }
 .record-laurel-value { font-size:11px; font-weight:700; color:#fff; margin:0; line-height:1.3; }
 
-.record-plaque-tile { width:150px; display:flex; }
+/* Plaque - whole-syndicate events. Fixed height so the Top earning team
+   tile's extra detail line (member initials) doesn't grow it past its
+   siblings. */
+.record-plaque-tile { width:150px; height:140px; display:flex; }
 .record-plaque-tile .flip-inner { flex:1; display:flex; }
 .record-plaque-front, .record-plaque-back {
   flex: 1;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
   padding: 12px 10px;
-  background: linear-gradient(145deg,#1e2450,#131735);
-  border-color: #7bd3ff;
-  box-shadow: 0 0 10px rgba(123,211,255,0.12);
+  box-sizing: border-box;
 }
-.record-plaque-tile .record-tile-label { color:#a8dcff; letter-spacing:0.03em; text-transform:uppercase; }
-.record-plaque-value { font-size:14px; font-weight:700; color:#fff; margin:0; }
+.record-plaque-front { background: linear-gradient(145deg,#1e2450,#131735); border-color: #7bd3ff; box-shadow: 0 0 10px rgba(123,211,255,0.12); }
+.record-plaque-back { background:#4a3908; border-color:#ffd700; }
+.record-plaque-tile .record-plaque-front .record-tile-label { color:#a8dcff; letter-spacing:0.03em; text-transform:uppercase; }
+.record-plaque-tile .record-plaque-back .record-tile-label { color:#f0d98a; letter-spacing:0.03em; text-transform:uppercase; }
+.record-plaque-value { font-size:13px; font-weight:700; color:#fff; margin:0 0 3px; }
+.record-plaque-detail { font-size:8.5px; margin:0; color:#7fb8dc; }
+.record-plaque-back .record-plaque-detail { color:#e0c878; }
 
 @media (max-width: 640px) {
   .record-ribbon-tile, .record-laurel-tile, .record-plaque-tile { width:150px; }
