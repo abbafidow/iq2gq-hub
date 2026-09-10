@@ -2,9 +2,9 @@ name: Update sports data
 
 on:
   schedule:
-    # Every Monday at 6am UTC (roughly 6pm NZ standard time / 7pm NZDT).
-    # Change this if you'd rather it ran on a different day/time.
-    - cron: '0 6 * * 1'
+    # Every day at 6am UTC (roughly 6pm NZ standard time / 7pm NZDT).
+    # Change this if you'd rather it ran at a different time.
+    - cron: '0 6 * * *'
   workflow_dispatch: {} # lets you trigger it manually from the Actions tab, for testing
 
 permissions:
