@@ -597,6 +597,12 @@ tr:last-child td { border-bottom: 0; }
 .sport-other { background: rgba(140, 140, 140, 0.10); border-color: rgba(140, 140, 140, 0.35); }
 .sport-other .flip-rating { color: rgb(140, 140, 140); }
 
+/* ---------- Records flip-tiles (season front / all-time back) ---------- */
+.record-flip-tile { min-height: 96px; }
+.record-flip-tile .flip-face { min-height: 96px; justify-content: center; }
+.record-flip-front { background: #1a5c34; border-color: #4ade80; }
+.record-flip-back { background: #4a3908; border-color: #ffd700; }
+
 /* ---------- President / Benson year dial (Records page) ---------- */
 .pres-dial-panel { text-align: center; }
 .pres-dial-stage { padding: 4px 0; user-select: none; }
@@ -613,7 +619,7 @@ tr:last-child td { border-bottom: 0; }
 }
 .pres-dial-arrow:hover { border-color: var(--accent); color: var(--accent); }
 .pres-dial-ruler {
-  flex: 1; display: flex; align-items: flex-end; gap: 10px; height: 24px;
+  flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 10px; height: 24px;
   overflow-x: auto; padding: 0 4px; scrollbar-width: none;
 }
 .pres-dial-ruler::-webkit-scrollbar { display: none; }
