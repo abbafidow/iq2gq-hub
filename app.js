@@ -237,6 +237,21 @@ const TEAM_MAP = {
 };
 const TEAM_ORDER = ['Team One', 'Team Two', 'Team Three', 'Team Four'];
 
+// Historical team rosters by season - teams are reconstituted every year,
+// so unlike TEAM_MAP (this season's roster only), "Team One" in 2021/22
+// shares almost no members with "Team One" in 2025/26. Confirmed against
+// the syndicate's own Teams roster sheet. Used only for the Top earning
+// team record, which needs to know who was actually on a team in a given
+// past season - hardcoded rather than pulled from Website_Data since it's
+// static history that doesn't change once a season closes.
+const TEAM_ROSTERS_BY_SEASON = {
+  '2021/22': { 'Team One': ['LS', 'AA', 'MA'], 'Team Two': ['TF', 'AF', 'TP'], 'Team Three': ['MV', 'AT', 'PN'], 'Team Four': ['SB', 'JF', 'SF'] },
+  '2022/23': { 'Team One': ['SF', 'AF', 'AA'], 'Team Two': ['TP', 'JF', 'MV'], 'Team Three': ['MA', 'AT', 'LS'], 'Team Four': ['SB', 'TF', 'PN'] },
+  '2023/24': { 'Team One': ['AA', 'SF', 'TP'], 'Team Two': ['TF', 'JF', 'MV'], 'Team Three': ['PN', 'AT', 'SB'], 'Team Four': ['AF', 'MA', 'LS'] },
+  '2024/25': { 'Team One': ['AA', 'TF', 'SB'], 'Team Two': ['AF', 'JF', 'AT'], 'Team Three': ['TP', 'MA', 'MV'], 'Team Four': ['PN', 'LS', 'SF'] },
+  '2025/26': { 'Team One': ['SF', 'LS', 'TP'], 'Team Two': ['SB', 'JF', 'PN'], 'Team Three': ['AT', 'TF', 'AA'], 'Team Four': ['AF', 'MV', 'MA'] },
+};
+
 // The syndicate year's start date isn't fixed - it moves around by AGM
 // decision. Rather than hardcoding a calendar month, derive the CURRENT
 // season's actual start date from the earliest recorded date among rows
@@ -603,6 +618,88 @@ function computeTeamMM(rows) {
 
 function uniq(values) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+}
+
+// Same logic as computeTeamMM, but scored against an explicit roster
+// (team -> member codes) instead of the current global TEAM_MAP - needed
+// because teams are reconstituted every season, so a past season's "Team
+// One" must be scored against who was actually on it that year, not
+// today's Team One.
+function computeTeamMMForRoster(rows, roster) {
+  const memberTeam = {};
+  Object.entries(roster).forEach(([team, members]) => members.forEach(m => { memberTeam[m] = team; }));
+  const perTeamDate = new Map();
+  rows.forEach(row => {
+    const team = memberTeam[row.member];
+    if (!team || !isRealPick(row)) return;
+    if (!perTeamDate.has(team)) perTeamDate.set(team, new Map());
+    const byDate = perTeamDate.get(team);
+    if (!byDate.has(row.date)) byDate.set(row.date, []);
+    byDate.get(row.date).push(row);
+  });
+  const result = new Map();
+  perTeamDate.forEach((byDate, team) => {
+    const teamMembers = roster[team] || [];
+    byDate.forEach((memberRows, date) => {
+      const membersPresent = uniq(memberRows.map(r => r.member));
+      const dropped = teamMembers.length > 0 && teamMembers.every(m => membersPresent.includes(m));
+      if (!dropped) return;
+      const successful = memberRows.every(r => r.win);
+      result.set(`${date}||${team}`, { team, date, successful, memberRows });
+    });
+  });
+  return result;
+}
+
+// Same as teamWinningsTally, scored against an explicit roster. Sorted by
+// raw dollar amount (not ROI) since "top earning" means who made the most
+// money, not the best return on stake.
+function teamWinningsForRoster(rows, roster) {
+  const teamMM = computeTeamMMForRoster(rows, roster);
+  const totals = new Map(Object.keys(roster).map(t => [t, { payout: 0, staked: 0 }]));
+  teamMM.forEach(entry => {
+    const t = totals.get(entry.team);
+    if (!t) return;
+    t.staked += MM_COST;
+    if (entry.successful) {
+      t.payout += entry.memberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+    }
+  });
+  return [...totals.entries()]
+    .map(([team, t]) => ({ team, amount: t.payout - t.staked }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+// The single best team-in-a-season, since 2021/22 (the earliest season
+// TEAM_ROSTERS_BY_SEASON covers). Not a cumulative sum across years - team
+// membership changes every season, so "Team One's all-time total" would
+// silently blend several unrelated groups of people together. This finds
+// whichever one team, in whichever one season, actually earned the most.
+function bestTeamSeasonRecord(allTimeData) {
+  const seasons = { ...TEAM_ROSTERS_BY_SEASON, [currentYear(allTimeData)]: TEAM_MAP_AS_ROSTER() };
+  let best = null;
+  Object.entries(seasons).forEach(([season, roster]) => {
+    if (!season || !roster) return;
+    const seasonRows = allTimeData.filter(r => seasonEqual(r.year, season));
+    if (!seasonRows.length) return;
+    const ranked = teamWinningsForRoster(seasonRows, roster);
+    const top = ranked[0];
+    if (top && (!best || top.amount > best.amount)) {
+      best = { team: top.team, season, amount: top.amount, members: roster[top.team] };
+    }
+  });
+  return best;
+}
+
+// TEAM_MAP is member -> team; roster helpers need team -> members. Built
+// once from TEAM_MAP rather than hand-duplicating the current roster.
+function TEAM_MAP_AS_ROSTER() {
+  const roster = {};
+  Object.entries(TEAM_MAP).forEach(([member, team]) => {
+    if (!roster[team]) roster[team] = [];
+    roster[team].push(member);
+  });
+  return roster;
 }
 
 function bind() {
@@ -1667,8 +1764,15 @@ function memberCrashesBySeasonRecord(data) {
       groups[key].crashes += 1;
     });
   });
-  const rows = Object.values(groups).sort((a, b) => b.crashes - a.crashes);
-  return rows[0] || null;
+  const rows = Object.values(groups);
+  if (!rows.length) return null;
+  const maxCrashes = Math.max(...rows.map(r => r.crashes));
+  const tied = rows.filter(r => r.crashes === maxCrashes);
+  // .member/.season/.crashes kept as the top tied entry so the two
+  // existing single-holder callers (recordsColumnHtml's "this year"/
+  // "annual best" lines) keep working unchanged; .members carries every
+  // tied member's code for the Records award tile, which shows them all.
+  return { ...tied[0], members: tied.map(t => t.member) };
 }
 
 function mostWinsInSeasonRecord(data) {
@@ -1842,14 +1946,18 @@ function svgPlaqueSeal() {
 // are { main, detail } - detail (the bet option and date) is only shown
 // when there's a single clear record-holder; a tie across several members
 // with no one option/date to point to falls back to just the main line.
-function recordRibbonTile(label, seasonParts, allTimeParts) {
+function recordRibbonTile(tone, label, seasonParts, allTimeParts, staticTile) {
+  const toneClass = tone === 'bad' ? 'record-ribbon-bad' : tone === 'gold' ? 'record-ribbon-gold' : 'record-ribbon-good';
   const face = (parts, backSuffix) => `<div class="record-ribbon-shape">
     <svg width="18" height="18" viewBox="0 0 24 24" class="record-icon" aria-hidden="true"><path d="${RECORD_TROPHY_PATH}" fill="currentColor"/></svg>
     <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
     <p class="record-ribbon-main">${escapeHtml(parts.main)}</p>
-    ${parts.detail ? `<p class="record-ribbon-detail">${escapeHtml(parts.detail)}</p>` : ''}
+    <p class="record-ribbon-detail">${parts.detail ? escapeHtml(parts.detail) : ''}</p>
   </div>`;
-  return `<div class="flip-tile record-ribbon-tile">
+  if (staticTile) {
+    return `<div class="record-ribbon-tile ${toneClass}"><div class="record-ribbon-front" style="width:100%;">${face(seasonParts, '')}</div></div>`;
+  }
+  return `<div class="flip-tile record-ribbon-tile ${toneClass}">
     <div class="flip-inner">
       <div class="flip-face flip-front record-ribbon-front">${face(seasonParts, '')}</div>
       <div class="flip-face flip-back record-ribbon-back">${face(allTimeParts, ' - all-time')}</div>
@@ -1872,16 +1980,19 @@ function recordLaurelTile(tone, label, seasonValue, allTimeValue) {
   </div>`;
 }
 
-function recordPlaqueTile(label, seasonValue, allTimeValue) {
-  const face = (value, backSuffix) => `
+function recordPlaqueTile(label, seasonValue, allTimeValue, opts) {
+  opts = opts || {};
+  const backSuffixText = opts.backLabelSuffix || ' - all-time';
+  const face = (value, detail, backSuffix) => `
     ${svgPlaqueSeal()}
     <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
     <p class="record-plaque-value">${escapeHtml(value)}</p>
+    ${detail ? `<p class="record-plaque-detail">${escapeHtml(detail)}</p>` : ''}
   `;
   return `<div class="flip-tile record-plaque-tile">
     <div class="flip-inner">
-      <div class="flip-face flip-front record-plaque-front">${face(seasonValue, '')}</div>
-      <div class="flip-face flip-back record-plaque-back">${face(allTimeValue, ' - all-time')}</div>
+      <div class="flip-face flip-front record-plaque-front">${face(seasonValue, opts.seasonDetail, '')}</div>
+      <div class="flip-face flip-back record-plaque-back">${face(allTimeValue, opts.allTimeDetail, backSuffixText)}</div>
     </div>
   </div>`;
 }
@@ -1890,15 +2001,19 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   const winPctText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${pct(r.success)} (${r.sameSample ? `${r.wins} wins from ${r.picks.toLocaleString()} picks` : r.tied.map(x => `${x.name} ${x.wins}/${x.picks}`).join(', ')})` : 'Not enough data yet.');
   const annualWinPctText = (r) => expandMemberCodes(r ? `${r.member} - ${pct(r.success)} (${r.wins} of ${r.picks}) - ${r.season}` : 'Not enough data yet.');
   const mostWinsText = (r) => expandMemberCodes(r ? `${r.names.join(', ')} - ${r.wins.toLocaleString()}` : 'Not enough data yet.');
-  const streakText = (r) => expandMemberCodes(r.streak ? `${r.streak} - ${r.ranges.join(', ')}` : 'Not enough data yet.');
   const mmKillersText = (r) => expandMemberCodes(r.count ? `${r.count} - ${r.members.join(', ')}` : 'Not enough data yet.');
   const lonesomeText = (r) => expandMemberCodes(r.total ? `${r.total} - ${r.names.join(', ')}` : 'Not enough data yet.');
-  const crashesText = (r) => expandMemberCodes(r ? `${r.member} - ${r.crashes}${r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.');
-  // { main, detail } rather than one combined string, so the ribbon tile
-  // can show odds+member bold and the bet option/date smaller underneath.
-  // detail is only ever populated when there is exactly one record-holder
-  // row to point to - a tie across several members has no single option
-  // or date to show, so the detail line is simply omitted for those.
+  // Season shown only when there's exactly one tied record-holder - with
+  // several tied members (possibly from different seasons), naming one
+  // season would misleadingly imply it applies to all of them.
+  const crashesText = (r) => expandMemberCodes(r ? `${r.members.join(', ')} - ${r.crashes}${r.members.length === 1 && r.season ? ` - ${r.season}` : ''}` : 'Not enough data yet.');
+  // { main, detail } rather than one combined string, so ribbon tiles can
+  // show the headline figure bold and the supporting context (bet option
+  // and date for odds; date range for streaks) smaller underneath. detail
+  // is only ever populated when there is exactly one record-holder to
+  // point to - a tie across several members has no single option/date/
+  // range that applies to all of them, so the detail line is simply
+  // omitted for those rather than showing something misleading.
   const oddsParts = (rec) => {
     if (!rec) return { main: 'Not enough data yet.', detail: null };
     const counts = {};
@@ -1910,49 +2025,87 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
       detail: single ? `${single.name}, ${single.date}` : null,
     };
   };
+  const streakParts = (r) => {
+    if (!r.streak) return { main: 'Not enough data yet.', detail: null };
+    // r.ranges[i] is already "MEMBER (date range)" - when there's a single
+    // tied member, pull just the parenthesised date range back out for the
+    // detail line rather than duplicating the member code there too.
+    let detail = null;
+    if (r.members.length === 1) {
+      const match = r.ranges[0].match(/\(([^)]+)\)/);
+      detail = match ? match[1] : null;
+    }
+    return {
+      main: expandMemberCodes(`${r.streak} - ${r.members.join(', ')}`),
+      detail,
+    };
+  };
 
-  // Grouped into rows by what the record is about, rather than one
-  // undifferentiated grid: odds records (ribbon), positive personal
-  // records (green laurel), negative personal records (red laurel), and
-  // whole-syndicate events (blue plaque) - each row centred so a
-  // shorter final row doesn't trail off to one side.
-  const ribbonRow = [
-    recordRibbonTile('Highest successful odds', oddsParts(extremeOddsRecord(seasonData, true, 'max')), oddsParts(extremeOddsRecord(allTimeData, true, 'max'))),
-    recordRibbonTile('Lowest unsuccessful odds', oddsParts(extremeOddsRecord(seasonData, false, 'min')), oddsParts(extremeOddsRecord(allTimeData, false, 'min'))),
+  // Grouped into tiers by what the record is about, rather than one
+  // undifferentiated grid: top-level headline records (ribbon - odds,
+  // streaks, IM Winnings), positive personal records (green laurel),
+  // negative personal records (red laurel), and whole-syndicate events
+  // (blue plaque) - each row centred so a shorter final row doesn't trail
+  // off to one side.
+  const topRow = [
+    recordRibbonTile('good', 'Highest successful odds', oddsParts(extremeOddsRecord(seasonData, true, 'max')), oddsParts(extremeOddsRecord(allTimeData, true, 'max'))),
+    recordRibbonTile('good', 'Longest winning streak', streakParts(currentTrailingStreakRecord(allTimeData, true)), streakParts(longestStreakRecord(allTimeData, true))),
+    recordRibbonTile('bad', 'Lowest unsuccessful odds', oddsParts(extremeOddsRecord(seasonData, false, 'min')), oddsParts(extremeOddsRecord(allTimeData, false, 'min'))),
+    recordRibbonTile('bad', 'Longest losing streak', streakParts(currentTrailingStreakRecord(allTimeData, false)), streakParts(longestStreakRecord(allTimeData, false))),
+    // Static - IMs aren't tracked in the Sheet, so this is a manually
+    // maintained figure rather than something computed from the data, and
+    // it's inherently an all-time record (there's no "this season's IM
+    // Winnings" version of it) - shown gold from the start rather than
+    // flipping between a season face and itself.
+    recordRibbonTile('gold', 'Highest IM Winnings', { main: expandMemberCodes('TP - $2,595'), detail: null }, null, true),
   ].join('');
 
   const goodRow = [
-    recordLaurelTile('good', 'Longest winning streak', streakText(currentTrailingStreakRecord(allTimeData, true)), streakText(longestStreakRecord(allTimeData, true))),
     recordLaurelTile('good', 'Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), annualWinPctText(bestAnnualWinPercentRecord(allTimeData, 10))),
     recordLaurelTile('good', 'Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsText(mostWinsRecord(allTimeData))),
   ].join('');
 
   const badRow = [
-    recordLaurelTile('bad', 'Longest losing streak', streakText(currentTrailingStreakRecord(allTimeData, false)), streakText(longestStreakRecord(allTimeData, false))),
-    recordLaurelTile('bad', 'Most crashes in a season', crashesText(isPastSeasonHalfway(seasonData) ? memberCrashesBySeasonRecord(seasonData) : null), crashesText(memberCrashesBySeasonRecord(allTimeData))),
+    recordLaurelTile('bad', 'Most crashes in a season', crashesText(memberCrashesBySeasonRecord(seasonData)), crashesText(memberCrashesBySeasonRecord(allTimeData))),
     recordLaurelTile('bad', 'Most MM Killers', mmKillersText(memberFieldLeaderboard(seasonData, 'mmKiller')), mmKillersText(memberFieldLeaderboard(allTimeData, 'mmKiller'))),
     recordLaurelTile('bad', 'Lonesome Loser(s)', lonesomeText(fieldEventTotal(seasonData, 'lonesomeLoser')), lonesomeText(fieldEventTotal(allTimeData, 'lonesomeLoser'))),
   ].join('');
 
+  // Top earning team: current season uses this season's actual roster
+  // (TEAM_MAP); the back face is the single best team-in-a-season since
+  // 2021/22, not a cumulative total - see bestTeamSeasonRecord for why a
+  // sum-across-years figure would be misleading given teams reshuffle
+  // every season.
+  const currentTeamRanked = teamWinningsForRoster(seasonData, TEAM_MAP_AS_ROSTER());
+  const topTeamSeason = currentTeamRanked[0];
+  const bestTeamEver = bestTeamSeasonRecord(allTimeData);
   const plaqueRow = [
     recordPlaqueTile('Tier Crashers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
     recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
+    recordPlaqueTile(
+      'Top earning team',
+      topTeamSeason ? `${topTeamSeason.team} - ${fmtMoney(topTeamSeason.amount)}` : 'Not enough data yet.',
+      bestTeamEver ? `${bestTeamEver.team} (${bestTeamEver.season}) - ${fmtMoney(bestTeamEver.amount)}` : 'Not enough data yet.',
+      {
+        seasonDetail: topTeamSeason ? expandMemberCodes(TEAM_MAP_AS_ROSTER()[topTeamSeason.team].join(', ')) : null,
+        allTimeDetail: bestTeamEver ? expandMemberCodes(bestTeamEver.members.join(', ')) : null,
+        backLabelSuffix: ' - best season since 2021/22',
+      }
+    ),
   ].join('');
 
   // Losing season doesn't have a natural "other scope" counterpart (a
-  // season isn't compared against its own best-ever single season), and
-  // Highest IM Winnings is a static, manually maintained figure not
-  // computed from the data at all - so these two stay as plain, unflipped
-  // entries rather than being forced into an ill-fitting front/back pairing.
+  // season isn't compared against its own best-ever single season), so it
+  // stays as a plain, unflipped entry rather than being forced into an
+  // ill-fitting front/back pairing.
   const losingSeasonText = losingSeasonRecord(seasonData, 1);
-  const extras = [
-    losingSeasonText ? `<div class="record-shield record-gold-current"><span>Member with a losing season</span><strong>${escapeHtml(expandMemberCodes(losingSeasonText))}</strong></div>` : '',
-    `<div class="record-shield record-gold-alltime"><span>Highest IM Winnings</span><strong>${escapeHtml(expandMemberCodes('TP - $2,595'))}</strong></div>`,
-  ].join('');
+  const extras = losingSeasonText
+    ? `<div class="record-list" style="margin-top:16px;"><div class="record-shield record-gold-current"><span>Member with a losing season</span><strong>${escapeHtml(expandMemberCodes(losingSeasonText))}</strong></div></div>`
+    : '';
 
   setTimeout(bindFlipTiles, 0);
 
-  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p>${recordMedalDefs()}<div class="record-rows"><div class="record-row">${ribbonRow}</div><div class="record-row">${goodRow}</div><div class="record-row">${badRow}</div><div class="record-row">${plaqueRow}</div></div><div class="record-list" style="margin-top:16px;">${extras}</div></div>`;
+  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p>${recordMedalDefs()}<div class="record-rows"><div class="record-row">${topRow}</div><div class="record-row">${goodRow}</div><div class="record-row">${badRow}</div><div class="record-row">${plaqueRow}</div></div>${extras}</div>`;
 }
 
 function recordsColumnHtml(title, data, opts, scope) {
