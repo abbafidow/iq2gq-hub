@@ -690,7 +690,7 @@ tr:last-child td { border-bottom: 0; }
 }
 
 /* ---------- President / Benson year dial (Records page) ---------- */
-.pres-dial-panel { text-align: center; }
+.pres-dial-panel { text-align: center; background: linear-gradient(160deg, #2e2560, #241d4a); border-color: #6b5cc4; }
 .pres-dial-stage { padding: 4px 0; user-select: none; }
 .pres-dial-label { margin: 0 0 4px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
 .pres-dial-label.good { color: var(--good); }
