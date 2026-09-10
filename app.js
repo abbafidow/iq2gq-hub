@@ -1724,6 +1724,20 @@ function memberFieldLeaderboard(data, field) {
   return { count: best, members: entries.filter(([, c]) => c === best).map(([m]) => m) };
 }
 
+// Same {count, members} shape as memberFieldLeaderboard, but for a plain
+// per-row flag (Tier Killer) rather than a field whose VALUE is a member
+// code (MM Killer, Lonesome Loser) - tallies r.member on every row where
+// the flag is set, since the flag is marked on each affected member's own
+// row rather than naming a single "who" elsewhere.
+function memberFlagLeaderboard(data, field) {
+  const counts = {};
+  data.forEach(r => { if (r[field]) counts[r.member] = (counts[r.member] || 0) + 1; });
+  const entries = Object.entries(counts);
+  if (!entries.length) return { count: 0, members: [] };
+  const best = Math.max(...entries.map(([, c]) => c));
+  return { count: best, members: entries.filter(([, c]) => c === best).map(([m]) => m) };
+}
+
 function fieldEventTotal(data, field) {
   const counts = {};
   data.forEach(r => { if (r[field]) counts[r[field]] = (counts[r[field]] || 0) + 1; });
@@ -1760,6 +1774,39 @@ function perfectRoundCount(data) {
     if (allRosterPlayed && resulted.every(p => p.win)) count += 1;
   });
   return count;
+}
+
+// Every Perfect Round, by definition, includes the entire active roster
+// that day - so within a single season everyone's tied and a breakdown
+// says nothing new. But the roster has grown from ~6 to 12 over time, so a
+// member's TOTAL across their whole tenure genuinely differs from someone
+// who joined more recently - this tallies that cumulative count and
+// returns the leader(s), same {count, members} shape as
+// memberFieldLeaderboard for consistent formatting.
+function perfectRoundMemberLeaderboard(data) {
+  const rosterBySeason = {};
+  data.forEach(r => {
+    const season = normalisedSeason(r.year);
+    if (!rosterBySeason[season]) rosterBySeason[season] = new Set();
+    rosterBySeason[season].add(r.member);
+  });
+  const byDate = groupBy(data, 'date');
+  const counts = {};
+  Object.values(byDate).forEach(picks => {
+    const resulted = picks.filter(p => p.win || p.loss);
+    if (!resulted.length) return;
+    const season = normalisedSeason(resulted[0].year);
+    const roster = rosterBySeason[season] || new Set();
+    const membersWithResult = uniq(resulted.map(p => p.member));
+    const allRosterPlayed = [...roster].every(m => membersWithResult.includes(m));
+    if (allRosterPlayed && resulted.every(p => p.win)) {
+      roster.forEach(m => { counts[m] = (counts[m] || 0) + 1; });
+    }
+  });
+  const entries = Object.entries(counts);
+  if (!entries.length) return { count: 0, members: [] };
+  const best = Math.max(...entries.map(([, c]) => c));
+  return { count: best, members: entries.filter(([, c]) => c === best).map(([m]) => m) };
 }
 // A "crash" is the established Tier Crasher event - a whole team's MM
 // fails. Tracked per MEMBER rather than per team, since team composition
@@ -2010,6 +2057,11 @@ function recordPlaqueTile(label, seasonValue, allTimeValue, opts) {
 }
 
 function recordFlipTilesHtml(seasonData, allTimeData, cy) {
+  // Formats a {count, members} leaderboard result (memberFieldLeaderboard,
+  // perfectRoundMemberLeaderboard) as a small "who's involved most" detail
+  // line - null when count is 0, so a tile with no occurrences yet shows
+  // no detail line at all rather than a stray "(0)".
+  const leaderDetail = (r) => r.count ? `Most involved: ${namesOrInitials(r.members)} (${r.count})` : null;
   const winPctText = (r) => {
     if (!r) return 'Not enough data yet.';
     const tiedText = r.tied.length > 2
@@ -2111,8 +2163,21 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   const topTeamSeason = currentTeamRanked[0];
   const bestTeamEver = bestTeamSeasonGrossEarnings(allTimeData);
   const plaqueRow = [
-    recordPlaqueTile('Tier Killers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
-    recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
+    recordPlaqueTile('Tier Killers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData)), {
+      // memberFieldLeaderboard naturally returns {count:0, members:[]} when
+      // nothing's happened yet (e.g. no Tier Killers so far this season),
+      // so this correctly shows no detail line rather than a stray "(0)".
+      seasonDetail: leaderDetail(memberFlagLeaderboard(seasonData, 'tierKiller')),
+      allTimeDetail: leaderDetail(memberFlagLeaderboard(allTimeData, 'tierKiller')),
+    }),
+    recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData)), {
+      // Every Perfect Round includes the whole active roster that day, so a
+      // breakdown within one season would just repeat everyone at an
+      // identical count - not informative. The roster's grown from ~6 to
+      // 12 members over time though, so a real split emerges cumulatively.
+      seasonDetail: 'Everyone active that day - no split within one season',
+      allTimeDetail: leaderDetail(perfectRoundMemberLeaderboard(allTimeData)),
+    }),
     recordPlaqueTile(
       'Highest earning team',
       topTeamSeason ? `${topTeamSeason.team} - ${fmtMoney(topTeamSeason.amount)}` : 'Not enough data yet.',
