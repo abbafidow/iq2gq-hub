@@ -661,38 +661,39 @@ function computeTeamMMForRoster(rows, roster) {
   return result;
 }
 
-// Same as teamWinningsTally, scored against an explicit roster. Sorted by
-// raw dollar amount (not ROI) since "top earning" means who made the most
-// money, not the best return on stake.
-function teamWinningsForRoster(rows, roster) {
+// Highest earning team: the team's total gross MM earnings (sum of
+// payouts from successful MMs only - NOT the same figure as the Team
+// winnings tally table below, which subtracts the ~$25 stake for every MM
+// dropped, win or lose, to get a net profit/ROI figure). "Highest earning"
+// means the most money that actually came back in, full stop.
+function teamGrossEarningsForRoster(rows, roster) {
   const teamMM = computeTeamMMForRoster(rows, roster);
-  const totals = new Map(Object.keys(roster).map(t => [t, { payout: 0, staked: 0 }]));
+  const totals = new Map(Object.keys(roster).map(t => [t, 0]));
   teamMM.forEach(entry => {
-    const t = totals.get(entry.team);
-    if (!t) return;
-    t.staked += MM_COST;
-    if (entry.successful) {
-      t.payout += entry.memberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
-    }
+    if (!entry.successful) return;
+    const current = totals.get(entry.team);
+    if (current === undefined) return;
+    totals.set(entry.team, current + entry.memberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0));
   });
   return [...totals.entries()]
-    .map(([team, t]) => ({ team, amount: t.payout - t.staked }))
+    .map(([team, amount]) => ({ team, amount }))
     .sort((a, b) => b.amount - a.amount);
 }
 
-// The single best team-in-a-season, since 2021/22 (the earliest season
-// TEAM_ROSTERS_BY_SEASON covers). Not a cumulative sum across years - team
-// membership changes every season, so "Team One's all-time total" would
-// silently blend several unrelated groups of people together. This finds
-// whichever one team, in whichever one season, actually earned the most.
-function bestTeamSeasonRecord(allTimeData) {
+// The single best team-in-a-season by gross earnings, since 2021/22 (the
+// earliest season TEAM_ROSTERS_BY_SEASON covers, roughly the last five
+// years). Not a cumulative sum across years - team membership changes
+// every season, so "Team One's all-time total" would silently blend
+// several unrelated groups of people together. This finds whichever one
+// team, in whichever one season, actually earned the most.
+function bestTeamSeasonGrossEarnings(allTimeData) {
   const seasons = { ...TEAM_ROSTERS_BY_SEASON, [currentYear(allTimeData)]: TEAM_MAP_AS_ROSTER() };
   let best = null;
   Object.entries(seasons).forEach(([season, roster]) => {
     if (!season || !roster) return;
     const seasonRows = allTimeData.filter(r => seasonEqual(r.year, season));
     if (!seasonRows.length) return;
-    const ranked = teamWinningsForRoster(seasonRows, roster);
+    const ranked = teamGrossEarningsForRoster(seasonRows, roster);
     const top = ranked[0];
     if (top && (!best || top.amount > best.amount)) {
       best = { team: top.team, season, amount: top.amount, members: roster[top.team] };
@@ -2099,24 +2100,21 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
     recordLaurelTile('bad', 'Lonesome Loser(s)', lonesomeText(fieldEventTotal(seasonData, 'lonesomeLoser')), lonesomeText(fieldEventTotal(allTimeData, 'lonesomeLoser'))),
   ].join('');
 
-  // Top earning team: current season uses this season's actual roster
-  // (TEAM_MAP); the back face is the single best team-in-a-season since
-  // 2021/22, not a cumulative total - see bestTeamSeasonRecord for why a
-  // sum-across-years figure would be misleading given teams reshuffle
-  // every season.
-  // Season face reuses the exact same cumulative-earnings-to-date figures
-  // already shown in the Team Winnings Tally table below, rather than a
-  // separate calculation, so the two never drift out of sync - just
-  // re-sorted here by raw amount (that table sorts by ROI) since "top
-  // earning" means who made the most money, not the best return on stake.
-  const currentTeamRanked = [...teamWinningsTally(seasonData)].sort((a, b) => b.amount - a.amount);
+  // Highest earning team: adds together all the MM earnings (gross
+  // payouts, not net of stake) a team has made this season, using this
+  // season's actual roster; the back face is the single best team-in-a-
+  // season by the same gross-earnings measure since 2021/22 (roughly the
+  // last five years), not a cumulative sum - see bestTeamSeasonGrossEarnings
+  // for why a sum-across-years figure would be misleading given teams
+  // reshuffle every season.
+  const currentTeamRanked = teamGrossEarningsForRoster(seasonData, TEAM_MAP_AS_ROSTER());
   const topTeamSeason = currentTeamRanked[0];
-  const bestTeamEver = bestTeamSeasonRecord(allTimeData);
+  const bestTeamEver = bestTeamSeasonGrossEarnings(allTimeData);
   const plaqueRow = [
     recordPlaqueTile('Tier Killers', String(tierCrasherCount(seasonData)), String(tierCrasherCount(allTimeData))),
     recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(seasonData)), String(perfectRoundCount(allTimeData))),
     recordPlaqueTile(
-      'Top earning team',
+      'Highest earning team',
       topTeamSeason ? `${topTeamSeason.team} - ${fmtMoney(topTeamSeason.amount)}` : 'Not enough data yet.',
       bestTeamEver ? `${bestTeamEver.team} (${bestTeamEver.season}) - ${fmtMoney(bestTeamEver.amount)}` : 'Not enough data yet.',
       {
