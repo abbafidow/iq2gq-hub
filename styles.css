@@ -225,15 +225,16 @@ h1, h2, h3 { margin: 0; }
 
 .footer {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   padding: 18px 28px;
   color: var(--muted);
   border-top: 1px solid var(--line);
   font-size: 13px;
+  text-align: center;
 }
-.footer::after { content: 'Google Sheets live data'; color: var(--accent); }
+.footer p { margin: 0; }
 
 /* ---------- Tables & mobile card views ---------- */
 
