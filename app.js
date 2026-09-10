@@ -55,7 +55,7 @@ const PRESIDENT_COUNTS = { TP: 1, LS: 2, MA: 2, TF: 1, MV: 2, SB: 3 };
 // the Records page instead of bare 2-letter codes.
 const MEMBER_FULL_NAMES = {
   MA: 'Aiono Matthew Aileone',
-  AA: 'Andrew Amituanai',
+  AA: "Andrew Amituana'i",
   SB: 'Stanley Bradbrook',
   AF: 'Tuaopepe Abba Fidow',
   LS: "Fa'aolatane Lemi Siitia",
@@ -65,7 +65,7 @@ const MEMBER_FULL_NAMES = {
   TP: 'Tony Paki',
   MV: 'Mano Mau Vili',
   JF: 'John Fenika',
-  TF: 'Misa Malaesila Tupu Fidow',
+  TF: 'Misa Malaesilia Tupu Fidow',
 };
 // Replaces any standalone 2-letter member code in a string with that
 // member's full name, leaving everything else untouched - safe against
@@ -90,16 +90,16 @@ const PRESIDENTS_DIAL_DATA = [
   { term: '2014/15', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
   { term: '2015/16', president: 'Tony Paki', honorific: 'Te Pioneer', benson: 'Tuaopepe Abba Fidow', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Stanley Bradbrook' },
   { term: '2016/17', president: "Fa'aolatane Lemi Siitia", honorific: 'Wayfinder', benson: 'John Fenika', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Tony Paki' },
-  { term: '2017/18', president: "Fa'aolatane Lemi Siitia", honorific: 'Wayfinder', benson: 'Misa Malaesila Tupu Fidow', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Stanley Bradbrook' },
+  { term: '2017/18', president: "Fa'aolatane Lemi Siitia", honorific: 'Wayfinder', benson: 'Misa Malaesilia Tupu Fidow', venue: 'Queenstown', activity: 'Skyline Luge', winner: 'Stanley Bradbrook' },
   { term: '2018/19', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Paul Nanai', venue: 'Mt Maunganui', activity: 'Tauranga Mini Golf', winner: 'Tony Paki' },
-  { term: '2019/20', president: 'Misa Malaesila Tupu Fidow', honorific: 'Reformer', benson: 'Shane Fenika', venue: 'Nelson', activity: 'Pro Combat Laser Tag', winner: 'Aiono Matthew Aileone' },
+  { term: '2019/20', president: 'Misa Malaesilia Tupu Fidow', honorific: 'Reformer', benson: 'Shane Fenika', venue: 'Nelson', activity: 'Pro Combat Laser Tag', winner: 'Aiono Matthew Aileone' },
   { term: '2020/21', president: 'Mano Mau Vili', honorific: 'Ace', benson: 'Stanley Bradbrook', venue: 'Taupo', activity: 'Hole in One Challenge', winner: 'Tuaopepe Abba Fidow' },
   { term: '2021/22', president: 'Mano Mau Vili', honorific: 'Ace', benson: "Fa'aolatane Lemi Siitia", venue: 'Queenstown (Rebel AGM)', activity: '', winner: '' },
   { term: '2022/23', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Tuaopepe Abba Fidow', venue: 'Mt Maunganui', activity: 'Spin the Wheel', winner: 'Shane Fenika' },
   { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Tupu Fidow' },
   { term: '2024/25', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Tuaopepe Abba Fidow', venue: 'Christchurch', activity: 'Clay Shooting', winner: 'Stanley Bradbrook' },
   { term: '2025/26', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Aiono Matthew Aileone', venue: 'Wellington', activity: 'Pistol Shooting', winner: "Fa'aolatane Lemi Siitia" },
-  { term: '2026/27', president: 'Andrew Amituanai', honorific: 'TBC', benson: 'TBC', venue: 'Gold Coast', activity: 'Top Golf', winner: 'Aiono Matthew Aileone' },
+  { term: '2026/27', president: "Andrew Amituana'i", honorific: 'TBC', benson: 'TBC', venue: 'Gold Coast', activity: 'Top Golf', winner: 'Aiono Matthew Aileone' },
 ];
 
 // Swipeable/tappable year dial for Records - President above the line,
@@ -125,7 +125,7 @@ function presidentDialHtml() {
   ).join('');
 
   return `<div class="panel pres-dial-panel">
-    <h3>Presidents &amp; Benson</h3>
+    <h3>List of Presidents</h3>
     <div class="pres-dial-stage" id="presDialStage">
       <p class="pres-dial-label good">President</p>
       <p class="pres-dial-name" id="presDialName">${escapeHtml(d.president)}</p>
@@ -1923,7 +1923,7 @@ function svgLaurelMedal(tone) {
   const star = tone === 'bad' ? '#fff1ee' : '#eaffef';
   const leaf = tone === 'bad' ? '#7d3a35' : '#3a7d52';
   const tail = tone === 'bad' ? '#5c1a1a' : '#1a5c34';
-  return `<svg width="44" height="44" viewBox="0 0 64 64" class="record-icon" aria-hidden="true">
+  return `<svg width="50" height="50" viewBox="0 0 64 64" class="record-icon" aria-hidden="true">
     <path d="M18,30 Q10,26 9,18 Q15,20 18,26 Z M18,34 Q9,35 5,29 Q12,28 18,32 Z" fill="${leaf}"/>
     <path d="M46,30 Q54,26 55,18 Q49,20 46,26 Z M46,34 Q55,35 59,29 Q52,28 46,32 Z" fill="${leaf}"/>
     <path d="M24,44 L20,58 L32,52 L44,58 L40,44 Z" fill="${tail}"/>
@@ -1936,7 +1936,7 @@ function svgLaurelMedal(tone) {
 // Blue seal - used for whole-syndicate events (everyone crashes, everyone
 // succeeds) rather than one member's personal record.
 function svgPlaqueSeal() {
-  return `<svg width="28" height="28" viewBox="0 0 34 34" class="record-icon" aria-hidden="true">
+  return `<svg width="32" height="32" viewBox="0 0 34 34" class="record-icon" aria-hidden="true">
     <circle cx="17" cy="17" r="15.5" fill="url(#gPlaqueSeal)" stroke="#dff3ff" stroke-width="1"/>
     <path d="M17,10 L18.6,15 L24,15.4 L19.9,18.7 L21.3,23.8 L17,20.7 L12.7,23.8 L14.1,18.7 L10,15.4 L15.4,15 Z" fill="#eaf8ff"/>
   </svg>`;
@@ -1949,7 +1949,7 @@ function svgPlaqueSeal() {
 function recordRibbonTile(tone, label, seasonParts, allTimeParts, staticTile) {
   const toneClass = tone === 'bad' ? 'record-ribbon-bad' : tone === 'gold' ? 'record-ribbon-gold' : 'record-ribbon-good';
   const face = (parts, backSuffix) => `<div class="record-ribbon-shape">
-    <svg width="18" height="18" viewBox="0 0 24 24" class="record-icon" aria-hidden="true"><path d="${RECORD_TROPHY_PATH}" fill="currentColor"/></svg>
+    <svg width="21" height="21" viewBox="0 0 24 24" class="record-icon" aria-hidden="true"><path d="${RECORD_TROPHY_PATH}" fill="currentColor"/></svg>
     <p class="record-tile-label">${escapeHtml(label)}${backSuffix}</p>
     <p class="record-ribbon-main">${escapeHtml(parts.main)}</p>
     <p class="record-ribbon-detail">${parts.detail ? escapeHtml(parts.detail) : ''}</p>
@@ -2076,7 +2076,12 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   // 2021/22, not a cumulative total - see bestTeamSeasonRecord for why a
   // sum-across-years figure would be misleading given teams reshuffle
   // every season.
-  const currentTeamRanked = teamWinningsForRoster(seasonData, TEAM_MAP_AS_ROSTER());
+  // Season face reuses the exact same cumulative-earnings-to-date figures
+  // already shown in the Team Winnings Tally table below, rather than a
+  // separate calculation, so the two never drift out of sync - just
+  // re-sorted here by raw amount (that table sorts by ROI) since "top
+  // earning" means who made the most money, not the best return on stake.
+  const currentTeamRanked = [...teamWinningsTally(seasonData)].sort((a, b) => b.amount - a.amount);
   const topTeamSeason = currentTeamRanked[0];
   const bestTeamEver = bestTeamSeasonRecord(allTimeData);
   const plaqueRow = [
@@ -2105,7 +2110,7 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
 
   setTimeout(bindFlipTiles, 0);
 
-  return `<div class="panel"><h2>${escapeHtml(cy || 'This season')} vs all-time records</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p>${recordMedalDefs()}<div class="record-rows"><div class="record-row">${topRow}</div><div class="record-row">${goodRow}</div><div class="record-row">${badRow}</div><div class="record-row">${plaqueRow}</div></div>${extras}</div>`;
+  return `<div class="panel"><h2>List of Honour</h2><p class="muted small">Tap a tile to flip between this season and all-time.</p>${recordMedalDefs()}<div class="record-rows"><div class="record-row">${topRow}</div><div class="record-row">${goodRow}</div><div class="record-row">${badRow}</div><div class="record-row">${plaqueRow}</div></div>${extras}</div>`;
 }
 
 function recordsColumnHtml(title, data, opts, scope) {
