@@ -4124,7 +4124,7 @@ function bindAutocomplete(inputId, listId, options, onCommit) {
     });
     starts.sort((a, b) => a.localeCompare(b));
     contains.sort((a, b) => a.localeCompare(b));
-    const matches = starts.concat(contains).slice(0, 8);
+    const matches = starts.concat(contains).slice(0, 20);
     if (!matches.length) { list.style.display = 'none'; list.innerHTML = ''; return; }
     list.innerHTML = matches.map(m => `<div class="pa-autocomplete-item" data-value="${escapeHtml(m)}">${escapeHtml(m)}</div>`).join('');
     list.style.display = 'block';
