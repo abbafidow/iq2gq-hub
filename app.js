@@ -234,7 +234,7 @@ function bindMemberPicker() {
 function dropPickTeamTilesHtml() {
   const teamClass = { 'Team One': 'team-one', 'Team Two': 'team-two', 'Team Three': 'team-three', 'Team Four': 'team-four' };
   const groups = TEAM_ORDER.map(team => {
-    const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team).sort();
+    const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team);
     const tiles = members.map(m =>
       `<button class="drop-pick-tile ${teamClass[team]}" data-member="${m}">${escapeHtml(m)}</button>`
     ).join('');
