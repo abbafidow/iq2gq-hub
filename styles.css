@@ -202,6 +202,26 @@ h1, h2, h3 { margin: 0; }
 .change-member-link { color: var(--accent); text-decoration: none; margin-left: 6px; }
 .change-member-link:hover { text-decoration: underline; }
 
+/* ---------- Drop a pick: team-coloured tile selector (AGM colours, Sept 2026) ---------- */
+.drop-pick-tiles { margin-bottom: 20px; }
+.drop-pick-team-group { margin-bottom: 14px; }
+.drop-pick-team-label { display: block; font-size: 10px; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+.drop-pick-team-tiles { display: flex; gap: 8px; flex-wrap: wrap; }
+.drop-pick-tile {
+  width: 56px;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.drop-pick-tile:hover { filter: brightness(1.08); }
+.drop-pick-tile.team-one { background: #f2b8b5; color: #5c1f1c; }
+.drop-pick-tile.team-two { background: #f5dd90; color: #5c4a10; }
+.drop-pick-tile.team-three { background: #a8d8ac; color: #1f4a22; }
+.drop-pick-tile.team-four { background: #a9d3ee; color: #1a3c54; }
+
 /* ---------- Layout & cards ---------- */
 
 .main { padding: 20px 28px; }
