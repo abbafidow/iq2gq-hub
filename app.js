@@ -2033,6 +2033,15 @@ const MM_COST = 25;
 // riskier/less-certain leg gets more credit for the parlay landing than
 // the member on the near-certain leg. Simple proportional split (not
 // log-weighted) so the numbers stay eyeball-verifiable against the Sheet.
+// Renamed from "profit" to "total" (Sept 2026) - a member whose team never
+// landed a single MM was previously shown as a flat -$25 loss purely from
+// their share of the stake, which read as "lost real money" even though
+// nothing of theirs actually went anywhere. This now reports the gross
+// share of MM winnings only, so a member with zero winning MMs shows $0,
+// not a negative. roi/staked are still tracked (used only for sort order -
+// ranks members by total won per dollar staked, a reasonable proxy for
+// standing) but are no longer rendered as a per-dollar ratio for this
+// column - see amountCellHtml's showRatio flag.
 function memberWinningsTallyOddsWeighted(rows) {
   const teamMM = computeTeamMM(rows);
   const totals = new Map(Object.keys(TEAM_MAP).map(m => [m, { amount: 0, staked: 0 }]));
@@ -2047,7 +2056,7 @@ function memberWinningsTallyOddsWeighted(rows) {
       const t = totals.get(r.member);
       if (!t) return;
       const payoutWeight = (entry.successful && oddsSum && Number.isFinite(r.odds)) ? r.odds / oddsSum : 0;
-      t.amount += payoutTotal * payoutWeight - costShare;
+      t.amount += payoutTotal * payoutWeight; // gross total won - stake no longer subtracted here
       t.staked += costShare;
     });
   });
@@ -2495,10 +2504,13 @@ function records(data) {
   const weightedTally = new Map(memberWinningsTallyOddsWeighted(seasonData).map(r => [r.member, r]));
   const flatTally = new Map(memberFlatBetTally(seasonData).map(r => [r.member, r]));
   const emptyItem = { amount: 0, roi: null };
-  const amountCellHtml = (item) => {
+  const amountCellHtml = (item, showRatio) => {
     const cls = item.amount > 0 ? 'good' : item.amount < 0 ? 'bad' : '';
     const returnPerDollar = item.roi === null ? null : 1 + item.roi / 100;
-    const ratioText = returnPerDollar === null ? '' : ` (${fmtMoney(returnPerDollar)})`;
+    // Odds-weighted now shows gross total won (see memberWinningsTallyOddsWeighted) -
+    // the per-dollar ratio would just restate that same number divided by
+    // itself in disguise, so it's only shown for the $10 flat (profit) column.
+    const ratioText = (!showRatio || returnPerDollar === null) ? '' : ` (${fmtMoney(returnPerDollar)})`;
     return `<td class="num ${cls}">${fmtMoney(item.amount)}${ratioText}</td>`;
   };
   const winningsRows = Object.keys(TEAM_MAP).sort().map(m => {
@@ -2508,12 +2520,12 @@ function records(data) {
   });
   const winningsTable = sortableMiniTable('memberWinnings', winningsRows, [
     { key: 'member', label: 'Member', render: r => `<td>${escapeHtml(r.member)}</td>` },
-    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem) },
-    { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
+    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem, false) },
+    { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem, true) },
   ]);
   const winningsSection = `<div class="panel standings-panel">
     <h3>Member winnings tally - ${escapeHtml(cy || 'this season')}</h3>
-    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure is how much came back for every \$1 staked.</p>
+    <p class="muted small">If the season ended today, here's where you stand. <strong>Odds-weighted:</strong> your gross share of team MM winnings (riskier leg earns more credit) - your total won, not netted against your stake. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure there is how much came back for every \$1 staked.</p>
     <div class="mini-table-wrap">${winningsTable}</div>
   </div>`;
 
