@@ -42,6 +42,7 @@ const state = {
   sportDrilldown: false,
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
+  dropPickMember: null, // separate "who am I" selection for Drop a pick - deliberately not shared with selectedMember, since dropping a pick and browsing your own stats are different intents
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
   presidentDialIndex: null, // Records page President/Benson dial - null until first touched, then persists across re-renders
@@ -224,6 +225,152 @@ function bindMemberPicker() {
       };
     });
   }, 0);
+}
+
+// Drop a pick's "who am I" step is tile-based and grouped/coloured by team
+// (AGM decision, Sept 2026) rather than the plain alphabetical grid used by
+// memberPickerHtml() elsewhere - members asked to visually recognise their
+// own team at a glance rather than hunt for their initials in a flat list.
+function dropPickTeamTilesHtml() {
+  const teamClass = { 'Team One': 'team-one', 'Team Two': 'team-two', 'Team Three': 'team-three', 'Team Four': 'team-four' };
+  const groups = TEAM_ORDER.map(team => {
+    const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team).sort();
+    const tiles = members.map(m =>
+      `<button class="drop-pick-tile ${teamClass[team]}" data-member="${m}">${escapeHtml(m)}</button>`
+    ).join('');
+    return `<div class="drop-pick-team-group">
+      <span class="drop-pick-team-label">${escapeHtml(team.toUpperCase())}</span>
+      <div class="drop-pick-team-tiles">${tiles}</div>
+    </div>`;
+  }).join('');
+  return `<div class="drop-pick-tiles">${groups}</div>`;
+}
+
+function bindDropPickTiles() {
+  setTimeout(() => {
+    document.querySelectorAll('.drop-pick-tile').forEach(btn => {
+      btn.onclick = () => {
+        state.dropPickMember = btn.dataset.member;
+        render();
+      };
+    });
+  }, 0);
+}
+
+// Which Friday round is currently open for picks. Not data-driven - Raw_Live
+// rows for a not-yet-open date are blank-Option and never reach state.raw
+// (see init(), which filters out rows where name === ''), so the client has
+// no visibility into which dates actually have a pre-populated row waiting.
+// Instead this is purely calculated from today's date: the current Friday's
+// round stays "open" through the end of Friday (local time), then rolls over
+// to default to the next Friday from midnight Saturday. Matches the decided
+// cutoff rule exactly - no member-facing date picker, this is fully invisible.
+function targetPickDate(today = new Date()) {
+  const day = today.getDay(); // 0=Sun..6=Sat, local time
+  const daysUntilFriday = (5 - day + 7) % 7; // 0 when today is already Friday
+  const target = new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilFriday);
+  const dd = String(target.getDate()).padStart(2, '0');
+  const mm = String(target.getMonth() + 1).padStart(2, '0');
+  const dateStr = `${dd}/${mm}/${target.getFullYear()}`; // matches Sheet's DD/MM/YYYY convention
+  const dayLabel = target.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' });
+  return { dateStr, label: `This week's round - ${dayLabel}` };
+}
+
+// Same aggregation as mostCommonSportByName() (used by Rate a Pick), but
+// keyed on the raw Sheet Sport value rather than the broader competitionFamily
+// grouping - Drop a pick needs the exact string to write into column J, not
+// just which family it belongs to.
+function mostCommonRawSportByName(rows) {
+  const counts = new Map();
+  rows.forEach(r => {
+    if (!r.name || !r.sport) return;
+    if (!counts.has(r.name)) counts.set(r.name, new Map());
+    const c = counts.get(r.name);
+    c.set(r.sport, (c.get(r.sport) || 0) + 1);
+  });
+  const result = new Map();
+  counts.forEach((sportCounts, name) => {
+    let best = null, bestCount = -1;
+    sportCounts.forEach((count, sport) => { if (count > bestCount) { best = sport; bestCount = count; } });
+    result.set(name, best);
+  });
+  return result;
+}
+
+// Front-end only for now - deliberately not wired to a live backend yet.
+// The Apps Script Web App that actually finds the matching Raw_Live row
+// (by Member code + Date) and writes into it is the next build step; until
+// that exists, submitting here logs the payload and tells the member
+// plainly that nothing has been saved, rather than pretending to succeed.
+function dropPick(data) {
+  const member = state.dropPickMember;
+  if (!member) {
+    bindDropPickTiles();
+    return `
+      <div class="pa-page">
+        <div class="page-header">
+          <h1>Drop a pick</h1>
+          <p>Tap your name below to drop this week's pick.</p>
+        </div>
+        ${dropPickTeamTilesHtml()}
+      </div>
+    `;
+  }
+
+  const target = targetPickDate();
+  const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
+  const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
+  const nameToTopSport = mostCommonRawSportByName(state.raw);
+
+  setTimeout(() => {
+    const changeLink = document.querySelector('.change-member-link');
+    if (changeLink) {
+      changeLink.onclick = (e) => {
+        e.preventDefault();
+        state.dropPickMember = null;
+        render();
+      };
+    }
+    bindAutocomplete('dropPickName', 'dropPickNameList', nameOptions);
+    bindAutocomplete('dropPickBetType', 'dropPickBetTypeList', betTypeOptions);
+    const submitBtn = document.getElementById('dropPickSubmitBtn');
+    if (submitBtn) {
+      submitBtn.onclick = () => {
+        const name = clean($('dropPickName').value);
+        const betType = clean($('dropPickBetType').value);
+        const oddsRaw = $('dropPickOdds').value;
+        const odds = oddsRaw !== '' && Number.isFinite(Number(oddsRaw)) && Number(oddsRaw) > 1 ? Number(oddsRaw) : null;
+        const statusEl = document.getElementById('dropPickStatus');
+        if (!name || !betType || !odds) {
+          statusEl.innerHTML = '<p class="muted small">Fill in Pick, Bet type and Odds before dropping your pick.</p>';
+          return;
+        }
+        const sport = nameToTopSport.get(name) || ''; // left blank if this Pick has never been recorded before - backfilled manually later
+        const payload = { member, date: target.dateStr, name, betType, sport, odds };
+        console.log('Drop pick payload (backend not yet connected):', payload);
+        statusEl.innerHTML = '<p class="muted small">This screen is not yet connected to the Sheet - nothing has been saved. (Backend build is next.)</p>';
+      };
+    }
+  }, 0);
+
+  return `
+    <div class="pa-page">
+      <div class="page-header">
+        <h1>Drop a pick - ${escapeHtml(member)}</h1>
+        <p>${escapeHtml(target.label)}. <a href="#" class="change-member-link">Not you?</a></p>
+      </div>
+      <div class="pa-card pa-rate-card">
+        <div class="pa-rate-form">
+          <label>Pick<span class="pa-autocomplete"><input autocomplete="off" id="dropPickName" placeholder="e.g. NZ Warriors"><div class="pa-autocomplete-list" id="dropPickNameList"></div></span></label>
+          <label>Bet type<span class="pa-autocomplete"><input autocomplete="off" id="dropPickBetType" placeholder="e.g. H2H"><div class="pa-autocomplete-list" id="dropPickBetTypeList"></div></span></label>
+          <label>Odds<input type="number" step="0.01" min="1.01" id="dropPickOdds" placeholder="e.g. 1.85"></label>
+          <button type="button" id="dropPickSubmitBtn">Drop pick</button>
+        </div>
+        <p class="muted small">Not on the list for Pick or Bet type? Just type your own in - it'll still go through, and gets tidied up on the Lists tab afterwards.</p>
+        <div id="dropPickStatus"></div>
+      </div>
+    </div>
+  `;
 }
 
 const ODDS = [
@@ -1263,6 +1410,7 @@ function render() {
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
+  if (page === 'droppick') app.innerHTML = dropPick(data);
 }
 
 function dashboard(data) {
