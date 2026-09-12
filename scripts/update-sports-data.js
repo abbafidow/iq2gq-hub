@@ -28,6 +28,12 @@ const path = require('path');
 const API_KEY = process.env.SPORTSDB_API_KEY || '123'; // falls back to the free test key if the secret isn't set
 const BASE_URL = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
 
+if (API_KEY === '123') {
+  console.log('Using the free "123" test key - SPORTSDB_API_KEY secret was not set (or was empty).');
+} else {
+  console.log(`Using a key from SPORTSDB_API_KEY (length ${API_KEY.length}, not shown).`);
+}
+
 const SPORTS = [
   {
     name: 'EPL',
@@ -92,8 +98,15 @@ function normalizeTeamName(name, aliases) {
 async function fetchSeason(leagueId, season) {
   const url = `${BASE_URL}/eventsseason.php?id=${leagueId}&s=${season}`;
   const res = await fetch(url);
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => '(could not read response body)');
+    console.log(`  HTTP ${res.status} calling eventsseason.php?id=${leagueId}&s=${season}: ${body.slice(0, 300)}`);
+    return [];
+  }
   const json = await res.json();
+  if (json.error) {
+    console.log(`  API returned an error for id=${leagueId}&s=${season}: ${json.error}`);
+  }
   return json.events || [];
 }
 
