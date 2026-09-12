@@ -1,5 +1,5 @@
-// Fetches recent EPL, NFL, NRL and Super Rugby results from TheSportsDB
-// and merges any games not already present into the existing
+// Fetches recent results for EPL, NFL, NRL, Super Rugby, AFL and NPC from
+// TheSportsDB and merges any games not already present into the existing
 // *_full_match_history.json files.
 //
 // Runs unattended via .github/workflows/update-sports-data.yml on a
@@ -10,17 +10,16 @@
 //
 // Data source: TheSportsDB (https://www.thesportsdb.com). Uses a Premium
 // key (stored as the SPORTSDB_API_KEY repo secret, never hardcoded here)
-// so all four sports get the full season each run rather than the free
+// so every sport gets the full season each run rather than the free
 // tier's ~5-events-a-day cap. Confirmed working league IDs: EPL 4328,
-// NFL 4391, NRL 4416, Super Rugby 4551, as of Sept 2026.
+// NFL 4391, NRL 4416, Super Rugby 4551, AFL 4456, NPC 5278.
 //
-// IMPORTANT - first run of NRL/Super Rugby should be checked by hand:
-// unlike EPL (confirmed "2025-2026" style) and NFL (confirmed plain
-// "2026"), the season-string format for NRL and Super Rugby hasn't
-// actually been tested against a live response yet - this script tries
-// both plain-year and hyphenated formats and uses whichever responds,
-// but if either sport comes back empty for several weeks running,
-// that's the first thing to check.
+// IMPORTANT - AFL and NPC are new, unlike the other four which already had
+// years of manually-sourced history behind them: these two started as
+// empty files, backfilled several seasons on their first run (see
+// backfillSeasons below). Their season-string format is also unconfirmed
+// against a live response (assumed plain year by analogy with NRL/Super
+// Rugby) - check the first run's log for either sport before trusting it.
 
 const fs = require('fs');
 const path = require('path');
@@ -74,7 +73,19 @@ const SPORTS = [
     // Untested against a live response - see file header. Trying plain
     // year first since NRL runs within a calendar year like NFL/AFL.
     seasonFormats: (year) => [`${year}`, `${year - 1}-${year}`, `${year}-${year + 1}`],
-    teamAliases: {}, // unconfirmed - check first run's output for mismatches against the existing file's team names
+    teamAliases: {
+      // Confirmed by comparing TheSportsDB's names against the existing
+      // file's dominant (majority-game-count) spelling on 2026-09-12 -
+      // without these, the same team's history silently splits across
+      // multiple name variants.
+      'Canterbury Bankstown Bulldogs': 'Canterbury Bulldogs',
+      'Canterbury-Bankstown Bulldogs': 'Canterbury Bulldogs',
+      'Cronulla-Sutherland Sharks': 'Cronulla Sharks',
+      'Manly-Warringah Sea Eagles': 'Manly Sea Eagles',
+      'North Queensland Cowboys': 'North QLD Cowboys',
+      'St. George Illawarra Dragons': 'St George Dragons',
+      'St. George Illawara Dragons': 'St George Dragons',
+    },
     oddsFieldStyle: 'plain', // this file uses home_odds/away_odds, not home_odds_close/away_odds_close
     hasPlayoffField: true,
   },
@@ -85,8 +96,68 @@ const SPORTS = [
     // Untested against a live response - see file header. Super Rugby
     // also runs within a calendar year (Feb-June), so trying plain year first.
     seasonFormats: (year) => [`${year}`, `${year - 1}-${year}`, `${year}-${year + 1}`],
-    teamAliases: {}, // unconfirmed - check first run's output for mismatches against the existing file's team names
+    teamAliases: {
+      // Confirmed by comparing TheSportsDB's names against the existing
+      // file's dominant (majority-game-count) spelling on 2026-09-12.
+      'Hurricanes Super Rugby': 'Hurricanes',
+      'Chiefs Super Rugby': 'Chiefs',
+      'Blues Super Rugby': 'Blues',
+      'Crusaders Super Rugby': 'Crusaders',
+      'Highlanders Super Rugby': 'Highlanders',
+      'Queensland Reds': 'Reds',
+      'ACT Brumbies': 'Brumbies',
+      'Western Force': 'Force',
+      'New South Wales Waratahs': 'Waratahs',
+    },
     oddsFieldStyle: 'plain', // this file uses home_odds/away_odds, not home_odds_close/away_odds_close
+    hasPlayoffField: false,
+  },
+  {
+    // AFL and NPC (below) start from an EMPTY file, unlike the four
+    // sports above which already had years of manually-sourced history -
+    // backfillSeasons pulls several past years on every run (not just the
+    // current one) so these two build up real depth quickly rather than
+    // starting thin and only growing one season at a time. Re-checking
+    // already-backfilled seasons on every run is a little wasteful but
+    // harmless (dedup drops anything already present) and self-healing if
+    // a run ever partially fails.
+    name: 'AFL',
+    leagueId: 4456,
+    file: path.join(__dirname, '..', 'afl_full_match_history.json'),
+    backfillSeasons: 6,
+    // Untested against a live response - assumed plain year by analogy
+    // with NRL (also an Australian, single-calendar-year competition,
+    // confirmed plain year) - falls back to hyphenated for the current
+    // year only, to avoid needlessly doubling backfill API calls if this
+    // assumption turns out wrong.
+    seasonFormats: (year) => {
+      const years = [];
+      for (let y = year; y > year - 6; y--) years.push(`${y}`);
+      years.push(`${year - 1}-${year}`, `${year}-${year + 1}`);
+      return years;
+    },
+    teamAliases: {}, // no prior file existed to compare against - nothing to check yet
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    name: 'NPC',
+    leagueId: 5278,
+    file: path.join(__dirname, '..', 'npc_full_match_history.json'),
+    backfillSeasons: 6,
+    // Untested against a live response - assumed plain year by analogy
+    // with Super Rugby (also a single-calendar-year competition,
+    // confirmed plain year), and TheSportsDB's own league listing showed
+    // "strCurrentSeason":"2026" for this league (plain year) when it was
+    // looked up - falls back to hyphenated for the current year only.
+    seasonFormats: (year) => {
+      const years = [];
+      for (let y = year; y > year - 6; y--) years.push(`${y}`);
+      years.push(`${year - 1}-${year}`, `${year}-${year + 1}`);
+      return years;
+    },
+    teamAliases: {}, // no prior file existed to compare against - nothing to check yet
+    oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
 ];
