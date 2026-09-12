@@ -2947,7 +2947,17 @@ function highestWinCard(data, label) {
 // Pulls a numeric line/handicap value out of a bet type string, e.g.
 // "12.5 point start" -> 12.5. Returns null when no number is present.
 function parsePointValue(betType) {
-  const match = String(betType || '').match(/(\d+(\.\d+)?)/);
+  // Anchored to the start, since every real bet-type string has the point
+  // value leading (e.g. "-6.5 point start", "12.5 point start and Total
+  // Combined points under 37.5") - a leading minus sign was previously
+  // being dropped entirely, silently merging "-6.5 point start" (favourite,
+  // must win by more than 6.5) with "6.5 point start" (underdog, gets a
+  // 6.5 cushion) as if they were the same bet. They aren't: one is much
+  // harder to hit than the other. Everywhere downstream that compares
+  // these values (thresholdsFromPool, Rate Your Pick) already works
+  // correctly on a signed number line once it actually receives one - the
+  // bug was contained entirely to this one regex not capturing the sign.
+  const match = String(betType || '').match(/^(-?\d+(?:\.\d+)?)/);
   return match ? Number(match[1]) : null;
 }
 
