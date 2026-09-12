@@ -23,16 +23,18 @@ jobs:
           node-version: 20
 
       - name: Run update script
+        env:
+          SPORTSDB_API_KEY: ${{ secrets.SPORTSDB_API_KEY }}
         run: node scripts/update-sports-data.js
 
       - name: Commit changes if any
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add epl_full_match_history.json nfl_full_match_history.json
+          git add epl_full_match_history.json nfl_full_match_history.json nrl_full_match_history.json super_rugby_full_match_history.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Auto-update EPL/NFL results from TheSportsDB"
+            git commit -m "Auto-update EPL/NFL/NRL/Super Rugby results from TheSportsDB"
             git push
           fi
