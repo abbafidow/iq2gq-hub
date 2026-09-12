@@ -3,10 +3,11 @@
     "sport": "NRL",
     "source": "aussportsbetting.com Historical NRL Results and Odds Data",
     "description": "Every NRL match in the source data, regardless of whether the syndicate ever picked it. For pattern-mining (streaks, scoring trends, etc.) independent of syndicate pick history.",
-    "row_count": 3780,
+    "row_count": 3717,
     "last_auto_update": "2026-09-12",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js",
-    "team_name_cleanup": "Normalized 710 team-name references across 7 known spelling variants on 2026-09-12, to stop the same team's history being split across multiple names."
+    "team_name_cleanup": "Normalized 710 team-name references across 7 known spelling variants on 2026-09-12, to stop the same team's history being split across multiple names.",
+    "dedup_cleanup": "Removed 63 exact-duplicate entries on 2026-09-12 (likely caused by overlapping workflow runs before the git pull --rebase safeguard was added)."
   },
   "games": [
     {
@@ -161,16 +162,6 @@
     },
     {
       "date": "2026-08-29",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Wests Tigers",
-      "home_score": 24,
-      "away_score": 10,
-      "home_odds": 1.22,
-      "away_odds": 4.25,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-29",
       "home_team": "Sydney Roosters",
       "away_team": "Dolphins",
       "home_score": 12,
@@ -217,26 +208,6 @@
       "away_score": 10,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-28",
-      "home_team": "Penrith Panthers",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 24,
-      "away_score": 10,
-      "home_odds": 1.31,
-      "away_odds": 3.61,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-28",
-      "home_team": "Manly Sea Eagles",
-      "away_team": "St George Dragons",
-      "home_score": 44,
-      "away_score": 10,
-      "home_odds": 1.31,
-      "away_odds": 3.53,
       "playoff_game": null
     },
     {
@@ -297,16 +268,6 @@
       "away_score": 44,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-22",
-      "home_team": "St George Dragons",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 14,
-      "away_score": 44,
-      "home_odds": 2.9,
-      "away_odds": 1.43,
       "playoff_game": null
     },
     {
@@ -381,16 +342,6 @@
     },
     {
       "date": "2026-08-16",
-      "home_team": "Wests Tigers",
-      "away_team": "St George Dragons",
-      "home_score": 22,
-      "away_score": 24,
-      "home_odds": 1.83,
-      "away_odds": 2.03,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-16",
       "home_team": "Newcastle Knights",
       "away_team": "Gold Coast Titans",
       "home_score": 36,
@@ -431,16 +382,6 @@
     },
     {
       "date": "2026-08-15",
-      "home_team": "Parramatta Eels",
-      "away_team": "North QLD Cowboys",
-      "home_score": 32,
-      "away_score": 30,
-      "home_odds": 2.4,
-      "away_odds": 1.61,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-15",
       "home_team": "Cronulla Sharks",
       "away_team": "Canberra Raiders",
       "home_score": 20,
@@ -467,16 +408,6 @@
       "away_score": 22,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-14",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "South Sydney Rabbitohs",
-      "home_score": 6,
-      "away_score": 22,
-      "home_odds": 1.57,
-      "away_odds": 2.5,
       "playoff_game": null
     },
     {
@@ -517,16 +448,6 @@
       "away_score": 16,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-09",
-      "home_team": "St George Dragons",
-      "away_team": "Cronulla Sharks",
-      "home_score": 24,
-      "away_score": 16,
-      "home_odds": 6.04,
-      "away_odds": 1.13,
       "playoff_game": null
     },
     {
@@ -591,16 +512,6 @@
     },
     {
       "date": "2026-08-07",
-      "home_team": "Sydney Roosters",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 20,
-      "away_score": 18,
-      "home_odds": 1.51,
-      "away_odds": 2.69,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-07",
       "home_team": "New Zealand Warriors",
       "away_team": "Penrith Panthers",
       "home_score": 28,
@@ -627,16 +538,6 @@
       "away_score": 30,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-08-06",
-      "home_team": "Gold Coast Titans",
-      "away_team": "North QLD Cowboys",
-      "home_score": 8,
-      "away_score": 30,
-      "home_odds": 2.45,
-      "away_odds": 1.59,
       "playoff_game": null
     },
     {
@@ -722,26 +623,6 @@
     {
       "date": "2026-07-31",
       "home_team": "Melbourne Storm",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 22,
-      "away_score": 36,
-      "home_odds": 3.7,
-      "away_odds": 1.35,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-31",
-      "home_team": "St George Dragons",
-      "away_team": "Dolphins",
-      "home_score": 22,
-      "away_score": 28,
-      "home_odds": 5.75,
-      "away_odds": 1.2,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-31",
-      "home_team": "Melbourne Storm",
       "away_team": "Canterbury Bankstown Bulldogs",
       "home_score": 22,
       "away_score": 36,
@@ -767,16 +648,6 @@
       "away_score": 82,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-30",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Sydney Roosters",
-      "home_score": 12,
-      "away_score": 82,
-      "home_odds": 2.52,
-      "away_odds": 1.6,
       "playoff_game": null
     },
     {
@@ -811,16 +682,6 @@
     },
     {
       "date": "2026-07-26",
-      "home_team": "St George Dragons",
-      "away_team": "Gold Coast Titans",
-      "home_score": 18,
-      "away_score": 38,
-      "home_odds": 1.88,
-      "away_odds": 2.07,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-26",
       "home_team": "St. George Illawara Dragons",
       "away_team": "Gold Coast Titans",
       "home_score": 18,
@@ -847,26 +708,6 @@
       "away_score": 10,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-25",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Brisbane Broncos",
-      "home_score": 18,
-      "away_score": 10,
-      "home_odds": 2.52,
-      "away_odds": 1.62,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-25",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "New Zealand Warriors",
-      "home_score": 18,
-      "away_score": 6,
-      "home_odds": 2.5,
-      "away_odds": 1.65,
       "playoff_game": null
     },
     {
@@ -941,16 +782,6 @@
     },
     {
       "date": "2026-07-19",
-      "home_team": "Dolphins",
-      "away_team": "North QLD Cowboys",
-      "home_score": 36,
-      "away_score": 16,
-      "home_odds": 1.71,
-      "away_odds": 2.4,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-19",
       "home_team": "Gold Coast Titans",
       "away_team": "Manly Sea Eagles",
       "home_score": 38,
@@ -987,26 +818,6 @@
       "away_score": 0,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-18",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Wests Tigers",
-      "home_score": 32,
-      "away_score": 0,
-      "home_odds": 1.58,
-      "away_odds": 2.9,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-18",
-      "home_team": "New Zealand Warriors",
-      "away_team": "St George Dragons",
-      "home_score": 20,
-      "away_score": 12,
-      "home_odds": 1.18,
-      "away_odds": 6.4,
       "playoff_game": null
     },
     {
@@ -1091,16 +902,6 @@
     },
     {
       "date": "2026-07-12",
-      "home_team": "Manly Sea Eagles",
-      "away_team": "North QLD Cowboys",
-      "home_score": 18,
-      "away_score": 19,
-      "home_odds": 1.5,
-      "away_odds": 3,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-12",
       "home_team": "South Sydney Rabbitohs",
       "away_team": "Newcastle Knights",
       "home_score": 26,
@@ -1137,16 +938,6 @@
       "away_score": 12,
       "home_odds": 1.34,
       "away_odds": 3.9,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-11",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Canberra Raiders",
-      "home_score": 16,
-      "away_score": 40,
-      "home_odds": 1.7,
-      "away_odds": 2.4,
       "playoff_game": null
     },
     {
@@ -1221,16 +1012,6 @@
     },
     {
       "date": "2026-07-04",
-      "home_team": "St George Dragons",
-      "away_team": "Wests Tigers",
-      "home_score": 24,
-      "away_score": 10,
-      "home_odds": 2.35,
-      "away_odds": 1.72,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-07-04",
       "home_team": "St. George Illawara Dragons",
       "away_team": "Wests Tigers",
       "home_score": 24,
@@ -1272,16 +1053,6 @@
     {
       "date": "2026-06-28",
       "home_team": "Canberra Raiders",
-      "away_team": "St George Dragons",
-      "home_score": 24,
-      "away_score": 16,
-      "home_odds": 1.33,
-      "away_odds": 4,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-28",
-      "home_team": "Canberra Raiders",
       "away_team": "St. George Illawara Dragons",
       "home_score": 24,
       "away_score": 16,
@@ -1307,16 +1078,6 @@
       "away_score": 4,
       "home_odds": 1.62,
       "away_odds": 2.8,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-27",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Penrith Panthers",
-      "home_score": 26,
-      "away_score": 12,
-      "home_odds": 4.31,
-      "away_odds": 1.3,
       "playoff_game": null
     },
     {
@@ -1357,16 +1118,6 @@
       "away_score": 24,
       "home_odds": 3.04,
       "away_odds": 1.5,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-26",
-      "home_team": "Gold Coast Titans",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 12,
-      "away_score": 30,
-      "home_odds": 1.96,
-      "away_odds": 2.1,
       "playoff_game": null
     },
     {
@@ -1422,16 +1173,6 @@
     {
       "date": "2026-06-21",
       "home_team": "New Zealand Warriors",
-      "away_team": "North QLD Cowboys",
-      "home_score": 38,
-      "away_score": 20,
-      "home_odds": 1.48,
-      "away_odds": 3.1,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-21",
-      "home_team": "New Zealand Warriors",
       "away_team": "North Queensland Cowboys",
       "home_score": 38,
       "away_score": 20,
@@ -1447,16 +1188,6 @@
       "away_score": 12,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-20",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Manly Sea Eagles",
-      "home_score": 13,
-      "away_score": 12,
-      "home_odds": 3.4,
-      "away_odds": 1.42,
       "playoff_game": null
     },
     {
@@ -1497,16 +1228,6 @@
       "away_score": 20,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-19",
-      "home_team": "Newcastle Knights",
-      "away_team": "St George Dragons",
-      "home_score": 22,
-      "away_score": 20,
-      "home_odds": 1.32,
-      "away_odds": 4.4,
       "playoff_game": null
     },
     {
@@ -1581,16 +1302,6 @@
     },
     {
       "date": "2026-06-08",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Parramatta Eels",
-      "home_score": 14,
-      "away_score": 12,
-      "home_odds": 1.48,
-      "away_odds": 3.2,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-08",
       "home_team": "Canterbury Bankstown Bulldogs",
       "away_team": "Parramatta Eels",
       "home_score": 14,
@@ -1607,16 +1318,6 @@
       "away_score": 12,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-07",
-      "home_team": "Cronulla Sharks",
-      "away_team": "St George Dragons",
-      "home_score": 34,
-      "away_score": 12,
-      "home_odds": 1.35,
-      "away_odds": 4.01,
       "playoff_game": null
     },
     {
@@ -1657,16 +1358,6 @@
       "away_score": 28,
       "home_odds": 1.4,
       "away_odds": 3.5,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-06-06",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Dolphins",
-      "home_score": 14,
-      "away_score": 40,
-      "home_odds": 2.8,
-      "away_odds": 1.58,
       "playoff_game": null
     },
     {
@@ -1742,26 +1433,6 @@
     {
       "date": "2026-05-31",
       "home_team": "Canberra Raiders",
-      "away_team": "North QLD Cowboys",
-      "home_score": 26,
-      "away_score": 12,
-      "home_odds": 1.78,
-      "away_odds": 2.31,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-31",
-      "home_team": "Brisbane Broncos",
-      "away_team": "St George Dragons",
-      "home_score": 26,
-      "away_score": 30,
-      "home_odds": 1.17,
-      "away_odds": 7.6,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-31",
-      "home_team": "Canberra Raiders",
       "away_team": "North Queensland Cowboys",
       "home_score": 26,
       "away_score": 12,
@@ -1797,16 +1468,6 @@
       "away_score": 4,
       "home_odds": 2.3,
       "away_odds": 1.75,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-30",
-      "home_team": "Wests Tigers",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 22,
-      "away_score": 16,
-      "home_odds": 1.75,
-      "away_odds": 2.39,
       "playoff_game": null
     },
     {
@@ -1851,16 +1512,6 @@
     },
     {
       "date": "2026-05-24",
-      "home_team": "North QLD Cowboys",
-      "away_team": "South Sydney Rabbitohs",
-      "home_score": 30,
-      "away_score": 18,
-      "home_odds": 1.62,
-      "away_odds": 2.61,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-24",
       "home_team": "North Queensland Cowboys",
       "away_team": "South Sydney Rabbitohs",
       "home_score": 30,
@@ -1891,16 +1542,6 @@
     },
     {
       "date": "2026-05-23",
-      "home_team": "St George Dragons",
-      "away_team": "New Zealand Warriors",
-      "home_score": 12,
-      "away_score": 30,
-      "home_odds": 4.7,
-      "away_odds": 1.32,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-23",
       "home_team": "St. George Illawara Dragons",
       "away_team": "New Zealand Warriors",
       "home_score": 12,
@@ -1917,16 +1558,6 @@
       "away_score": 20,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-22",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Melbourne Storm",
-      "home_score": 30,
-      "away_score": 20,
-      "home_odds": 1.8,
-      "away_odds": 2.2,
       "playoff_game": null
     },
     {
@@ -1957,16 +1588,6 @@
       "away_score": 6,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-17",
-      "home_team": "Penrith Panthers",
-      "away_team": "St George Dragons",
-      "home_score": 28,
-      "away_score": 6,
-      "home_odds": 1.04,
-      "away_odds": 18,
       "playoff_game": null
     },
     {
@@ -2021,16 +1642,6 @@
     },
     {
       "date": "2026-05-16",
-      "home_team": "Sydney Roosters",
-      "away_team": "North QLD Cowboys",
-      "home_score": 12,
-      "away_score": 18,
-      "home_odds": 1.25,
-      "away_odds": 5.5,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-16",
       "home_team": "Wests Tigers",
       "away_team": "Manly Sea Eagles",
       "home_score": 18,
@@ -2067,16 +1678,6 @@
       "away_score": 32,
       "home_odds": 2.24,
       "away_odds": 1.8,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-15",
-      "home_team": "Cronulla Sharks",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 38,
-      "away_score": 16,
-      "home_odds": 1.6,
-      "away_odds": 2.78,
       "playoff_game": null
     },
     {
@@ -2141,16 +1742,6 @@
     },
     {
       "date": "2026-05-09",
-      "home_team": "St George Dragons",
-      "away_team": "Newcastle Knights",
-      "home_score": 10,
-      "away_score": 44,
-      "home_odds": 3.7,
-      "away_odds": 1.4,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-09",
       "home_team": "St. George Illawara Dragons",
       "away_team": "Newcastle Knights",
       "home_score": 10,
@@ -2167,16 +1758,6 @@
       "away_score": 33,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-08",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Parramatta Eels",
-      "home_score": 30,
-      "away_score": 33,
-      "home_odds": 1.35,
-      "away_odds": 4.15,
       "playoff_game": null
     },
     {
@@ -2207,16 +1788,6 @@
       "away_score": 12,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-07",
-      "home_team": "Dolphins",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 44,
-      "away_score": 12,
-      "home_odds": 1.4,
-      "away_odds": 3.5,
       "playoff_game": null
     },
     {
@@ -2311,16 +1882,6 @@
     },
     {
       "date": "2026-05-01",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "North QLD Cowboys",
-      "home_score": 12,
-      "away_score": 28,
-      "home_odds": 1.94,
-      "away_odds": 2.06,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-05-01",
       "home_team": "Canterbury Bankstown Bulldogs",
       "away_team": "North Queensland Cowboys",
       "home_score": 12,
@@ -2381,16 +1942,6 @@
     },
     {
       "date": "2026-04-25",
-      "home_team": "St George Dragons",
-      "away_team": "Sydney Roosters",
-      "home_score": 16,
-      "away_score": 62,
-      "home_odds": 6.36,
-      "away_odds": 1.2,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-25",
       "home_team": "St. George Illawara Dragons",
       "away_team": "Sydney Roosters",
       "home_score": 16,
@@ -2417,26 +1968,6 @@
       "away_score": 12,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-24",
-      "home_team": "Brisbane Broncos",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 32,
-      "away_score": 12,
-      "home_odds": 2.47,
-      "away_odds": 1.7,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-24",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Cronulla Sharks",
-      "home_score": 46,
-      "away_score": 34,
-      "home_odds": 2.06,
-      "away_odds": 1.92,
       "playoff_game": null
     },
     {
@@ -2481,16 +2012,6 @@
     },
     {
       "date": "2026-04-19",
-      "home_team": "Parramatta Eels",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 38,
-      "away_score": 20,
-      "home_odds": 4.4,
-      "away_odds": 1.28,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-19",
       "home_team": "Sydney Roosters",
       "away_team": "Newcastle Knights",
       "home_score": 38,
@@ -2527,16 +2048,6 @@
       "away_score": 21,
       "home_odds": 1.6,
       "away_odds": 2.8,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-18",
-      "home_team": "South Sydney Rabbitohs",
-      "away_team": "St George Dragons",
-      "home_score": 30,
-      "away_score": 12,
-      "home_odds": 1.32,
-      "away_odds": 4.1,
       "playoff_game": null
     },
     {
@@ -2587,16 +2098,6 @@
       "away_score": 38,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-16",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Manly Sea Eagles",
-      "home_score": 6,
-      "away_score": 38,
-      "home_odds": 1.68,
-      "away_odds": 2.45,
       "playoff_game": null
     },
     {
@@ -2682,26 +2183,6 @@
     {
       "date": "2026-04-10",
       "home_team": "Brisbane Broncos",
-      "away_team": "North QLD Cowboys",
-      "home_score": 31,
-      "away_score": 35,
-      "home_odds": 1.88,
-      "away_odds": 2.1,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-10",
-      "home_team": "St George Dragons",
-      "away_team": "Manly Sea Eagles",
-      "home_score": 18,
-      "away_score": 28,
-      "home_odds": 3,
-      "away_odds": 1.49,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-10",
-      "home_team": "Brisbane Broncos",
       "away_team": "North Queensland Cowboys",
       "home_score": 31,
       "away_score": 35,
@@ -2727,16 +2208,6 @@
       "away_score": 16,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-09",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Penrith Panthers",
-      "home_score": 32,
-      "away_score": 16,
-      "home_odds": 6.55,
-      "away_odds": 1.2,
       "playoff_game": null
     },
     {
@@ -2801,16 +2272,6 @@
     },
     {
       "date": "2026-04-04",
-      "home_team": "St George Dragons",
-      "away_team": "North QLD Cowboys",
-      "home_score": 0,
-      "away_score": 32,
-      "home_odds": 2.17,
-      "away_odds": 1.88,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-04",
       "home_team": "St. George Illawara Dragons",
       "away_team": "North Queensland Cowboys",
       "home_score": 0,
@@ -2842,16 +2303,6 @@
     {
       "date": "2026-04-03",
       "home_team": "South Sydney Rabbitohs",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 32,
-      "away_score": 24,
-      "home_odds": 2.02,
-      "away_odds": 2.05,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-04-03",
-      "home_team": "South Sydney Rabbitohs",
       "away_team": "Canterbury Bankstown Bulldogs",
       "home_score": 32,
       "away_score": 24,
@@ -2877,16 +2328,6 @@
       "away_score": 14,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-29",
-      "home_team": "Gold Coast Titans",
-      "away_team": "St George Dragons",
-      "home_score": 22,
-      "away_score": 14,
-      "home_odds": 1.82,
-      "away_odds": 2.2,
       "playoff_game": null
     },
     {
@@ -2931,32 +2372,12 @@
     },
     {
       "date": "2026-03-28",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Melbourne Storm",
-      "home_score": 28,
-      "away_score": 24,
-      "home_odds": 4.31,
-      "away_odds": 1.32,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-28",
       "home_team": "Penrith Panthers",
       "away_team": "Parramatta Eels",
       "home_score": 48,
       "away_score": 20,
       "home_odds": 1.25,
       "away_odds": 5.4,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-28",
-      "home_team": "Canterbury Bulldogs",
-      "away_team": "Newcastle Knights",
-      "home_score": 16,
-      "away_score": 24,
-      "home_odds": 1.26,
-      "away_odds": 4.8,
       "playoff_game": null
     },
     {
@@ -3027,26 +2448,6 @@
       "away_score": 16,
       "home_odds": null,
       "away_odds": null,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-22",
-      "home_team": "North QLD Cowboys",
-      "away_team": "Gold Coast Titans",
-      "home_score": 30,
-      "away_score": 16,
-      "home_odds": 1.65,
-      "away_odds": 2.5,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-22",
-      "home_team": "Parramatta Eels",
-      "away_team": "St George Dragons",
-      "home_score": 30,
-      "away_score": 20,
-      "home_odds": 1.68,
-      "away_odds": 2.78,
       "playoff_game": null
     },
     {
@@ -3132,16 +2533,6 @@
     {
       "date": "2026-03-19",
       "home_team": "Canberra Raiders",
-      "away_team": "Canterbury Bulldogs",
-      "home_score": 10,
-      "away_score": 14,
-      "home_odds": 1.95,
-      "away_odds": 2.1,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-19",
-      "home_team": "Canberra Raiders",
       "away_team": "Canterbury Bankstown Bulldogs",
       "home_score": 10,
       "away_score": 14,
@@ -3197,26 +2588,6 @@
       "away_score": 6,
       "home_odds": 1.52,
       "away_odds": 2.95,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-14",
-      "home_team": "St George Dragons",
-      "away_team": "Melbourne Storm",
-      "home_score": 20,
-      "away_score": 46,
-      "home_odds": 3.39,
-      "away_odds": 1.42,
-      "playoff_game": null
-    },
-    {
-      "date": "2026-03-14",
-      "home_team": "Wests Tigers",
-      "away_team": "North QLD Cowboys",
-      "home_score": 44,
-      "away_score": 16,
-      "home_odds": 1.62,
-      "away_odds": 2.55,
       "playoff_game": null
     },
     {
