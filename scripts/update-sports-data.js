@@ -1,28 +1,31 @@
-// Fetches recent EPL and NFL results from TheSportsDB's free API and
-// merges any games not already present into the existing
-// epl_full_match_history.json / nfl_full_match_history.json files.
+// Fetches recent EPL, NFL, NRL and Super Rugby results from TheSportsDB
+// and merges any games not already present into the existing
+// *_full_match_history.json files.
 //
 // Runs unattended via .github/workflows/update-sports-data.yml on a
 // schedule - this script never needs to be run by hand, but you can run
-// it locally with `node scripts/update-sports-data.js` to test it.
+// it locally with `node scripts/update-sports-data.js` to test it
+// (set SPORTSDB_API_KEY as an env var first, or it'll fall back to the
+// free "123" test key).
 //
-// Data source: TheSportsDB (https://www.thesportsdb.com), free tier,
-// key "123" - no signup required, confirmed working for EPL (league id
-// 4328) and NFL (league id 4391) as of Sept 2026. Free tier does not
-// include betting odds, so newly-added games have null odds fields -
-// same convention already used for older/incomplete rows in these files.
+// Data source: TheSportsDB (https://www.thesportsdb.com). Uses a Premium
+// key (stored as the SPORTSDB_API_KEY repo secret, never hardcoded here)
+// so all four sports get the full season each run rather than the free
+// tier's ~5-events-a-day cap. Confirmed working league IDs: EPL 4328,
+// NFL 4391, NRL 4416, Super Rugby 4551, as of Sept 2026.
 //
-// IMPORTANT - first run should be checked by hand: the season-string
-// format TheSportsDB expects for NFL wasn't confirmed the same way EPL's
-// was (EPL is definitely "2025-2026" style; NFL might be a single year
-// like "2026" instead). This script tries both and uses whichever
-// returns data, but if NFL comes back empty for several weeks running,
+// IMPORTANT - first run of NRL/Super Rugby should be checked by hand:
+// unlike EPL (confirmed "2025-2026" style) and NFL (confirmed plain
+// "2026"), the season-string format for NRL and Super Rugby hasn't
+// actually been tested against a live response yet - this script tries
+// both plain-year and hyphenated formats and uses whichever responds,
+// but if either sport comes back empty for several weeks running,
 // that's the first thing to check.
 
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = '123'; // TheSportsDB free tier key - documented as public, no registration
+const API_KEY = process.env.SPORTSDB_API_KEY || '123'; // falls back to the free test key if the secret isn't set
 const BASE_URL = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
 
 const SPORTS = [
@@ -58,6 +61,28 @@ const SPORTS = [
     seasonFormats: (year) => [`${year}`, `${year - 1}-${year}`, `${year}-${year + 1}`],
     teamAliases: {}, // aussportsbetting.com already uses full team names, matching TheSportsDB's convention
   },
+  {
+    name: 'NRL',
+    leagueId: 4416,
+    file: path.join(__dirname, '..', 'nrl_full_match_history.json'),
+    // Untested against a live response - see file header. Trying plain
+    // year first since NRL runs within a calendar year like NFL/AFL.
+    seasonFormats: (year) => [`${year}`, `${year - 1}-${year}`, `${year}-${year + 1}`],
+    teamAliases: {}, // unconfirmed - check first run's output for mismatches against the existing file's team names
+    oddsFieldStyle: 'plain', // this file uses home_odds/away_odds, not home_odds_close/away_odds_close
+    hasPlayoffField: true,
+  },
+  {
+    name: 'Super Rugby',
+    leagueId: 4551,
+    file: path.join(__dirname, '..', 'super_rugby_full_match_history.json'),
+    // Untested against a live response - see file header. Super Rugby
+    // also runs within a calendar year (Feb-June), so trying plain year first.
+    seasonFormats: (year) => [`${year}`, `${year - 1}-${year}`, `${year}-${year + 1}`],
+    teamAliases: {}, // unconfirmed - check first run's output for mismatches against the existing file's team names
+    oddsFieldStyle: 'plain', // this file uses home_odds/away_odds, not home_odds_close/away_odds_close
+    hasPlayoffField: false,
+  },
 ];
 
 function normalizeTeamName(name, aliases) {
@@ -90,11 +115,18 @@ function toGameRow(event, sport) {
     row.division = sport.division;
     row.home_odds_close = null;
     row.away_odds_close = null;
-  }
-  if (sport.name === 'NFL') {
+  } else if (sport.oddsFieldStyle === 'plain') {
+    // NRL/Super Rugby use unsuffixed odds field names - match the
+    // existing file's convention rather than EPL/NFL's "_close" suffix.
+    row.home_odds = null;
+    row.away_odds = null;
+    if (sport.hasPlayoffField) row.playoff_game = null;
+  } else {
     row.home_odds_close = null;
     row.away_odds_close = null;
-    row.playoff_game = event.strDescriptionEN && /playoff|super bowl/i.test(event.strDescriptionEN) ? 'Y' : null;
+    if (sport.name === 'NFL') {
+      row.playoff_game = event.strDescriptionEN && /playoff|super bowl/i.test(event.strDescriptionEN) ? 'Y' : null;
+    }
   }
   return row;
 }
@@ -140,7 +172,7 @@ async function updateSport(sport) {
   data.games = [...newGames, ...data.games].sort((a, b) => (a.date < b.date ? 1 : -1));
   data.meta.row_count = data.games.length;
   data.meta.last_auto_update = new Date().toISOString().slice(0, 10);
-  data.meta.last_auto_update_source = 'TheSportsDB free API, via scripts/update-sports-data.js';
+  data.meta.last_auto_update_source = 'TheSportsDB API, via scripts/update-sports-data.js';
 
   fs.writeFileSync(sport.file, JSON.stringify(data, null, 2) + '\n');
   console.log(`  added ${newGames.length} new game(s), file now has ${data.games.length} total`);
