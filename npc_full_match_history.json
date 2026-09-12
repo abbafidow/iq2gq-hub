@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "sport": "NPC",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "Unlike NRL/NFL/Super Rugby/EPL, there is no manually-curated historical spreadsheet behind this file - it started empty and is built entirely from TheSportsDB going forward, backfilled a few seasons on its first run. Covers all of the National Provincial Championship's sponsorship-name eras (ITM Cup, Mitre 10 Cup, Bunnings NPC) as one continuous competition, matching how Super Rugby's file already treats its own era/branding variants.",
+    "row_count": 0
+  },
+  "games": []
+}

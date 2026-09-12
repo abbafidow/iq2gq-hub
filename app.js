@@ -10,6 +10,8 @@ const REAL_WORLD_SOURCES = {
   NFL: 'nfl_full_match_history.json',
   'Super Rugby': 'super_rugby_full_match_history.json',
   EPL: 'epl_full_match_history.json',
+  AFL: 'afl_full_match_history.json',
+  NPC: 'npc_full_match_history.json',
 };
 
 // Maps a syndicate Sport tag to the real-world sport group it belongs to, so
@@ -32,6 +34,11 @@ const REAL_WORLD_SPORT_GROUPS = {
   'Football (EPL)': 'EPL',
   'Football (English Domestic)': 'EPL',
   'Football (English Championship)': 'EPL',
+  // AFL/NPC added once real-world data existed for them - unconfirmed
+  // whether these are the only raw Sheet tag variants in use (see the EPL
+  // comment above this block for why that's worth checking, not assuming).
+  AFL: 'AFL',
+  NPC: 'NPC',
 };
 
 const state = {
@@ -42,7 +49,6 @@ const state = {
   sportDrilldown: false,
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
-  dropPickMember: null, // separate "who am I" selection for Drop a pick - deliberately not shared with selectedMember, since dropping a pick and browsing your own stats are different intents
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
   presidentDialIndex: null, // Records page President/Benson dial - null until first touched, then persists across re-renders
@@ -225,152 +231,6 @@ function bindMemberPicker() {
       };
     });
   }, 0);
-}
-
-// Drop a pick's "who am I" step is tile-based and grouped/coloured by team
-// (AGM decision, Sept 2026) rather than the plain alphabetical grid used by
-// memberPickerHtml() elsewhere - members asked to visually recognise their
-// own team at a glance rather than hunt for their initials in a flat list.
-function dropPickTeamTilesHtml() {
-  const teamClass = { 'Team One': 'team-one', 'Team Two': 'team-two', 'Team Three': 'team-three', 'Team Four': 'team-four' };
-  const groups = TEAM_ORDER.map(team => {
-    const members = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team);
-    const tiles = members.map(m =>
-      `<button class="drop-pick-tile ${teamClass[team]}" data-member="${m}">${escapeHtml(m)}</button>`
-    ).join('');
-    return `<div class="drop-pick-team-group">
-      <span class="drop-pick-team-label">${escapeHtml(team.toUpperCase())}</span>
-      <div class="drop-pick-team-tiles">${tiles}</div>
-    </div>`;
-  }).join('');
-  return `<div class="drop-pick-tiles">${groups}</div>`;
-}
-
-function bindDropPickTiles() {
-  setTimeout(() => {
-    document.querySelectorAll('.drop-pick-tile').forEach(btn => {
-      btn.onclick = () => {
-        state.dropPickMember = btn.dataset.member;
-        render();
-      };
-    });
-  }, 0);
-}
-
-// Which Friday round is currently open for picks. Not data-driven - Raw_Live
-// rows for a not-yet-open date are blank-Option and never reach state.raw
-// (see init(), which filters out rows where name === ''), so the client has
-// no visibility into which dates actually have a pre-populated row waiting.
-// Instead this is purely calculated from today's date: the current Friday's
-// round stays "open" through the end of Friday (local time), then rolls over
-// to default to the next Friday from midnight Saturday. Matches the decided
-// cutoff rule exactly - no member-facing date picker, this is fully invisible.
-function targetPickDate(today = new Date()) {
-  const day = today.getDay(); // 0=Sun..6=Sat, local time
-  const daysUntilFriday = (5 - day + 7) % 7; // 0 when today is already Friday
-  const target = new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilFriday);
-  const dd = String(target.getDate()).padStart(2, '0');
-  const mm = String(target.getMonth() + 1).padStart(2, '0');
-  const dateStr = `${dd}/${mm}/${target.getFullYear()}`; // matches Sheet's DD/MM/YYYY convention
-  const dayLabel = target.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' });
-  return { dateStr, label: `This week's round - ${dayLabel}` };
-}
-
-// Same aggregation as mostCommonSportByName() (used by Rate a Pick), but
-// keyed on the raw Sheet Sport value rather than the broader competitionFamily
-// grouping - Drop a pick needs the exact string to write into column J, not
-// just which family it belongs to.
-function mostCommonRawSportByName(rows) {
-  const counts = new Map();
-  rows.forEach(r => {
-    if (!r.name || !r.sport) return;
-    if (!counts.has(r.name)) counts.set(r.name, new Map());
-    const c = counts.get(r.name);
-    c.set(r.sport, (c.get(r.sport) || 0) + 1);
-  });
-  const result = new Map();
-  counts.forEach((sportCounts, name) => {
-    let best = null, bestCount = -1;
-    sportCounts.forEach((count, sport) => { if (count > bestCount) { best = sport; bestCount = count; } });
-    result.set(name, best);
-  });
-  return result;
-}
-
-// Front-end only for now - deliberately not wired to a live backend yet.
-// The Apps Script Web App that actually finds the matching Raw_Live row
-// (by Member code + Date) and writes into it is the next build step; until
-// that exists, submitting here logs the payload and tells the member
-// plainly that nothing has been saved, rather than pretending to succeed.
-function dropPick(data) {
-  const member = state.dropPickMember;
-  if (!member) {
-    bindDropPickTiles();
-    return `
-      <div class="pa-page">
-        <div class="page-header">
-          <h1>Drop a pick</h1>
-          <p>Tap your name below to drop this week's pick.</p>
-        </div>
-        ${dropPickTeamTilesHtml()}
-      </div>
-    `;
-  }
-
-  const target = targetPickDate();
-  const nameOptions = uniq(state.raw.map(r => r.name)).filter(Boolean);
-  const betTypeOptions = uniq(state.raw.map(r => r.betType)).filter(Boolean);
-  const nameToTopSport = mostCommonRawSportByName(state.raw);
-
-  setTimeout(() => {
-    const changeLink = document.querySelector('.change-member-link');
-    if (changeLink) {
-      changeLink.onclick = (e) => {
-        e.preventDefault();
-        state.dropPickMember = null;
-        render();
-      };
-    }
-    bindAutocomplete('dropPickName', 'dropPickNameList', nameOptions);
-    bindAutocomplete('dropPickBetType', 'dropPickBetTypeList', betTypeOptions);
-    const submitBtn = document.getElementById('dropPickSubmitBtn');
-    if (submitBtn) {
-      submitBtn.onclick = () => {
-        const name = clean($('dropPickName').value);
-        const betType = clean($('dropPickBetType').value);
-        const oddsRaw = $('dropPickOdds').value;
-        const odds = oddsRaw !== '' && Number.isFinite(Number(oddsRaw)) && Number(oddsRaw) > 1 ? Number(oddsRaw) : null;
-        const statusEl = document.getElementById('dropPickStatus');
-        if (!name || !betType || !odds) {
-          statusEl.innerHTML = '<p class="muted small">Fill in Pick, Bet type and Odds before dropping your pick.</p>';
-          return;
-        }
-        const sport = nameToTopSport.get(name) || ''; // left blank if this Pick has never been recorded before - backfilled manually later
-        const payload = { member, date: target.dateStr, name, betType, sport, odds };
-        console.log('Drop pick payload (backend not yet connected):', payload);
-        statusEl.innerHTML = '<p class="muted small">This screen is not yet connected to the Sheet - nothing has been saved. (Backend build is next.)</p>';
-      };
-    }
-  }, 0);
-
-  return `
-    <div class="pa-page">
-      <div class="page-header">
-        <h1>Drop a pick - ${escapeHtml(member)}</h1>
-        <p>${escapeHtml(target.label)}. <a href="#" class="change-member-link">Not you?</a></p>
-      </div>
-      <div class="pa-card pa-rate-card">
-        <div class="pa-rate-form">
-          <label>Pick<span class="pa-autocomplete"><input autocomplete="off" id="dropPickName" placeholder="e.g. NZ Warriors"><div class="pa-autocomplete-list" id="dropPickNameList"></div></span></label>
-          <label>Bet type<span class="pa-autocomplete"><input autocomplete="off" id="dropPickBetType" placeholder="e.g. H2H"><div class="pa-autocomplete-list" id="dropPickBetTypeList"></div></span></label>
-          <label>Odds<input type="number" step="0.01" min="1.01" id="dropPickOdds" placeholder="e.g. 1.85"></label>
-          <button type="button" id="dropPickSubmitBtn">Drop pick</button>
-        </div>
-        <p class="muted small">Not on the list for Pick or Bet type? Just type your own in - it'll still go through, and gets tidied up on the Lists tab afterwards.</p>
-        <div id="dropPickStatus"></div>
-      </div>
-    </div>
-  `;
 }
 
 const ODDS = [
@@ -1410,7 +1270,6 @@ function render() {
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
-  if (page === 'droppick') app.innerHTML = dropPick(data);
 }
 
 function dashboard(data) {
@@ -2033,15 +1892,6 @@ const MM_COST = 25;
 // riskier/less-certain leg gets more credit for the parlay landing than
 // the member on the near-certain leg. Simple proportional split (not
 // log-weighted) so the numbers stay eyeball-verifiable against the Sheet.
-// Renamed from "profit" to "total" (Sept 2026) - a member whose team never
-// landed a single MM was previously shown as a flat -$25 loss purely from
-// their share of the stake, which read as "lost real money" even though
-// nothing of theirs actually went anywhere. This now reports the gross
-// share of MM winnings only, so a member with zero winning MMs shows $0,
-// not a negative. roi/staked are still tracked (used only for sort order -
-// ranks members by total won per dollar staked, a reasonable proxy for
-// standing) but are no longer rendered as a per-dollar ratio for this
-// column - see amountCellHtml's showRatio flag.
 function memberWinningsTallyOddsWeighted(rows) {
   const teamMM = computeTeamMM(rows);
   const totals = new Map(Object.keys(TEAM_MAP).map(m => [m, { amount: 0, staked: 0 }]));
@@ -2056,7 +1906,7 @@ function memberWinningsTallyOddsWeighted(rows) {
       const t = totals.get(r.member);
       if (!t) return;
       const payoutWeight = (entry.successful && oddsSum && Number.isFinite(r.odds)) ? r.odds / oddsSum : 0;
-      t.amount += payoutTotal * payoutWeight; // gross total won - stake no longer subtracted here
+      t.amount += payoutTotal * payoutWeight - costShare;
       t.staked += costShare;
     });
   });
@@ -2504,13 +2354,10 @@ function records(data) {
   const weightedTally = new Map(memberWinningsTallyOddsWeighted(seasonData).map(r => [r.member, r]));
   const flatTally = new Map(memberFlatBetTally(seasonData).map(r => [r.member, r]));
   const emptyItem = { amount: 0, roi: null };
-  const amountCellHtml = (item, showRatio) => {
+  const amountCellHtml = (item) => {
     const cls = item.amount > 0 ? 'good' : item.amount < 0 ? 'bad' : '';
     const returnPerDollar = item.roi === null ? null : 1 + item.roi / 100;
-    // Odds-weighted now shows gross total won (see memberWinningsTallyOddsWeighted) -
-    // the per-dollar ratio would just restate that same number divided by
-    // itself in disguise, so it's only shown for the $10 flat (profit) column.
-    const ratioText = (!showRatio || returnPerDollar === null) ? '' : ` (${fmtMoney(returnPerDollar)})`;
+    const ratioText = returnPerDollar === null ? '' : ` (${fmtMoney(returnPerDollar)})`;
     return `<td class="num ${cls}">${fmtMoney(item.amount)}${ratioText}</td>`;
   };
   const winningsRows = Object.keys(TEAM_MAP).sort().map(m => {
@@ -2520,12 +2367,12 @@ function records(data) {
   });
   const winningsTable = sortableMiniTable('memberWinnings', winningsRows, [
     { key: 'member', label: 'Member', render: r => `<td>${escapeHtml(r.member)}</td>` },
-    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem, false) },
-    { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem, true) },
+    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem) },
+    { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
   ]);
   const winningsSection = `<div class="panel standings-panel">
     <h3>Member winnings tally - ${escapeHtml(cy || 'this season')}</h3>
-    <p class="muted small">If the season ended today, here's where you stand. <strong>Odds-weighted:</strong> your gross share of team MM winnings (riskier leg earns more credit) - your total won, not netted against your stake. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure there is how much came back for every \$1 staked.</p>
+    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure is how much came back for every \$1 staked.</p>
     <div class="mini-table-wrap">${winningsTable}</div>
   </div>`;
 
@@ -3517,7 +3364,7 @@ function computeActivityBySport() {
 }
 
 // Maps a Rate Your Pick "sport" field value (a competitionFamily() label, not
-// a raw Sheet Sport tag) onto one of the four real-world data sources. Not
+// a raw Sheet Sport tag) onto one of the six real-world data sources. Not
 // the same mapping as REAL_WORLD_SPORT_GROUPS above (which keys off raw
 // Sheet tags for the activity signal) - competitionFamily deliberately keeps
 // old English football tags as an unmerged "mixed competitions" catch-all,
@@ -3527,6 +3374,11 @@ function realWorldSportForFamily(family) {
   if (family === 'Super Rugby') return 'Super Rugby';
   if (family === 'Rugby League (NRL)' || family === 'Rugby Union (NRL)') return 'NRL';
   if (family === 'American Football (NFL)') return 'NFL';
+  // AFL/NPC: competitionFamily() has no special-case for either, so the
+  // family value is just whatever the raw Sheet Sport tag is - "AFL" and
+  // "NPC" respectively, per the current syndicate sport list.
+  if (family === 'AFL') return 'AFL';
+  if (family === 'NPC') return 'NPC';
   if (family.startsWith('Football (England Domestic') || family === 'Football (EPL)' || family.includes('English Championship') || family.startsWith('Football (English Domestic')) return 'EPL';
   return null;
 }
@@ -3833,7 +3685,7 @@ function sportColorClass(group) {
 // broader sportGroup() category syndicate patterns use, so a real-world
 // Man City pattern and an EPL-tagged syndicate pattern land on the same
 // colour despite coming from different underlying data.
-const REAL_WORLD_TO_SPORT_GROUP = { NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football' };
+const REAL_WORLD_TO_SPORT_GROUP = { NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football', AFL: 'AFL', NPC: 'Rugby Union' };
 
 // Real-world options get a small, flat rating boost (never the syndicate
 // side) - reflecting that real-world data is generally the larger, more
@@ -4005,8 +3857,17 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
     EPL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'EPL').map(realWorldPatternToOption)],
     NFL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NFL').map(realWorldPatternToOption)],
     NRL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NRL').map(realWorldPatternToOption)],
-    'NZ Domestic Rugby': focusSyndicateOptions('Rugby Union (NPC)', 'Rugby Union'),
-    AFL: focusSyndicateOptions('AFL', 'AFL'),
+    // AFL/NPC previously had syndicate patterns only (no real-world file
+    // existed for either) - now that both do, folded in the same way as
+    // the three sports above.
+    'NZ Domestic Rugby': [
+      ...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NPC').map(realWorldPatternToOption),
+      ...focusSyndicateOptions('Rugby Union (NPC)', 'Rugby Union'),
+    ],
+    AFL: [
+      ...realWorldPatternsForDisplay(20).filter(p => p.sport === 'AFL').map(realWorldPatternToOption),
+      ...focusSyndicateOptions('AFL', 'AFL'),
+    ],
   };
   // Member-driven options (your/syndicate patterns not already captured by
   // the focus-sport syndicate pools above) fold into whichever focus
@@ -4136,7 +3997,7 @@ function bindAutocomplete(inputId, listId, options, onCommit) {
     });
     starts.sort((a, b) => a.localeCompare(b));
     contains.sort((a, b) => a.localeCompare(b));
-    const matches = starts.concat(contains).slice(0, 20);
+    const matches = starts.concat(contains).slice(0, 8);
     if (!matches.length) { list.style.display = 'none'; list.innerHTML = ''; return; }
     list.innerHTML = matches.map(m => `<div class="pa-autocomplete-item" data-value="${escapeHtml(m)}">${escapeHtml(m)}</div>`).join('');
     list.style.display = 'block';

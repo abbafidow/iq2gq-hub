@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "sport": "AFL",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "Unlike NRL/NFL/Super Rugby/EPL, there is no manually-curated historical spreadsheet behind this file - it started empty and is built entirely from TheSportsDB going forward, backfilled a few seasons on its first run.",
+    "row_count": 0
+  },
+  "games": []
+}
