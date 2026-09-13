@@ -1,25 +1,33 @@
-## v2.0 changes
+## v5.0 changes
 
-**Stats tab**
-- **Members, Sports, Bet types and Odds combined into a single "Stats" tab.** Nav bar now has one Stats button instead of four separate ones.
-- **New rugby-ball wedge selector.** First visit to Stats shows "What are you interested in?" with a rugby-ball shape split into four pressable wedges (Members / Sports / Bet types / Odds), seams and lacing styled to look like a real ball, plus a small star badge in the centre. Picking a wedge opens that section; a pill sub-nav then handles switching between sections for the rest of the session, so you're not forced back through the ball every time.
-- **Stats is now always all-time.** The All-time/Current season toggle is hidden while on this tab (and on Records) since everything there already shows both scopes explicitly - it no longer has any effect on data shown, everywhere else it still works as before.
-- **STAND DOWN removed from Sports, Bet types and Odds.** These admin/non-pick rows were showing up as a fake "sport" or "bet type" category with a 0% success rate. Same fix extended to Records (was quietly deflating win/loss streaks and the general records pool too).
-- **Odds page:** reordered (Odds bands table first, then a new **Top 5 most successful (high confidence)** panel below it, by *specific* odds value rather than a whole band - e.g. "1.20" rather than "1.20-1.39"). Fixed the "Under 1.20" band's lower bound, which was 0 - letting blank/zero odds rows drag its average down towards $1.00 instead of reflecting genuine low-odds picks.
+**Drop a Pick - new tab**
+- **Members can now enter their own picks directly in the Hub**, instead of the previous manual process. Tap your own 2-letter code (tiles grouped and colour-coded by team) to identify yourself - no login.
+- **Sport auto-suggests, but only when it's genuinely safe to guess.** If a Pick's own history has always been tagged the same Sport, it pre-fills (still editable). If that Pick's history is split across more than one Sport - or it's never been picked before - it's left blank for you to choose, rather than risk a wrong guess.
+- **Search-select for Pick, Bet type and Sport**, ranked by how often each option has actually been picked before (not alphabetically) - so a constantly-picked team like NZ Warriors surfaces before a rarely-used, alphabetically-earlier entry. Pick and Bet type let you add something new if it's not on the list yet; Sport doesn't, since it has to match a valid value for the rest of the Hub to make sense of it.
+- **"Change your mind" flow.** If you already have a pick recorded for the current round, the Hub shows it to you and asks for explicit confirmation before letting you replace it - it will never silently overwrite an existing pick.
+- **Backend is a genuinely new, separate Apps Script Web App** (not part of the existing Code.gs API), writing directly into Raw_Live by finding your existing pre-populated row for the current round - it never creates new rows. Fixed a real partial-write bug during testing (the four fields were being written as four separate commands; if anything interrupted execution between them, some fields would land and others wouldn't) by switching to a single atomic write.
+- **Date is worked out automatically** - defaults to the current week's Friday round, rolling forward the moment it becomes Saturday.
 
-**Records page**
-- **Best winning streaks and Highest winning odds** each split into explicit **All-time** and **Current season** pairs (four panels total) instead of one toggle-dependent table, since the toggle is no longer shown on this page.
-- **Record tiles restyled** as shield/medal shapes (matching the trophy-case feel of the page), colour-coded by scope: **bronze for current season, gold for all-time**.
-- **Fixed: "Perfect Round" was checking against the current 12-member roster**, which wrongly excluded genuine early-era Perfect Rounds from when the syndicate only had ~6 members. Now derives the active roster per season instead of hardcoding it.
-- **Fixed: ties were being silently dropped.** "Most wins" and "Highest winning percentage" only ever showed the first name after sorting - if two members were tied, the second was invisible. Both now list every tied member.
-- **Fixed: a Stand Down week was breaking win streaks**, since it was being treated like a loss (resetting the streak to 0) rather than being skipped entirely.
-- **Fixed: "This season" streaks were being truncated at the season boundary.** A live streak that started at the end of last season and carried into this one now correctly shows its full length, instead of resetting to 0 on the season flip.
-- **Empty syndicate-event tiles (Tier Crashers, Perfect Rounds, Member with a losing season, etc.) no longer render at all until they've actually occurred**, instead of cluttering the shield grid with "Not enough data yet." placeholders.
+**Real-world sports data**
+- **EPL, NFL, NRL and Super Rugby now refresh automatically every day**, instead of relying on manually re-downloading a spreadsheet whenever someone remembered to. A scheduled job pulls fresh results from a live sports-data API and merges in anything new.
+- **AFL and NPC have real-world data for the first time ever** - previously Worth Watching and Rate Your Pick could only use the syndicate's own pick history for these two sports, with no actual match data behind them at all. Both now feed into Worth Watching's patterns and Rate Your Pick's signals exactly like the other four sports.
+- **Fixed: NRL and Super Rugby team names were silently split across multiple spellings** (e.g. "Cronulla Sharks" vs "Cronulla-Sutherland Sharks"), fragmenting a team's real history across two names that never matched each other. Cleaned up in the existing data and prevented going forward.
+- **Fixed: overlapping automation runs could double-write the same games as duplicates.** A concurrency guard now stops two runs from ever executing at the same time.
 
-**Under the hood - the big one**
-- **The entire "Winning MM" / MM-success mechanism was silently broken, every season, since it was built.** It relied on grouping picks by an `MM drop` column - which doesn't exist on the Sheet, and never has. This meant the Presidential Race's +1.5 MM bonus, the "Winning MMs YTD" tile, and Team success rate were all quietly wrong for everyone, every season. Replaced with the real rule: a team's weekly MM is *dropped* when all three team members have a real pick recorded for the same date, and *successful* when all three won - derived purely from team membership + date, with no dependent column at all.
-- Separately (Sheet-side, not a Hub bug): a broken master-cell reference (`Dashboard!J12`) was causing TP's Presidency Race row to read the wrong data entirely. Fixed on the Sheet by re-entering TP in the master cell.
+**Pick Assistant**
+- **Fixed: pending picks (no result yet) were quietly dragging down success rates**, since they were counted the same as a loss until they resolved. Genuinely strong patterns could get filtered out or under-ranked while a pick was still open. Now excluded until resolved.
+- **Fixed: a negative point start ("-6.5") and a positive one ("6.5") were being treated as the same bet.** The two are opposite situations (favourite vs underdog) - fixed the parsing and corrected the pooling direction so "or lower" and "or higher" now mean the right thing for each.
+- **Rate Your Pick now compares against the same bet type at a similar price**, not just any bet in the same sport - previously a Point Starts bet could get compared against unrelated Totals or H2H bets just because the odds happened to match.
+- **Rate Your Pick now shows a real-world winning-margin signal for point-start bets** - "how often has this team actually won by enough to cover this line", computed from real scorelines, separate from whether the syndicate has personally bet this exact line before.
+- **Worth Watching options now rotate weekly among near-tied patterns**, instead of the single highest-rated pattern permanently crowding out everything else - seeded by calendar week, so it changes on a fixed schedule rather than randomly.
+
+**Records / List of Honour**
+- **Presidents & Benson redesigned as a swipeable year dial**, spanning every syndicate term - president, honorific, Benson (last place), and AGM venue/activity/immunity winner where known.
+- **Records reworked as an actual award system** - ribbon medals for odds and streak records, laurel medals (green for achievements, red for records nobody wants) for individual member records, and seals for whole-syndicate events. All-time flips to gold on the back, tone carried through as colour rather than background.
+- **New "Highest earning team" record**, using gross MM earnings (not the same figure as the Team Winnings Tally table, which nets out stake) - current season plus the single best team-in-a-season since 2021/22, since teams reshuffle every year and a cumulative total across different rosters would be misleading.
+- **Fixed: the Dashboard's President line was pulling rank 1 off the Presidential Race table** - President is a fixed role for the whole term, unrelated to leaderboard standing. Now reads from the same president data as the year dial.
+- **Fixed: a real losing-streak bug** - the season face of Longest Losing/Winning Streak could surface a stale streak from a member who hadn't picked in years, since it wasn't checking whether their last pick was actually recent.
+- Renamed "Tier Crashers" to "Tier Killers" to match the syndicate's actual terminology.
 
 **Housekeeping**
-- Cache-busting version markers (`?v=X.X`) added to `styles.css`, `app.js` and `pickAssistant.js` in `index.html` - bump this number on every future update, or browsers may keep serving a stale cached copy.
-- Two stray duplicate files (`app (2).js`, `app (4).js`) that had accumulated from upload conflicts have been deleted.
+- Cache-busting for `styles.css` and `app.js` is already fully automatic (`Date.now()` in `index.html`, not a manually-bumped number) - nothing to do there. The footer version label itself is the one thing that's still manual; updated to v5.0 alongside this release.
