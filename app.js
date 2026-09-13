@@ -603,6 +603,54 @@ function isRealPick(row) {
   return name !== 'stand down' && betType !== 'stand down';
 }
 
+// Drop a Pick: looks at every past pick recorded under this exact Option
+// name and, if the Sport value has been unanimous (or at least meets
+// requiredAgreement, default 100%), returns it as a confident, editable
+// suggestion. If the name's history is genuinely split across more than
+// one Sport - or has never been picked before - returns no suggestion, so
+// the member has to choose from the Sport (Combined) list themselves
+// rather than risk a wrong pre-fill. A compound Option name like "Beauden
+// Barrett (All Blacks)" vs "Beauden Barrett (Blues)" is just a different
+// string here, so club and country picks for the same player are never
+// confused - the disambiguation already lives in how the Option itself is
+// recorded, not in anything this function needs to know about.
+// Deliberately does NOT filter by win/loss/pending status: a pending
+// pick's recorded Sport tag is just as valid a signal as a resulted one
+// for this purpose - only isRealPick's Stand Down exclusion applies, same
+// convention as the rest of the codebase.
+//
+// requiredAgreement is a fraction (1 = unanimous, 0.95 = 95%+) - kept as a
+// parameter rather than hardcoded so the threshold can be loosened later
+// without touching the calling code, once real usage shows whether 100%
+// is too strict in practice.
+function sportSuggestionForOption(rows, optionName, requiredAgreement = 1) {
+  const target = clean(optionName);
+  if (!target) return { suggestion: null, confident: false, history: [], totalPicks: 0 };
+
+  const matches = rows.filter(r => isRealPick(r) && clean(r.name) === target && clean(r.sport));
+  const counts = {};
+  matches.forEach(r => {
+    const sport = clean(r.sport);
+    counts[sport] = (counts[sport] || 0) + 1;
+  });
+
+  const history = Object.entries(counts)
+    .map(([sport, count]) => ({ sport, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const totalPicks = matches.length;
+  if (!totalPicks) return { suggestion: null, confident: false, history, totalPicks };
+
+  const top = history[0];
+  const confident = (top.count / totalPicks) >= requiredAgreement;
+  return {
+    suggestion: confident ? top.sport : null,
+    confident,
+    history,
+    totalPicks,
+  };
+}
+
 // A team's weekly MM is "dropped" when all three of that team's members have
 // a real pick recorded for the same date (columns H/I/J/K all filled in per
 // member), and "successful" when all three of those picks won (column L =
@@ -2946,6 +2994,20 @@ function highestWinCard(data, label) {
 
 // Pulls a numeric line/handicap value out of a bet type string, e.g.
 // "12.5 point start" -> 12.5. Returns null when no number is present.
+// A negative point start (favourite, must win by more than the number) and
+// a positive one (underdog, gets that cushion) are opposite situations on
+// the signed number line - going MORE negative is a HEAVIER favourite
+// requirement (harder), while going MORE positive is a MORE generous
+// cushion (easier). So "at least as tough as this line" means >= for a
+// positive threshold (bigger cushion or more) but <= for a negative one
+// (bigger favourite ask or more) - not the same direction for both.
+function pointStartQualifies(value, threshold) {
+  return threshold >= 0 ? value >= threshold : value <= threshold;
+}
+function pointStartDirectionWord(threshold) {
+  return threshold >= 0 ? 'higher' : 'lower';
+}
+
 function parsePointValue(betType) {
   // Anchored to the start, since every real bet-type string has the point
   // value leading (e.g. "-6.5 point start", "12.5 point start and Total
@@ -3087,17 +3149,18 @@ function thresholdsFromPool(pool, teamName, sportGroupName) {
   if (!pool.length) return [];
   const thresholds = uniq(pool.map(r => parsePointValue(r.betType))).sort((a, b) => a - b);
   return thresholds.map(t => {
-    const subset = pool.filter(r => parsePointValue(r.betType) >= t);
+    const subset = pool.filter(r => pointStartQualifies(parsePointValue(r.betType), t));
     const wins = subset.filter(r => r.win).length;
     const dates = subset.map(r => parseDMY(r.date)).filter(Boolean);
     const lastDate = dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
     const firstDate = dates.length ? new Date(Math.min(...dates.map(d => d.getTime()))) : null;
     const avgOdds = subset.reduce((s, r) => s + (r.odds || 0), 0) / (subset.length || 1);
+    const direction = pointStartDirectionWord(t);
     const label = teamName
-      ? `${teamName} (${sportGroupName ? sportGroupName + ' - ' : ''}${t} point start or higher)`
+      ? `${teamName} (${sportGroupName ? sportGroupName + ' - ' : ''}${t} point start or ${direction})`
       : sportGroupName
-        ? `${t} point start or higher (${sportGroupName})`
-        : `${t} point start or higher`;
+        ? `${t} point start or ${direction} (${sportGroupName})`
+        : `${t} point start or ${direction}`;
     return {
       key: `points||${teamName || 'all'}||${sportGroupName || 'all'}||${t}`,
       // Every threshold for the same team+sport (or the same sport overall)
@@ -3404,7 +3467,7 @@ function realWorldSportForFamily(family) {
 // reliable sample of the two.
 const REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER = 2;
 const REAL_WORLD_SIGNAL_WEIGHT_CAP = 100;
-function realWorldSignalsForTeam(name, sportFamily) {
+function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
   const sport = realWorldSportForFamily(sportFamily);
   if (!sport || !name) return [];
   const games = state.realWorldGames[sport] || [];
@@ -3415,6 +3478,30 @@ function realWorldSignalsForTeam(name, sportFamily) {
   const signals = [];
   const current = isRealWorldTeamCurrent(log);
   const staleNote = current ? '' : ` Their last real-world game was a while ago, so treat this as background context rather than current form.`;
+
+  // Winning margin, for a point-start entry specifically - a genuinely
+  // different question from "has this exact line been bet before"
+  // (Signal 1 above): this uses the team's actual real-world scorelines to
+  // ask "how often has this team's own margin been big enough to cover
+  // this line", regardless of whether the syndicate has ever placed this
+  // specific bet. A negative point start (favourite) needs to win by MORE
+  // than the absolute value; a positive one (underdog) just needs to lose
+  // by less than it, or win outright.
+  if (pointStartValue !== null && pointStartValue !== undefined) {
+    const marginGames = log.filter(g => g.for != null && g.against != null);
+    if (marginGames.length >= 5) {
+      const marginNeeded = -pointStartValue; // -6.5 point start -> must win by more than 6.5
+      const hits = marginGames.filter(g => (g.for - g.against) > marginNeeded).length;
+      const success = hits / marginGames.length;
+      const marginWord = pointStartValue < 0
+        ? `won by more than ${Math.abs(pointStartValue)}`
+        : `avoided losing by ${pointStartValue} or more (won outright or lost by less)`;
+      signals.push({
+        text: `Real-world data: ${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games (any competition/venue).${staleNote}`,
+        success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+      });
+    }
+  }
 
   let lastResult = null, streak = 0;
   for (let i = log.length - 1; i >= 0; i--) {
@@ -4081,6 +4168,8 @@ function shortSportLabel(sport) {
 function ratePotentialPick(name, betType, sport, odds) {
   const signals = [];
   const pool = state.raw.filter(isRealPick);
+  const enteredPointValue = parsePointValue(betType);
+  const isPointStart = enteredPointValue !== null && betTypeGroup(betType) === 'Point Starts';
 
   // Signal 0: real-world data for the entered team, if there is any - added
   // first (both in array order and, via the weight boost inside
@@ -4089,23 +4178,22 @@ function ratePotentialPick(name, betType, sport, odds) {
   // two source types and should be weighted accordingly, not just shown
   // alongside syndicate history as an equal alternative.
   if (name && sport) {
-    signals.push(...realWorldSignalsForTeam(name, sport));
+    signals.push(...realWorldSignalsForTeam(name, sport, isPointStart ? enteredPointValue : null));
   }
 
   // Signal 1: this team+bet type+sport. For point-start bets, matched the
   // same way Worth Watching computes its own threshold patterns ("X or
-  // higher"), not an exact text match - otherwise typing in exactly one of
-  // Worth Watching's own recommended picks could fail to find the data it
-  // was built from, since a threshold pattern pools several exact bet-type
+  // higher"/"X or lower" depending on sign - see pointStartQualifies), not
+  // an exact text match - otherwise typing in exactly one of Worth
+  // Watching's own recommended picks could fail to find the data it was
+  // built from, since a threshold pattern pools several exact bet-type
   // values together (1.5, 2.5, 3.5...) rather than matching one literally.
   if (name && betType && sport) {
     const enteredFamily = competitionFamily(sport, name);
-    const enteredPointValue = parsePointValue(betType);
-    const isPointStart = enteredPointValue !== null && betTypeGroup(betType) === 'Point Starts';
     const comboRows = isPointStart
-      ? pool.filter(r => r.name === name && competitionFamily(r.sport, r.name) === enteredFamily && r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && parsePointValue(r.betType) >= enteredPointValue)
+      ? pool.filter(r => r.name === name && competitionFamily(r.sport, r.name) === enteredFamily && r.betTypeGroup === 'Point Starts' && parsePointValue(r.betType) !== null && pointStartQualifies(parsePointValue(r.betType), enteredPointValue))
       : pool.filter(r => r.name === name && r.betType === betType && competitionFamily(r.sport, r.name) === enteredFamily);
-    const betLabel = isPointStart ? `${enteredPointValue} point start or higher` : betType;
+    const betLabel = isPointStart ? `${enteredPointValue} point start or ${pointStartDirectionWord(enteredPointValue)}` : betType;
     if (comboRows.length >= 3) {
       const allTimeWins = comboRows.filter(r => r.win).length;
       const allTimeSuccess = allTimeWins / comboRows.length;
@@ -4122,6 +4210,27 @@ function ratePotentialPick(name, betType, sport, odds) {
       signals.push({ text: `${headline}${caveat}`, success: finalSuccess, sampleSize: finalSampleSize });
     } else {
       signals.push({ text: `No real history yet for ${name} ${betLabel} in ${shortSportLabel(sport)} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
+    }
+  }
+
+  // Signal 1b: same bet type (not just same sport) at a similar price -
+  // more precise than Signal 2 below, which matches on sport+price alone
+  // and can mix, say, a Point Starts bet with an unrelated Totals bet just
+  // because they happen to have similar odds. Only shown when there's
+  // enough same-bet-type data at this price; the broader sport-wide
+  // Signal 2 always runs regardless, so there's no gap if this one can't.
+  if (sport && betType && Number.isFinite(odds)) {
+    const enteredFamily = competitionFamily(sport, name);
+    const enteredGroup = betTypeGroup(betType);
+    const shortLabel = shortSportLabel(sport);
+    const bandLow = Math.round((odds - 0.05) * 100) / 100;
+    const bandHigh = Math.round((odds + 0.05) * 100) / 100;
+    const sameTypeBandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.betTypeGroup === enteredGroup && r.odds >= bandLow && r.odds <= bandHigh);
+    if (sameTypeBandRows.length >= 5) {
+      const success = sameTypeBandRows.filter(r => r.win).length / sameTypeBandRows.length;
+      const headline = `${shortLabel} ${enteredGroup} bets with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(success)} all time.`;
+      const caveat = stalenessCaveat(sameTypeBandRows) || ` ${sampleSizeSentence(sameTypeBandRows.length)}`;
+      signals.push({ text: `${headline}${caveat}`, success, sampleSize: sameTypeBandRows.length });
     }
   }
 
