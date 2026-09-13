@@ -53,6 +53,7 @@ const state = {
     step: 'grid', // 'grid' | 'checking' | 'existing' | 'confirmOverwrite' | 'form' | 'submitting' | 'done' | 'error'
     member: null,
     lists: null, // { options, betTypes, sports } - fetched once per session, cached here
+    popularity: null, // { option, betType, sport } - computed once per session from state.raw, cached here
     existingPick: null, // { option, betType, sport, odds } if checkPick found one, else null
     form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false },
     error: null,
@@ -4597,7 +4598,24 @@ function dropPickDoneHtml() {
 // never be able to write in an arbitrary Sport value, since downstream
 // Records/Worth Watching/Rate Your Pick logic depends on it matching a
 // known value.
-function renderSearchSelect(container, list, currentValue, onSelect) {
+// Counts how many real picks (isRealPick) exist for each distinct value
+// of a given field - "how many times has this exact Option/Bet type/
+// Sport actually been picked before". Used to rank search-select results
+// by real popularity instead of alphabetically, so a team like "NZ
+// Warriors" that's picked constantly surfaces before an alphabetically
+// earlier but rarely-picked entry.
+function fieldPopularity(rows, fieldName) {
+  const counts = {};
+  rows.forEach(r => {
+    if (!isRealPick(r)) return;
+    const val = clean(r[fieldName]);
+    if (!val) return;
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  return counts;
+}
+
+function renderSearchSelect(container, list, currentValue, onSelect, popularityMap) {
   const allowAddNew = container.dataset.noAddNew !== '1';
   container.innerHTML = `
     <input type="text" class="drop-pick-input" value="${escapeHtml(currentValue || '')}" placeholder="Start typing..." />
@@ -4610,7 +4628,14 @@ function renderSearchSelect(container, list, currentValue, onSelect) {
     const q = input.value.trim().toLowerCase();
     resultsEl.innerHTML = '';
     if (!q) return;
-    const matches = list.filter(o => o.toLowerCase().includes(q)).slice(0, 8);
+    let matches = list.filter(o => o.toLowerCase().includes(q));
+    if (popularityMap) {
+      matches = matches.slice().sort((a, b) => {
+        const diff = (popularityMap[b] || 0) - (popularityMap[a] || 0);
+        return diff !== 0 ? diff : a.localeCompare(b);
+      });
+    }
+    matches = matches.slice(0, 8);
     matches.forEach(m => {
       const row = document.createElement('div');
       row.className = 'drop-pick-search-row';
@@ -4678,7 +4703,7 @@ async function submitDropPick(confirmOverwrite) {
 
 function resetDropPick() {
   state.dropPick = {
-    step: 'grid', member: null, lists: state.dropPick.lists, existingPick: null,
+    step: 'grid', member: null, lists: state.dropPick.lists, popularity: state.dropPick.popularity, existingPick: null,
     form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false }, error: null,
   };
   render();
@@ -4750,6 +4775,14 @@ function bindDropAPick() {
     const errorEl = document.getElementById('dropPickFormError');
     const submitBtn = document.getElementById('dropPickSubmit');
 
+    if (!dp.popularity) {
+      dp.popularity = {
+        option: fieldPopularity(state.raw, 'name'),
+        betType: fieldPopularity(state.raw, 'betType'),
+        sport: fieldPopularity(state.raw, 'sport'),
+      };
+    }
+
     const applySportSuggestion = (optionValue) => {
       const result = sportSuggestionForOption(state.raw, optionValue);
       if (result.confident) {
@@ -4757,13 +4790,13 @@ function bindDropAPick() {
         dp.form.sportAutoFilled = true;
         renderSearchSelect(sportEl, dp.lists.sports, dp.form.sport, (val) => {
           dp.form.sport = val; dp.form.sportAutoFilled = false;
-        });
+        }, dp.popularity.sport);
         sportNoteEl.textContent = `Pre-filled from past picks of "${optionValue}" - still editable.`;
         sportNoteEl.style.color = 'var(--good)';
       } else {
         dp.form.sport = '';
         dp.form.sportAutoFilled = false;
-        renderSearchSelect(sportEl, dp.lists.sports, '', (val) => { dp.form.sport = val; });
+        renderSearchSelect(sportEl, dp.lists.sports, '', (val) => { dp.form.sport = val; }, dp.popularity.sport);
         sportNoteEl.textContent = result.totalPicks
           ? `Past picks of "${optionValue}" have used more than one sport - choose which one applies.`
           : '';
@@ -4774,9 +4807,9 @@ function bindDropAPick() {
     renderSearchSelect(optionEl, dp.lists.options, dp.form.option, (val) => {
       dp.form.option = val;
       applySportSuggestion(val);
-    });
-    renderSearchSelect(betTypeEl, dp.lists.betTypes, dp.form.betType, (val) => { dp.form.betType = val; });
-    renderSearchSelect(sportEl, dp.lists.sports, dp.form.sport, (val) => { dp.form.sport = val; dp.form.sportAutoFilled = false; });
+    }, dp.popularity.option);
+    renderSearchSelect(betTypeEl, dp.lists.betTypes, dp.form.betType, (val) => { dp.form.betType = val; }, dp.popularity.betType);
+    renderSearchSelect(sportEl, dp.lists.sports, dp.form.sport, (val) => { dp.form.sport = val; dp.form.sportAutoFilled = false; }, dp.popularity.sport);
 
     if (oddsEl) oddsEl.oninput = () => { dp.form.odds = oddsEl.value; };
 
