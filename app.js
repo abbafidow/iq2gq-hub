@@ -49,6 +49,14 @@ const state = {
   sportDrilldown: false,
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
+  dropPick: {
+    step: 'grid', // 'grid' | 'checking' | 'existing' | 'confirmOverwrite' | 'form' | 'submitting' | 'done' | 'error'
+    member: null,
+    lists: null, // { options, betTypes, sports } - fetched once per session, cached here
+    existingPick: null, // { option, betType, sport, odds } if checkPick found one, else null
+    form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false },
+    error: null,
+  },
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
   presidentDialIndex: null, // Records page President/Benson dial - null until first touched, then persists across re-renders
@@ -1318,6 +1326,7 @@ function render() {
   if (page === 'records') app.innerHTML = records(data);
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
+  if (page === 'droppick') app.innerHTML = dropAPickPage(data);
 }
 
 function dashboard(data) {
@@ -4441,6 +4450,373 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[char]));
+}
+
+// ---------- Drop a Pick ----------
+//
+// Talks to a separate, standalone Apps Script Web App (NOT the existing
+// Code.gs API) - see PickEntry.gs. That project serves the Lists tab data
+// and writes picks into Raw_Live; this file only ever calls it over the
+// network, never assumes anything about its internals beyond the response
+// shapes documented alongside each fetch call below.
+//
+// UNTESTED against a real https:// deployment of the Hub as of writing -
+// the CORS/redirect issue that caused "Failed to fetch" during backend
+// testing was only ever confirmed from a local file:// test page. It's
+// genuinely possible (Apps Script's cross-origin behaviour can differ for
+// a null/file:// origin vs a real https:// one) that this works fine once
+// actually live on GitHub Pages - but that's a real unknown, not a
+// confirmed fix, and is the first thing to check once this is deployed.
+
+const PICK_ENTRY_API_URL = 'https://script.google.com/macros/s/AKfycbxK9UTzbay0j3bZpmjJLUikWFlnSN38lv83Fjwymq22FsiICf0-DDH2tpjFqFyz6FWN/exec';
+
+const DROP_PICK_TEAMS = [
+  { name: 'Team 1', color: '#e57373', dark: '#3a1f1f', members: ['MA', 'AA', 'SB'] },
+  { name: 'Team 2', color: '#f0d878', dark: '#3a331a', members: ['AF', 'LS', 'SF'] },
+  { name: 'Team 3', color: '#79d99a', dark: '#1a3324', members: ['AT', 'PN', 'TP'] },
+  { name: 'Team 4', color: '#7bb8e8', dark: '#1a2a3a', members: ['MV', 'JF', 'TF'] },
+];
+
+function dropAPickPage(data) {
+  const dp = state.dropPick;
+  setTimeout(bindDropAPick, 0);
+
+  let body;
+  if (dp.step === 'grid') {
+    body = dropPickGridHtml();
+  } else if (dp.step === 'checking') {
+    body = `<p class="muted">Checking your current pick...</p>`;
+  } else if (dp.step === 'existing') {
+    body = dropPickExistingHtml();
+  } else if (dp.step === 'confirmOverwrite') {
+    body = dropPickConfirmOverwriteHtml();
+  } else if (dp.step === 'form') {
+    body = dropPickFormHtml(data);
+  } else if (dp.step === 'submitting') {
+    body = `<p class="muted">Sending your pick...</p>`;
+  } else if (dp.step === 'done') {
+    body = dropPickDoneHtml();
+  } else {
+    body = `<p style="color:var(--bad);">${escapeHtml(dp.error || 'Something went wrong.')}</p>
+      <button type="button" class="drop-pick-btn" id="dropPickRetry">Start again</button>`;
+  }
+
+  return `<div class="page-header"><h1>Drop a Pick</h1><p>Tap your own code to record a pick for this round.</p></div>
+    <div class="panel drop-pick-panel">${body}</div>`;
+}
+
+function dropPickGridHtml() {
+  const groups = DROP_PICK_TEAMS.map(team => `
+    <div class="drop-pick-team">
+      <p class="drop-pick-team-label" style="color:${team.color};">${escapeHtml(team.name)}</p>
+      <div class="drop-pick-tile-row">
+        ${team.members.map(code => `
+          <button type="button" class="drop-pick-tile" data-member="${code}"
+            style="background:${team.dark}; border-color:${team.color}; color:${team.color};">${escapeHtml(code)}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  return `<p class="drop-pick-prompt">Who's dropping a pick?</p>${groups}`;
+}
+
+function dropPickHeaderHtml() {
+  const dp = state.dropPick;
+  const team = DROP_PICK_TEAMS.find(t => t.members.includes(dp.member));
+  const color = team ? team.color : 'var(--accent)';
+  const dark = team ? team.dark : 'var(--panel2)';
+  return `<div class="drop-pick-badge-row">
+    <div class="drop-pick-badge" style="background:${dark}; color:${color}; border-color:${color};">${escapeHtml(dp.member)}</div>
+    <div><p class="muted small" style="margin:0;">Dropping pick as</p><p style="margin:0; font-weight:500;">${escapeHtml(dp.member)}</p></div>
+    <button type="button" class="drop-pick-btn" id="dropPickNotYou" style="margin-left:auto;">Not you?</button>
+  </div>`;
+}
+
+function dropPickExistingHtml() {
+  const p = state.dropPick.existingPick;
+  return `${dropPickHeaderHtml()}
+    <div class="drop-pick-existing-card">
+      <p class="drop-pick-existing-label">You've already picked this round</p>
+      <p class="drop-pick-existing-main">${escapeHtml(p.option)}</p>
+      <p class="muted small">${escapeHtml(p.betType)} - odds ${escapeHtml(p.odds)} - ${escapeHtml(p.sport)}</p>
+    </div>
+    <button type="button" class="drop-pick-btn" id="dropPickChange" style="width:100%; border-color:var(--warn); color:var(--warn);">Change my pick</button>`;
+}
+
+function dropPickConfirmOverwriteHtml() {
+  const p = state.dropPick.existingPick;
+  return `${dropPickHeaderHtml()}
+    <div class="drop-pick-warn-card">
+      <p style="margin:0 0 4px; font-weight:500; color:var(--warn);">Replace your current pick?</p>
+      <p class="muted small" style="margin:0;">Your existing pick (${escapeHtml(p.option)}, ${escapeHtml(p.betType)}, ${escapeHtml(p.odds)}) will be overwritten. This can't be undone from here.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button type="button" class="drop-pick-btn" id="dropPickCancelChange" style="flex:1;">Never mind</button>
+      <button type="button" class="drop-pick-btn" id="dropPickProceedChange" style="flex:1; background:var(--warn); color:#1a1206; border-color:var(--warn);">Yes, change it</button>
+    </div>`;
+}
+
+function dropPickFormHtml(data) {
+  const dp = state.dropPick;
+  const replacing = Boolean(dp.existingPick);
+  return `${dropPickHeaderHtml()}
+    ${replacing ? `<p class="muted small" style="color:var(--warn);">Replacing your ${escapeHtml(dp.existingPick.option)} pick - fill in the new one below.</p>` : ''}
+
+    <label class="drop-pick-label">Pick</label>
+    <div class="drop-pick-search" id="dropPickSearch-option" data-field="option"></div>
+
+    <label class="drop-pick-label">Bet type</label>
+    <div class="drop-pick-search" id="dropPickSearch-betType" data-field="betType"></div>
+
+    <label class="drop-pick-label">Sport</label>
+    <div class="drop-pick-search" id="dropPickSearch-sport" data-field="sport" data-no-add-new="1"></div>
+    <p class="muted small" id="dropPickSportNote" style="margin:2px 0 0;"></p>
+
+    <label class="drop-pick-label">Odds</label>
+    <input type="text" id="dropPickOdds" inputmode="decimal" placeholder="e.g. 1.85" value="${escapeHtml(dp.form.odds)}" class="drop-pick-input" />
+
+    <div id="dropPickFormError" class="drop-pick-error" style="display:none;"></div>
+
+    <button type="button" class="drop-pick-btn" id="dropPickSubmit" style="width:100%; margin-top:16px; background:var(--good); color:#04210f; border-color:var(--good);">Drop pick</button>`;
+}
+
+function dropPickDoneHtml() {
+  return `${dropPickHeaderHtml()}
+    <div style="text-align:center; padding:1.5rem 0;">
+      <p style="color:var(--good); font-weight:500; margin:0 0 6px;">Pick dropped</p>
+      <p class="muted small" id="dropPickDoneSummary"></p>
+      <button type="button" class="drop-pick-btn" id="dropPickAnother" style="margin-top:16px;">Drop another (different member)</button>
+    </div>`;
+}
+
+// A single generic search-select, reused for Pick, Bet type and Sport.
+// Filters `list` as the member types and always shows "+ Add new" as the
+// last row - one consistent rule instead of separately detecting a
+// "no results" state. Sport passes data-no-add-new since it's a
+// controlled vocabulary (the Sport (Combined) list) - a member should
+// never be able to write in an arbitrary Sport value, since downstream
+// Records/Worth Watching/Rate Your Pick logic depends on it matching a
+// known value.
+function renderSearchSelect(container, list, currentValue, onSelect) {
+  const allowAddNew = container.dataset.noAddNew !== '1';
+  container.innerHTML = `
+    <input type="text" class="drop-pick-input" value="${escapeHtml(currentValue || '')}" placeholder="Start typing..." />
+    <div class="drop-pick-search-results"></div>
+  `;
+  const input = container.querySelector('input');
+  const resultsEl = container.querySelector('.drop-pick-search-results');
+
+  function renderResults() {
+    const q = input.value.trim().toLowerCase();
+    resultsEl.innerHTML = '';
+    if (!q) return;
+    const matches = list.filter(o => o.toLowerCase().includes(q)).slice(0, 8);
+    matches.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'drop-pick-search-row';
+      row.textContent = m;
+      row.onclick = () => { input.value = m; resultsEl.innerHTML = ''; onSelect(m, false); };
+      resultsEl.appendChild(row);
+    });
+    if (allowAddNew && input.value.trim()) {
+      const addNew = document.createElement('div');
+      addNew.className = 'drop-pick-search-row drop-pick-search-add-new';
+      addNew.innerHTML = `+ Add new: "${escapeHtml(input.value.trim())}"`;
+      addNew.onclick = () => { resultsEl.innerHTML = ''; onSelect(input.value.trim(), true); };
+      resultsEl.appendChild(addNew);
+    }
+  }
+
+  input.addEventListener('input', renderResults);
+  input.addEventListener('focus', renderResults);
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) resultsEl.innerHTML = '';
+  });
+}
+
+async function fetchDropPickLists() {
+  if (state.dropPick.lists) return state.dropPick.lists;
+  const res = await fetch(PICK_ENTRY_API_URL);
+  const json = await res.json();
+  // De-duplicate here rather than relying on the Sheet's Lists tab being
+  // clean - a handful of exact duplicates (e.g. "Stand Down" appearing
+  // twice) were confirmed present in the real data, and de-duping client
+  // side means members never see a repeated entry regardless of whether
+  // the Sheet itself ever gets tidied up.
+  const dedupe = arr => [...new Set((arr || []).map(v => String(v).trim()))].sort((a, b) => a.localeCompare(b));
+  state.dropPick.lists = {
+    options: dedupe(json.options),
+    betTypes: dedupe(json.betTypes),
+    sports: dedupe(json.sports),
+  };
+  return state.dropPick.lists;
+}
+
+async function checkDropPickExisting(member) {
+  const url = `${PICK_ENTRY_API_URL}?action=checkPick&member=${encodeURIComponent(member)}`;
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function submitDropPick(confirmOverwrite) {
+  const dp = state.dropPick;
+  const body = {
+    memberCode: dp.member,
+    option: dp.form.option,
+    betType: dp.form.betType,
+    sport: dp.form.sport,
+    odds: dp.form.odds,
+    confirmOverwrite: confirmOverwrite ? 'true' : 'false',
+  };
+  const res = await fetch(PICK_ENTRY_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // avoids a CORS preflight Apps Script doesn't handle
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+function resetDropPick() {
+  state.dropPick = {
+    step: 'grid', member: null, lists: state.dropPick.lists, existingPick: null,
+    form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false }, error: null,
+  };
+  render();
+}
+
+async function selectDropPickMember(code) {
+  state.dropPick.member = code;
+  state.dropPick.step = 'checking';
+  render();
+  try {
+    await fetchDropPickLists();
+    const check = await checkDropPickExisting(code);
+    if (check.error) {
+      // Covers both "no matching row found" (found: false) and genuine
+      // hard errors (unrecognised member, sheet missing) - either way,
+      // something needs a human's attention, not a silent fall-through
+      // to a blank form as if the member simply has no pick yet.
+      state.dropPick.step = 'error';
+      state.dropPick.error = check.error;
+      render();
+      return;
+    }
+    if (check.hasExistingPick) {
+      state.dropPick.existingPick = check.existingPick;
+      state.dropPick.step = 'existing';
+    } else {
+      state.dropPick.existingPick = null;
+      state.dropPick.step = 'form';
+    }
+    render();
+  } catch (err) {
+    state.dropPick.step = 'error';
+    state.dropPick.error = 'Could not reach the pick-entry service: ' + err.message;
+    render();
+  }
+}
+
+function bindDropAPick() {
+  const dp = state.dropPick;
+
+  document.querySelectorAll('.drop-pick-tile').forEach(btn => {
+    btn.onclick = () => selectDropPickMember(btn.dataset.member);
+  });
+
+  const notYouBtn = document.getElementById('dropPickNotYou');
+  if (notYouBtn) notYouBtn.onclick = resetDropPick;
+
+  const changeBtn = document.getElementById('dropPickChange');
+  if (changeBtn) changeBtn.onclick = () => { state.dropPick.step = 'confirmOverwrite'; render(); };
+
+  const cancelChangeBtn = document.getElementById('dropPickCancelChange');
+  if (cancelChangeBtn) cancelChangeBtn.onclick = () => { state.dropPick.step = 'existing'; render(); };
+
+  const proceedChangeBtn = document.getElementById('dropPickProceedChange');
+  if (proceedChangeBtn) proceedChangeBtn.onclick = () => { state.dropPick.step = 'form'; render(); };
+
+  const retryBtn = document.getElementById('dropPickRetry');
+  if (retryBtn) retryBtn.onclick = resetDropPick;
+
+  const anotherBtn = document.getElementById('dropPickAnother');
+  if (anotherBtn) anotherBtn.onclick = resetDropPick;
+
+  if (dp.step === 'form' && dp.lists) {
+    const optionEl = document.getElementById('dropPickSearch-option');
+    const betTypeEl = document.getElementById('dropPickSearch-betType');
+    const sportEl = document.getElementById('dropPickSearch-sport');
+    const sportNoteEl = document.getElementById('dropPickSportNote');
+    const oddsEl = document.getElementById('dropPickOdds');
+    const errorEl = document.getElementById('dropPickFormError');
+    const submitBtn = document.getElementById('dropPickSubmit');
+
+    const applySportSuggestion = (optionValue) => {
+      const result = sportSuggestionForOption(state.raw, optionValue);
+      if (result.confident) {
+        dp.form.sport = result.suggestion;
+        dp.form.sportAutoFilled = true;
+        renderSearchSelect(sportEl, dp.lists.sports, dp.form.sport, (val) => {
+          dp.form.sport = val; dp.form.sportAutoFilled = false;
+        });
+        sportNoteEl.textContent = `Pre-filled from past picks of "${optionValue}" - still editable.`;
+        sportNoteEl.style.color = 'var(--good)';
+      } else {
+        dp.form.sport = '';
+        dp.form.sportAutoFilled = false;
+        renderSearchSelect(sportEl, dp.lists.sports, '', (val) => { dp.form.sport = val; });
+        sportNoteEl.textContent = result.totalPicks
+          ? `Past picks of "${optionValue}" have used more than one sport - choose which one applies.`
+          : '';
+        sportNoteEl.style.color = 'var(--muted)';
+      }
+    };
+
+    renderSearchSelect(optionEl, dp.lists.options, dp.form.option, (val) => {
+      dp.form.option = val;
+      applySportSuggestion(val);
+    });
+    renderSearchSelect(betTypeEl, dp.lists.betTypes, dp.form.betType, (val) => { dp.form.betType = val; });
+    renderSearchSelect(sportEl, dp.lists.sports, dp.form.sport, (val) => { dp.form.sport = val; dp.form.sportAutoFilled = false; });
+
+    if (oddsEl) oddsEl.oninput = () => { dp.form.odds = oddsEl.value; };
+
+    if (submitBtn) submitBtn.onclick = async () => {
+      const odds = Number(dp.form.odds);
+      if (!dp.form.option || !dp.form.betType || !dp.form.sport || !dp.form.odds || isNaN(odds) || odds <= 1) {
+        errorEl.textContent = 'Fill in pick, bet type, sport, and a valid odds number (greater than 1) first.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+      state.dropPick.step = 'submitting';
+      render();
+      try {
+        const result = await submitDropPick(Boolean(dp.existingPick));
+        if (result.success) {
+          state.dropPick.step = 'done';
+          render();
+          setTimeout(() => {
+            const el = document.getElementById('dropPickDoneSummary');
+            if (el) el.textContent = `${dp.member} - ${dp.form.option} - ${dp.form.betType} - ${dp.form.odds} - ${dp.form.sport}`;
+          }, 0);
+        } else {
+          state.dropPick.step = 'form';
+          render();
+          setTimeout(() => {
+            const err2 = document.getElementById('dropPickFormError');
+            if (err2) { err2.textContent = result.error || 'Something went wrong submitting this pick.'; err2.style.display = 'block'; }
+          }, 0);
+        }
+      } catch (err) {
+        state.dropPick.step = 'form';
+        render();
+        setTimeout(() => {
+          const err2 = document.getElementById('dropPickFormError');
+          if (err2) { err2.textContent = 'Could not reach the pick-entry service: ' + err.message; err2.style.display = 'block'; }
+        }, 0);
+      }
+    };
+  }
 }
 
 init();
