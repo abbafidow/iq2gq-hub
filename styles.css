@@ -202,36 +202,6 @@ h1, h2, h3 { margin: 0; }
 .change-member-link { color: var(--accent); text-decoration: none; margin-left: 6px; }
 .change-member-link:hover { text-decoration: underline; }
 
-/* ---------- Drop a pick: team-coloured tile selector (AGM colours, Sept 2026) ---------- */
-.drop-pick-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 20px;
-}
-.drop-pick-team-group { margin-bottom: 0; }
-.drop-pick-team-label { display: block; font-size: 10px; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
-.drop-pick-team-tiles { display: flex; gap: 8px; }
-.drop-pick-tile {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  border: none;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.drop-pick-tile:hover { filter: brightness(1.08); }
-.drop-pick-tile.team-one { background: #f2b8b5; color: #5c1f1c; }
-.drop-pick-tile.team-two { background: #f5dd90; color: #5c4a10; }
-.drop-pick-tile.team-three { background: #a8d8ac; color: #1f4a22; }
-.drop-pick-tile.team-four { background: #a9d3ee; color: #1a3c54; }
-
-@media (max-width: 640px) {
-  .drop-pick-tiles { grid-template-columns: 1fr; }
-}
-
 /* ---------- Layout & cards ---------- */
 
 .main { padding: 20px 28px; }
@@ -1056,4 +1026,58 @@ border: 1px solid rgba(255,255,255,0.10);
   .pa-stats {
     gap: 6px;
   }
+}
+
+/* ---------- Drop a Pick ---------- */
+.drop-pick-panel { max-width: 480px; margin: 0 auto; }
+.drop-pick-prompt { font-size: 15px; font-weight: 500; margin: 0 0 16px; }
+.drop-pick-team { margin-bottom: 14px; }
+.drop-pick-team-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
+.drop-pick-tile-row { display: flex; gap: 8px; }
+.drop-pick-tile {
+  flex: 1; border-radius: 10px; border: 1px solid; padding: 14px 0;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+}
+.drop-pick-tile:hover { filter: brightness(1.15); }
+
+.drop-pick-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.drop-pick-badge {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid;
+  display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; flex-shrink: 0;
+}
+
+.drop-pick-existing-card, .drop-pick-warn-card {
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px;
+}
+.drop-pick-existing-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.drop-pick-existing-main { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+.drop-pick-warn-card { border-color: var(--warn); }
+
+.drop-pick-btn {
+  border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+  padding: 12px; font-size: 14px; cursor: pointer;
+}
+.drop-pick-btn:hover { filter: brightness(1.15); }
+
+.drop-pick-label { display: block; color: var(--muted); font-size: 12px; margin: 14px 0 4px; }
+.drop-pick-input {
+  width: 100%; box-sizing: border-box; background: var(--panel2); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+}
+.drop-pick-search { position: relative; }
+.drop-pick-search-results {
+  position: absolute; left: 0; right: 0; z-index: 20; margin-top: 4px;
+  border-radius: 8px; overflow: hidden; border: 1px solid var(--line);
+}
+.drop-pick-search-row {
+  padding: 10px 12px; font-size: 14px; cursor: pointer; background: var(--panel2);
+  border-bottom: 1px solid var(--panel);
+}
+.drop-pick-search-row:hover { background: var(--panel); }
+.drop-pick-search-add-new { color: var(--good); background: var(--panel); }
+
+.drop-pick-error { color: var(--bad); font-size: 13px; margin-top: 10px; }
+
+@media (max-width: 640px) {
+  .drop-pick-panel { max-width: none; }
 }
