@@ -1081,3 +1081,7 @@ border: 1px solid rgba(255,255,255,0.10);
 @media (max-width: 640px) {
   .drop-pick-panel { max-width: none; }
 }
+
+.drop-pick-team-complete-card {
+  background: var(--good); border-radius: 10px; padding: 14px; margin-top: 14px; text-align: left;
+}

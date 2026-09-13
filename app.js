@@ -4586,8 +4586,21 @@ function dropPickDoneHtml() {
     <div style="text-align:center; padding:1.5rem 0;">
       <p style="color:var(--good); font-weight:500; margin:0 0 6px;">Pick dropped</p>
       <p class="muted small" id="dropPickDoneSummary"></p>
+      <div id="dropPickTeamStatus"></div>
       <button type="button" class="drop-pick-btn" id="dropPickAnother" style="margin-top:16px;">Drop another (different member)</button>
     </div>`;
+}
+
+function dropPickTeamStatusHtml(teamComplete, teamStatus) {
+  if (!teamStatus) return '';
+  if (teamComplete) {
+    return `<div class="drop-pick-team-complete-card">
+      <p style="margin:0 0 4px; font-weight:600; color:#04210f;">Your team's complete - place the bet!</p>
+      <p style="margin:0; font-size:13px; color:#0a3a1f;">${teamStatus.map(t => escapeHtml(t.member)).join(', ')} have all dropped a pick this round. Time to put the bet on with the bookmaker.</p>
+    </div>`;
+  }
+  const waiting = teamStatus.filter(t => !t.hasPicked).map(t => t.member);
+  return `<p class="muted small" style="margin-top:10px;">Still waiting on: ${waiting.map(m => escapeHtml(m)).join(', ')}</p>`;
 }
 
 // A single generic search-select, reused for Pick, Bet type and Sport.
@@ -4831,6 +4844,8 @@ function bindDropAPick() {
           setTimeout(() => {
             const el = document.getElementById('dropPickDoneSummary');
             if (el) el.textContent = `${dp.member} - ${dp.form.option} - ${dp.form.betType} - ${dp.form.odds} - ${dp.form.sport}`;
+            const statusEl = document.getElementById('dropPickTeamStatus');
+            if (statusEl) statusEl.innerHTML = dropPickTeamStatusHtml(result.teamComplete, result.teamStatus);
           }, 0);
         } else {
           state.dropPick.step = 'form';
