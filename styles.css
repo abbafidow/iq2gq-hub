@@ -834,7 +834,7 @@ border: 1px solid rgba(255,255,255,0.10);
 .pa-rate-card .pa-rate-form input,
 .pa-rate-card .pa-rate-form button,
 .pa-rate-card .pa-rating-signal,
-.pa-rate-card .pa-flames-text {
+.pa-rate-card .pa-rating-badge {
   font-family: 'Poppins', Arial, sans-serif;
 }
 
@@ -908,8 +908,18 @@ border: 1px solid rgba(255,255,255,0.10);
   line-height: 1.4;
   margin: 0 0 8px;
 }
-.pa-flames { display: flex; align-items: center; gap: 4px; }
-.pa-flames-text { color: var(--text); font-weight: 700; font-size: 13px; margin-left: 6px; }
+.pa-rating-badge {
+  display: inline-block;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+.pa-rating-badge.good { border-color: var(--good); color: var(--good); }
+.pa-rating-badge.bad { border-color: var(--bad); color: var(--bad); }
 
 @media (max-width: 640px) {
   .pa-rate-form { grid-template-columns: 1fr 1fr; }
@@ -1085,3 +1095,31 @@ border: 1px solid rgba(255,255,255,0.10);
 .drop-pick-team-complete-card {
   background: var(--good); border-radius: 10px; padding: 14px; margin-top: 14px; text-align: left;
 }
+
+/* Reusable info-icon caption toggle - full methodology text hidden by
+   default, expands on click. Used across several panels to keep the
+   default view concise without losing the detail for anyone who wants it. */
+.info-toggle {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+  margin-left: 2px;
+}
+.info-toggle:hover { color: var(--text); }
+.info-detail {
+  display: none;
+  margin-top: -4px;
+}
+.info-detail.expanded { display: block; }
+
+.table-expand-btn {
+  margin-top: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.table-expand-btn:hover { color: var(--text); border-color: var(--accent); }
