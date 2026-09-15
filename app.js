@@ -46,6 +46,7 @@ const state = {
   apiCount: 0,
   page: 'dashboard',
   sort: {},
+  tableExpanded: {}, // { tableId: true } once a folded table's "show more" has been clicked
   sportDrilldown: false,
   statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
@@ -64,7 +65,15 @@ const state = {
 };
 
 const MEMBER_NICKNAMES = { TP: 'Te Pioneer', LS: 'Wayfinder', MA: 'Chief', TF: 'Reformer', MV: 'Ace', SB: 'Maverick' };
-const PRESIDENT_COUNTS = { TP: 1, LS: 2, MA: 2, TF: 1, MV: 2, SB: 3 };
+// Was a hardcoded { TP: 1, LS: 2, ... } list - meant a new president (like
+// AA for 2026/27) silently got zero trophies until someone remembered to
+// add them by hand. Computed directly from PRESIDENTS_DIAL_DATA instead,
+// counting how many terms each member's full name appears as president -
+// this picks up every future presidency automatically, no list to maintain.
+function presidentTermCount(code) {
+  const name = fullName(code);
+  return PRESIDENTS_DIAL_DATA.filter(d => d.president === name).length;
+}
 
 // Full names for all 12 member codes, confirmed against the Syndicate
 // Records sheet and AGM packs - used to show award-worthy full names on
@@ -224,9 +233,16 @@ function memberPickerHtml(promptText) {
   const members = Object.keys(TEAM_MAP).slice().sort();
   const buttons = members.map(m => {
     const nick = MEMBER_NICKNAMES[m];
-    const trophyCount = PRESIDENT_COUNTS[m] || 0;
+    const trophyCount = presidentTermCount(m);
     const trophies = trophyCount ? `<span class="member-pick-trophies">${svgTrophy().repeat(trophyCount)}</span>` : '';
-    return `<button class="member-pick-btn" data-member="${m}"><span class="member-pick-code">${m}</span>${nick ? `<span class="member-pick-nick">${escapeHtml(nick)}${trophies}</span>` : ''}</button>`;
+    // Trophy and nickname render independently - previously the trophy was
+    // nested inside the nickname's own conditional, so a president with no
+    // honorific yet (a term still in progress) got no trophy at all, not
+    // just no nickname text.
+    const subline = nick || trophies
+      ? `<span class="member-pick-nick">${nick ? escapeHtml(nick) : ''}${trophies}</span>`
+      : '';
+    return `<button class="member-pick-btn" data-member="${m}"><span class="member-pick-code">${m}</span>${subline}</button>`;
   }).join('');
   return `<p class="member-pick-prompt">${escapeHtml(promptText || 'Select your name below to personalise for you.')}</p><div class="member-pick-grid">${buttons}</div>`;
 }
@@ -915,14 +931,24 @@ function sortValue(row, key) {
   return row[key];
 }
 
-function table(rows, tableId, columns) {
+function table(rows, tableId, columns, options = {}) {
   const sort = state.sort[tableId] || {};
   const head = columns.map(col => {
     const marker = sort.key === col.key ? (sort.dir === -1 ? ' ↓' : ' ↑') : '';
     return `<th data-table="${tableId}" data-key="${col.key}">${col.label}${marker}</th>`;
   }).join('');
-  const body = rows.map(row => `<tr>${columns.map(col => `<td>${format(col, row[col.key], row)}</td>`).join('')}</tr>`).join('');
-  const cards = rows.map(row => `<div class="mini-card">${cardContent(columns, row)}</div>`).join('');
+  // foldAt: only set by callers with genuinely large reference tables
+  // (Competitions, Specific bet types) - every other table's call site is
+  // unchanged and renders in full, exactly as before.
+  const foldAt = options.foldAt;
+  const expanded = Boolean(state.tableExpanded[tableId]);
+  const folded = Boolean(foldAt) && !expanded && rows.length > foldAt;
+  const visibleRows = folded ? rows.slice(0, foldAt) : rows;
+  const body = visibleRows.map(row => `<tr>${columns.map(col => `<td>${format(col, row[col.key], row)}</td>`).join('')}</tr>`).join('');
+  const cards = visibleRows.map(row => `<div class="mini-card">${cardContent(columns, row)}</div>`).join('');
+  const expandButton = folded
+    ? `<button type="button" class="table-expand-btn" data-table-expand="${tableId}">Show ${rows.length - foldAt} more</button>`
+    : '';
   setTimeout(() => {
     document.querySelectorAll(`th[data-table="${tableId}"]`).forEach(th => {
       th.onclick = () => {
@@ -933,8 +959,10 @@ function table(rows, tableId, columns) {
         render();
       };
     });
+    const expandBtn = document.querySelector(`[data-table-expand="${tableId}"]`);
+    if (expandBtn) expandBtn.onclick = () => { state.tableExpanded[tableId] = true; render(); };
   }, 0);
-  return `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div><div class="cards compact-cards">${cards}</div>`;
+  return `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div><div class="cards compact-cards">${cards}</div>${expandButton}`;
 }
 
 function format(column, value) {
@@ -1243,7 +1271,7 @@ function presidentialTeamsSection(currentSeasonRows) {
   ]);
 
   return `<section class="two standings-row">
-    <div class="panel standings-panel"><h3>Presidential race</h3><p class="muted small">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap">${presTable}</div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
+    <div class="panel standings-panel"><h3>Presidential race <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="Scoring formula">&#9432;</span></h3><p class="muted small info-detail">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap">${presTable}</div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
     <div class="standings-col">
       <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap">${teamTable}</div><p class="muted small">* captain</p></div>
       ${teamQuarterFormPanel()}
@@ -1602,7 +1630,7 @@ function sports(data) {
   const realPicks = data.filter(isRealPick);
   const groupedRows = rank(sortRows(aggregate(realPicks, 'group').filter(x => x.picks >= min), 'sportsPage'));
   const competitionRows = rank(sortRows(aggregate(realPicks, 'sport').filter(x => x.picks >= min), 'competitionsPage'));
-  return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use Search to narrow to a specific sport or competition.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'))}</div>`;
+  return `<div class="panel"><h2>Sports</h2><p class="muted">Sports are grouped by default. Use Search to narrow to a specific sport or competition.</p>${table(groupedRows, 'sportsPage', sportCols('Sport group'))}</div><div class="panel"><h2>Competitions</h2>${table(competitionRows, 'competitionsPage', sportCols('Competition'), { foldAt: 20 })}</div>`;
 }
 
 function betTypes(data) {
@@ -1610,7 +1638,7 @@ function betTypes(data) {
   const realPicks = data.filter(isRealPick);
   const groupedRows = rank(sortRows(aggregate(realPicks, 'betTypeGroup').filter(x => x.picks >= min), 'betTypesGrouped'));
   const specificRows = rank(sortRows(aggregate(realPicks, 'betType').filter(x => x.picks >= min), 'betTypesSpecific'));
-  return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use Search to narrow to a specific market.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'))}</div>`;
+  return `<div class="panel"><h2>Bet types</h2><p class="muted">Bet types are grouped by default. Use Search to narrow to a specific market.</p>${table(groupedRows, 'betTypesGrouped', sportCols('Bet type group'))}</div><div class="panel"><h2>Specific bet types</h2>${table(specificRows, 'betTypesSpecific', sportCols('Bet type'), { foldAt: 20 })}</div>`;
 }
 
 function odds(data) {
@@ -1950,6 +1978,11 @@ const MM_COST = 25;
 // riskier/less-certain leg gets more credit for the parlay landing than
 // the member on the near-certain leg. Simple proportional split (not
 // log-weighted) so the numbers stay eyeball-verifiable against the Sheet.
+// Shows GROSS WINNINGS (payout only) - not profit. Stake is still tracked
+// separately (t.staked) so the bracketed "return per $1 staked" figure
+// keeps working, but it's no longer subtracted from the headline amount -
+// a member with zero winning MMs this season now shows $0.00, not a
+// negative figure, since gross winnings can never go below zero.
 function memberWinningsTallyOddsWeighted(rows) {
   const teamMM = computeTeamMM(rows);
   const totals = new Map(Object.keys(TEAM_MAP).map(m => [m, { amount: 0, staked: 0 }]));
@@ -1964,7 +1997,7 @@ function memberWinningsTallyOddsWeighted(rows) {
       const t = totals.get(r.member);
       if (!t) return;
       const payoutWeight = (entry.successful && oddsSum && Number.isFinite(r.odds)) ? r.odds / oddsSum : 0;
-      t.amount += payoutTotal * payoutWeight - costShare;
+      t.amount += payoutTotal * payoutWeight;
       t.staked += costShare;
     });
   });
@@ -2425,12 +2458,13 @@ function records(data) {
   });
   const winningsTable = sortableMiniTable('memberWinnings', winningsRows, [
     { key: 'member', label: 'Member', render: r => `<td>${escapeHtml(r.member)}</td>` },
-    { key: 'weightedAmount', label: 'Odds-weighted', numeric: true, render: r => amountCellHtml(r.weightedItem) },
+    { key: 'weightedAmount', label: 'Odds-weighted (winnings)', numeric: true, render: r => amountCellHtml(r.weightedItem) },
     { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
   ]);
   const winningsSection = `<div class="panel standings-panel">
-    <h3>Member winnings tally - ${escapeHtml(cy || 'this season')}</h3>
-    <p class="muted small">If the season ended today, this is how much you've won or lost. <strong>Odds-weighted:</strong> your share of team MM winnings (riskier leg earns more credit), minus your 1/3 of the ~\$25 stake for every MM you're part of. <strong>\$10 flat (profit only):</strong> what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, not your stake being returned to you. The bracketed figure is how much came back for every \$1 staked.</p>
+    <h3>Member winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
+    <p class="muted small">How you've done this season, by two different methods - <strong>Odds-weighted</strong> is gross winnings, <strong>\$10 flat</strong> is profit.</p>
+    <p class="muted small info-detail">Odds-weighted: your share of team MM winnings (riskier leg earns more credit) - this is gross winnings, not profit; your 1/3 of the ~\$25 stake per MM isn't subtracted, so it can never go below \$0. \$10 flat (profit only): what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, your stake isn't being returned to you here. The bracketed figure is how much came back for every \$1 involved.</p>
     <div class="mini-table-wrap">${winningsTable}</div>
   </div>`;
 
@@ -2440,8 +2474,9 @@ function records(data) {
     { key: 'amount', label: 'Net', numeric: true, render: t => amountCellHtml(t) },
   ]);
   const teamRoiSection = `<div class="panel standings-panel">
-    <h3>Team winnings tally - ${escapeHtml(cy || 'this season')}</h3>
-    <p class="muted small">If the season ended today, this is how much each team has won or lost - total MM payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure is how much came back for every \$1 staked.</p>
+    <h3>Team winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
+    <p class="muted small">Net profit per team this season, including stake.</p>
+    <p class="muted small info-detail">If the season ended today, this is how much each team has won or lost - total MM payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure is how much came back for every \$1 staked.</p>
     <div class="mini-table-wrap">${teamTable}</div>
   </div>`;
 
@@ -2773,7 +2808,7 @@ function pickAssistant(data) {
           <div class="pa-rating-signals">
             ${result.signals.map(s => `<p class="pa-rating-signal">${escapeHtml(s.text)}</p>`).join('')}
           </div>
-          ${ratingFlamesHtml(result.rating)}
+          ${ratingBadgeHtml(result.rating)}
           ${result.lowConfidence ? '<p class="muted small">Small sample size - treat this rating as indicative, not certain.</p>' : ''}
         `;
       };
@@ -3489,28 +3524,44 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
   const current = isRealWorldTeamCurrent(log);
   const staleNote = current ? '' : ` Their last real-world game was a while ago, so treat this as background context rather than current form.`;
 
-  // Winning margin, for a point-start entry specifically - a genuinely
-  // different question from "has this exact line been bet before"
-  // (Signal 1 above): this uses the team's actual real-world scorelines to
-  // ask "how often has this team's own margin been big enough to cover
-  // this line", regardless of whether the syndicate has ever placed this
-  // specific bet. A negative point start (favourite) needs to win by MORE
-  // than the absolute value; a positive one (underdog) just needs to lose
-  // by less than it, or win outright.
-  if (pointStartValue !== null && pointStartValue !== undefined) {
-    const marginGames = log.filter(g => g.for != null && g.against != null);
-    if (marginGames.length >= 5) {
-      const marginNeeded = -pointStartValue; // -6.5 point start -> must win by more than 6.5
-      const hits = marginGames.filter(g => (g.for - g.against) > marginNeeded).length;
-      const success = hits / marginGames.length;
-      const marginWord = pointStartValue < 0
-        ? `won by more than ${Math.abs(pointStartValue)}`
-        : `avoided losing by ${pointStartValue} or more (won outright or lost by less)`;
-      signals.push({
-        text: `Real-world data: ${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games (any competition/venue).${staleNote}`,
-        success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
-      });
+  // Win rate: leads with the longest trend the team's history actually
+  // supports (up to 30 games), then contrasts into a fixed recent window
+  // (10) - previously this was hard-capped at exactly the last 12 games
+  // regardless of how much real history existed, so a team with years of
+  // data got the same thin sample as one just getting started. Three
+  // phrasings depending on whether recent form is stronger, weaker, or in
+  // line with the longer trend - "while X, they've Y" only makes sense
+  // when there's a genuine contrast to report.
+  const availableGames = log.filter(g => g.for != null && g.against != null);
+  if (availableGames.length >= 5) {
+    const shortN = Math.min(10, availableGames.length);
+    const longN = availableGames.length > shortN ? Math.min(30, availableGames.length) : null;
+    const shortSlice = availableGames.slice(-shortN);
+    const shortWins = shortSlice.filter(g => g.for > g.against).length;
+    const shortSuccess = shortWins / shortN;
+
+    let text, success, weightN;
+    if (longN) {
+      const longSlice = availableGames.slice(-longN);
+      const longWins = longSlice.filter(g => g.for > g.against).length;
+      const longSuccess = longWins / longN;
+      const diff = shortSuccess - longSuccess;
+      if (diff > 0.15) {
+        text = `While only won ${longWins} of their last ${longN} games, they've won ${shortWins} from their last ${shortN}.`;
+      } else if (diff < -0.15) {
+        text = `Won ${longWins} of their last ${longN} games, though just ${shortWins} from their last ${shortN}.`;
+      } else {
+        text = `Won ${longWins} of their last ${longN} games, and ${shortWins} from their last ${shortN} too.`;
+      }
+      success = longSuccess; weightN = longN; // weight the rating by the more robust longer window
+    } else {
+      text = `Won ${shortWins} of their last ${shortN} real-world games.`;
+      success = shortSuccess; weightN = shortN;
     }
+    signals.push({
+      text: `${name} ${text}${staleNote}`,
+      success, sampleSize: Math.min(weightN * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+    });
   }
 
   let lastResult = null, streak = 0;
@@ -3526,19 +3577,67 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
     const word = lastResult === 'W' ? 'won' : 'lost';
     const success = lastResult === 'W' ? 1 : 0;
     signals.push({
-      text: `Real-world data: ${name} have ${word} their last ${streak} in a row.${staleNote}`,
+      text: `${name} have ${word} their last ${streak} in a row.${staleNote}`,
       success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
     });
   }
 
-  const recentGames = log.filter(g => g.for != null).slice(-12);
-  if (recentGames.length >= 5) {
-    const wins = recentGames.filter(g => g.for > g.against).length;
-    const success = wins / recentGames.length;
-    signals.push({
-      text: `Real-world data: ${name} have won ${wins} of their last ${recentGames.length} real-world games (any competition/venue).${staleNote}`,
-      success, sampleSize: Math.min(recentGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
-    });
+  // Winning margin - now always shown, not just when a point-start bet was
+  // entered. When a point value was typed in, uses that exact line (same
+  // logic as before: negative = favourite, must win by more than the
+  // number; positive = underdog, just needs to lose by less or win
+  // outright). Without one, falls back to the same sport-wide dynamic
+  // threshold Worth Watching itself uses, framed as a plain "won by more
+  // than X" question - so this is useful context even before you've
+  // settled on a specific bet type. Average winning margin is the mean
+  // margin across games they actually won, not a net figure including
+  // losses, since "average winning margin" should read as "when they win,
+  // by how much" - see dynamicMarginThreshold's own notes on why this
+  // doesn't attempt an actual handicap-line prediction.
+  const marginGames = log.filter(g => g.for != null && g.against != null).slice(-10);
+  if (marginGames.length >= 5) {
+    let marginThreshold, marginNeeded, marginWord;
+    if (pointStartValue !== null && pointStartValue !== undefined) {
+      marginThreshold = Math.abs(pointStartValue);
+      marginNeeded = -pointStartValue;
+      marginWord = pointStartValue < 0
+        ? `won by more than ${marginThreshold}`
+        : `avoided losing by ${marginThreshold} or more (won outright or lost by less)`;
+    } else {
+      marginThreshold = dynamicMarginThreshold(games);
+      marginNeeded = marginThreshold;
+      marginWord = marginThreshold != null ? `won by more than ${marginThreshold}` : null;
+    }
+    if (marginThreshold != null) {
+      const hits = marginGames.filter(g => (g.for - g.against) > marginNeeded).length;
+      const success = hits / marginGames.length;
+      const wonGames = marginGames.filter(g => g.for > g.against);
+      const avgMarginText = wonGames.length
+        ? ` Average winning margin: ${(wonGames.reduce((sum, g) => sum + (g.for - g.against), 0) / wonGames.length).toFixed(1)} points.`
+        : '';
+      signals.push({
+        text: `${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games (any competition/venue).${avgMarginText}${staleNote}`,
+        success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+      });
+    }
+  }
+
+  // Scoring/totals - new. Reuses Worth Watching's own sport-wide dynamic
+  // threshold (75th percentile of scores over the last year), so a
+  // suggested total is self-calibrating per sport rather than a made-up
+  // fixed number - a 40+ point threshold makes sense for the NFL, not for
+  // a low-scoring sport like Rugby League.
+  const scoringGames = log.filter(g => g.for != null).slice(-10);
+  if (scoringGames.length >= 5) {
+    const threshold = dynamicScoringThreshold(games);
+    if (threshold != null) {
+      const hits = scoringGames.filter(g => g.for >= threshold).length;
+      const success = hits / scoringGames.length;
+      signals.push({
+        text: `${name} have scored ${threshold}+ in ${hits} of their last ${scoringGames.length} games.${staleNote}`,
+        success, sampleSize: Math.min(scoringGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+      });
+    }
   }
 
   return signals;
@@ -4212,63 +4311,122 @@ function ratePotentialPick(name, betType, sport, odds) {
       const recentSuccess = recentRows.length >= 3 ? recentRows.filter(r => r.win).length / recentRows.length : null;
       const sinceYear = comboRows.map(r => parseDMY(r.date)).filter(Boolean).reduce((min, d) => !min || d < min ? d : min, null);
       const headline = recentSuccess !== null
-        ? `${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time, but ${pct(recentSuccess)} over the last two years.`
-        : `${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks${sinceYear ? ` since ${sinceYear.getUTCFullYear()}` : ''}).`;
+        ? `Looking at Syndicate picks only, ${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time, but its ${pct(recentSuccess)} over the last two years (only ${recentRows.length} pick${recentRows.length === 1 ? '' : 's'} though).`
+        : `Looking at Syndicate picks only, ${name} ${betLabel} is successful ${pct(allTimeSuccess)} all time (${comboRows.length.toLocaleString()} picks${sinceYear ? ` since ${sinceYear.getUTCFullYear()}` : ''}).`;
       const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
       const finalSampleSize = recentSuccess !== null ? recentRows.length : comboRows.length;
-      const caveat = stalenessCaveat(comboRows) || ` ${sampleSizeSentence(finalSampleSize)}`;
-      signals.push({ text: `${headline}${caveat}`, success: finalSuccess, sampleSize: finalSampleSize });
+      const staleness = stalenessCaveat(comboRows); // a genuinely different warning (last pick was a while ago) - kept alongside, not replaced by the picks-count note above
+      signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalSampleSize });
     } else {
       signals.push({ text: `No real history yet for ${name} ${betLabel} in ${shortSportLabel(sport)} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
     }
   }
 
-  // Signal 1b: same bet type (not just same sport) at a similar price -
-  // more precise than Signal 2 below, which matches on sport+price alone
-  // and can mix, say, a Point Starts bet with an unrelated Totals bet just
-  // because they happen to have similar odds. Only shown when there's
-  // enough same-bet-type data at this price; the broader sport-wide
-  // Signal 2 always runs regardless, so there's no gap if this one can't.
-  if (sport && betType && Number.isFinite(odds)) {
-    const enteredFamily = competitionFamily(sport, name);
-    const enteredGroup = betTypeGroup(betType);
-    const shortLabel = shortSportLabel(sport);
-    const bandLow = Math.round((odds - 0.05) * 100) / 100;
-    const bandHigh = Math.round((odds + 0.05) * 100) / 100;
-    const sameTypeBandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.betTypeGroup === enteredGroup && r.odds >= bandLow && r.odds <= bandHigh);
-    if (sameTypeBandRows.length >= 5) {
-      const success = sameTypeBandRows.filter(r => r.win).length / sameTypeBandRows.length;
-      const headline = `${shortLabel} ${enteredGroup} bets with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(success)} all time.`;
-      const caveat = stalenessCaveat(sameTypeBandRows) || ` ${sampleSizeSentence(sameTypeBandRows.length)}`;
-      signals.push({ text: `${headline}${caveat}`, success, sampleSize: sameTypeBandRows.length });
-    }
-  }
-
-  // Signal 2: this sport, odds within +/-$0.05 of the entered price. Prefers
-  // the last six months if there's enough there, but falls back to all-time
-  // data rather than showing nothing when recent activity is thin (e.g. the
-  // sport's out of season right now). Only runs if sport + odds were given.
+  // Signal 1b and Signal 2 share the same odds band, computed once here so
+  // Signal 2 can check whether it would just be repeating Signal 1b before
+  // deciding to show itself at all.
+  let sameTypeSuccessAllTime = null, sameTypeBandRows = [];
   if (sport && Number.isFinite(odds)) {
     const enteredFamily = competitionFamily(sport, name);
     const shortLabel = shortSportLabel(sport);
     const bandLow = Math.round((odds - 0.05) * 100) / 100;
     const bandHigh = Math.round((odds + 0.05) * 100) / 100;
-    const sixMonthsAgo = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 6, new Date().getUTCDate()));
+    const twoYearsAgo = new Date(Date.UTC(new Date().getUTCFullYear() - 2, new Date().getUTCMonth(), new Date().getUTCDate()));
     const bandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.odds >= bandLow && r.odds <= bandHigh);
-    const recentBandRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= sixMonthsAgo; });
-    if (recentBandRows.length >= 5) {
-      const bandSuccess = recentBandRows.filter(r => r.win).length / recentBandRows.length;
-      const headline = `${shortLabel} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} over the last six months.`;
-      signals.push({ text: `${headline} ${sampleSizeSentence(recentBandRows.length)}`, success: bandSuccess, sampleSize: recentBandRows.length });
-      if (name) signals.push({ text: `This reflects ${shortLabel} overall at this price, not ${name} specifically.`, success: null, sampleSize: 0 });
-    } else if (bandRows.length >= 5) {
-      const bandSuccess = bandRows.filter(r => r.win).length / bandRows.length;
-      const headline = `${shortLabel} picks with odds between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} have been successful ${pct(bandSuccess)} all time.`;
-      const caveat = stalenessCaveat(bandRows) || ` ${sampleSizeSentence(bandRows.length)}`;
-      signals.push({ text: `${headline}${caveat}`, success: bandSuccess, sampleSize: bandRows.length });
-      if (name) signals.push({ text: `This reflects ${shortLabel} overall at this price, not ${name} specifically.`, success: null, sampleSize: 0 });
-    } else {
+
+    // Signal 1b: same bet type at this price - more precise than Signal 2
+    // below, which matches on sport+price alone and can otherwise mix, say,
+    // a Point Starts bet with an unrelated Totals bet just because they
+    // happen to have similar odds.
+    if (betType) {
+      const enteredGroup = betTypeGroup(betType);
+      sameTypeBandRows = bandRows.filter(r => r.betTypeGroup === enteredGroup);
+      if (sameTypeBandRows.length >= 5) {
+        const allTimeSuccess = sameTypeBandRows.filter(r => r.win).length / sameTypeBandRows.length;
+        sameTypeSuccessAllTime = allTimeSuccess;
+        const recentRows = sameTypeBandRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
+        const recentSuccess = recentRows.length >= 5 ? recentRows.filter(r => r.win).length / recentRows.length : null;
+        const headline = recentSuccess !== null
+          ? `All Syndicate ${shortLabel} ${enteredGroup} bets between ${fmtMoney(bandLow)}-${fmtMoney(bandHigh)} have been successful ${pct(allTimeSuccess)} all time, ${pct(recentSuccess)} over the last two years (${recentRows.length} picks).`
+          : `All Syndicate ${shortLabel} ${enteredGroup} bets between ${fmtMoney(bandLow)}-${fmtMoney(bandHigh)} have been successful ${pct(allTimeSuccess)} all time.`;
+        const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
+        const finalN = recentSuccess !== null ? recentRows.length : sameTypeBandRows.length;
+        const staleness = stalenessCaveat(sameTypeBandRows);
+        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN });
+      }
+    }
+
+    // Signal 2: any bet type at this price - suppressed when it would just
+    // repeat Signal 1b (the entered bet type already makes up most of this
+    // band's picks, and the success rates are close), since two near-
+    // identical numbers is noise, not a second insight. Shown when either
+    // the bet-type mix here is genuinely varied, or the success rates
+    // actually diverge enough to be worth knowing.
+    if (bandRows.length >= 5) {
+      const dominanceRatio = sameTypeBandRows.length ? sameTypeBandRows.length / bandRows.length : 0;
+      const allTimeSuccess = bandRows.filter(r => r.win).length / bandRows.length;
+      const diverges = sameTypeSuccessAllTime !== null && Math.abs(allTimeSuccess - sameTypeSuccessAllTime) >= 0.05;
+      const redundant = sameTypeSuccessAllTime !== null && dominanceRatio >= 0.8 && !diverges;
+      if (!redundant) {
+        const recentRows = bandRows.filter(r => { const d = parseDMY(r.date); return d && d >= twoYearsAgo; });
+        const recentSuccess = recentRows.length >= 5 ? recentRows.filter(r => r.win).length / recentRows.length : null;
+        const headline = recentSuccess !== null
+          ? `All Syndicate ${shortLabel} picks (any bet type) between ${fmtMoney(bandLow)}-${fmtMoney(bandHigh)} have been successful ${pct(allTimeSuccess)} all time, ${pct(recentSuccess)} over the last two years (${recentRows.length} picks).`
+          : `All Syndicate ${shortLabel} picks (any bet type) between ${fmtMoney(bandLow)}-${fmtMoney(bandHigh)} have been successful ${pct(allTimeSuccess)} all time.`;
+        const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
+        const finalN = recentSuccess !== null ? recentRows.length : bandRows.length;
+        const staleness = stalenessCaveat(bandRows);
+        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN });
+      }
+    } else if (sameTypeBandRows.length < 5) {
       signals.push({ text: `Not enough ${shortLabel} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point (only ${bandRows.length} found) to show a trend.`, success: null, sampleSize: 0 });
+    }
+
+    // Opportunities: odds-level caveat. Informational only (success: null),
+    // since it's not evidence for the entered pick - it's a warning about
+    // going to longer odds. Only shown when there's real evidence for it:
+    // enough picks in the next price band up, and a meaningful drop in
+    // success there, not a generic disclaimer attached to every rating.
+    const nextBandLow = bandHigh;
+    const nextBandHigh = Math.round((bandHigh + 0.15) * 100) / 100;
+    const nextBandRows = pool.filter(r => competitionFamily(r.sport, r.name) === enteredFamily && r.odds > nextBandLow && r.odds <= nextBandHigh);
+    if (bandRows.length >= 5 && nextBandRows.length >= 5) {
+      const currentSuccess = bandRows.filter(r => r.win).length / bandRows.length;
+      const nextSuccess = nextBandRows.filter(r => r.win).length / nextBandRows.length;
+      if (currentSuccess - nextSuccess >= 0.1) {
+        const subject = name && betType ? `${name} ${betType}` : `${shortLabel} picks`;
+        signals.push({
+          text: `This form backs ${subject} at ${fmtMoney(odds)} or shorter - success drops to ${pct(nextSuccess)} at ${fmtMoney(nextBandLow)}-${fmtMoney(nextBandHigh)}, so treat longer odds as a bigger ask than this trend supports.`,
+          success: null, sampleSize: 0,
+        });
+      }
+    }
+  }
+
+  // Opportunities: margin-threshold suggestion. Informational only
+  // (success: null) - a threshold, not a signed handicap line, since no
+  // live bookmaker-line data exists anywhere in this pipeline to know
+  // whether this would be a + or - line for any specific upcoming game.
+  // Duplicates a little of realWorldSignalsForTeam's own margin logic
+  // rather than restructuring that function's return shape just to share
+  // this one number - a deliberate, small trade-off for keeping both
+  // pieces simple to reason about independently.
+  if (name && sport) {
+    const rwSport = realWorldSportForFamily(sport);
+    const rwGames = rwSport ? (state.realWorldGames[rwSport] || []) : [];
+    if (rwGames.length) {
+      const log = realWorldTeamLog(rwGames, name);
+      const threshold = dynamicMarginThreshold(rwGames);
+      if (log.length && threshold != null) {
+        const marginGames = log.filter(g => g.for != null && g.against != null).slice(-10);
+        const hits = marginGames.filter(g => (g.for - g.against) > threshold).length;
+        if (marginGames.length >= 5 && hits / marginGames.length >= 0.65) {
+          signals.push({
+            text: `Given the points trend, a Winning Margin of at least ${threshold} is worth a look.`,
+            success: null, sampleSize: 0,
+          });
+        }
+      }
     }
   }
 
@@ -4276,30 +4434,31 @@ function ratePotentialPick(name, betType, sport, odds) {
     signals.push({ text: 'Not enough information to check any trend - try adding a sport plus either odds or a selection and bet type.', success: null, sampleSize: 0 });
   }
 
-  // Rating: weighted average of whichever signals had enough data (weight
-  // capped at 50 so one huge sample can't completely drown out the other
-  // signal), mapped onto a 1-5 scale. Null (no usable rating) when neither
-  // signal had enough data at all.
+  // Rating: same Wilson lower-bound method Worth Watching uses for its own
+  // 1-10 ratings, applied here to the pooled weighted evidence across every
+  // usable signal (weight capped at 50 per signal, so one huge sample can't
+  // drown out the others). Previously a plain weighted average mapped onto
+  // 1-5 - this is a genuinely different, more conservative calculation, not
+  // just the same number rescaled: Wilson pulls a rating back toward
+  // uncertainty when the combined evidence is thin, the same way it already
+  // does for Worth Watching's single-pattern ratings. Null (no usable
+  // rating) when nothing had enough data at all.
   const usable = signals.filter(s => s.success !== null);
   let rating = null;
   if (usable.length) {
     const totalWeight = usable.reduce((sum, s) => sum + Math.min(s.sampleSize, 50), 0);
-    const weighted = usable.reduce((sum, s) => sum + s.success * Math.min(s.sampleSize, 50), 0) / totalWeight;
-    rating = Math.max(1, Math.min(5, Math.round(weighted * 5)));
+    const weightedSuccesses = usable.reduce((sum, s) => sum + s.success * Math.min(s.sampleSize, 50), 0);
+    rating = wilsonRating(weightedSuccesses, totalWeight);
   }
   const lowConfidence = usable.length > 0 && usable.every(s => s.sampleSize < 15);
 
   return { signals, rating, lowConfidence };
 }
 
-function svgFlame(filled) {
-  const color = filled ? '#f97316' : 'rgba(255,255,255,0.15)';
-  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="${color}"><path d="M12,2 C8,6 6,10 8,14 C6,13 5,15 6,17 C7,19.5 10,21 12,21 C16,21 18,17 17,13 C16,15 15,15 15,13 C17,10 14,6 12,2 Z"/></svg>`;
-}
-
-function ratingFlamesHtml(rating) {
+function ratingBadgeHtml(rating) {
   if (rating === null) return '<span class="muted small">Not enough data yet to give a rating.</span>';
-  return `<div class="pa-flames">${[1, 2, 3, 4, 5].map(n => svgFlame(n <= rating)).join('')}<span class="pa-flames-text">${rating} out of 5</span></div>`;
+  const cls = rating >= 7 ? 'good' : rating <= 4 ? 'bad' : '';
+  return `<div class="pa-rating-badge ${cls}">${rating}/10</div>`;
 }
 
 
