@@ -3533,12 +3533,15 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
   // line with the longer trend - "while X, they've Y" only makes sense
   // when there's a genuine contrast to report.
   const availableGames = log.filter(g => g.for != null && g.against != null);
+  let recentWindowSize = null, recentWindowPerfect = false;
   if (availableGames.length >= 5) {
     const shortN = Math.min(10, availableGames.length);
     const longN = availableGames.length > shortN ? Math.min(30, availableGames.length) : null;
     const shortSlice = availableGames.slice(-shortN);
     const shortWins = shortSlice.filter(g => g.for > g.against).length;
     const shortSuccess = shortWins / shortN;
+    recentWindowSize = shortN;
+    recentWindowPerfect = shortWins === shortN;
 
     let text, success, weightN;
     if (longN) {
@@ -3574,12 +3577,21 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
     else break;
   }
   if ((lastResult === 'W' || lastResult === 'L') && streak >= 2) {
-    const word = lastResult === 'W' ? 'won' : 'lost';
-    const success = lastResult === 'W' ? 1 : 0;
-    signals.push({
-      text: `${name} have ${word} their last ${streak} in a row.${staleNote}`,
-      success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
-    });
+    // A winning streak that's at least as long as a perfect recent window
+    // (e.g. a 10-game streak alongside "10 from their last 10") is the
+    // same fact stated twice - the streak IS the perfect window, not a
+    // separate observation. Only losing streaks, or winning streaks
+    // shorter than the recent window (sitting inside a mixed record the
+    // win-rate line didn't fully capture), are shown as their own line.
+    const redundantWithRecentForm = lastResult === 'W' && recentWindowPerfect && streak >= recentWindowSize;
+    if (!redundantWithRecentForm) {
+      const word = lastResult === 'W' ? 'won' : 'lost';
+      const success = lastResult === 'W' ? 1 : 0;
+      signals.push({
+        text: `${name} have ${word} their last ${streak} in a row.${staleNote}`,
+        success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+      });
+    }
   }
 
   // Winning margin - now always shown, not just when a point-start bet was
@@ -3616,7 +3628,7 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
         ? ` Average winning margin: ${(wonGames.reduce((sum, g) => sum + (g.for - g.against), 0) / wonGames.length).toFixed(1)} points.`
         : '';
       signals.push({
-        text: `${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games (any competition/venue).${avgMarginText}${staleNote}`,
+        text: `${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games.${avgMarginText}${staleNote}`,
         success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
       });
     }
@@ -3963,10 +3975,17 @@ function realWorldPatternToOption(item) {
   } else {
     corroboration = ` The syndicate's own record on ${item.team} is fairly even (${record.wins} wins from ${record.total} picks) - not a strong signal either way.`;
   }
+  // The boost only applies when the syndicate's own history genuinely
+  // backs this up (record.rate >= 0.6, same threshold as the positive
+  // corroboration branch above) - previously applied unconditionally,
+  // meaning a pattern the syndicate's own record actually contradicts
+  // ("real-world data and syndicate history don't fully agree here")
+  // got the same confidence bump as one that was properly corroborated.
+  const positivelyCorroborated = record && record.rate >= 0.6;
   return {
     team: item.team,
     betOption: item.betOption,
-    rating: Math.min(10, item.rating + REAL_WORLD_RATING_BOOST),
+    rating: Math.min(10, item.rating + (positivelyCorroborated ? REAL_WORLD_RATING_BOOST : 0)),
     fairOdds: item.fairOdds,
     rationale: `${item.rationale}${corroboration}`,
     colorClass: sportColorClass(sportGroup),
