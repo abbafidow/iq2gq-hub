@@ -1223,6 +1223,52 @@ function dashboardTiles(current, previous, roundCount) {
 // operates on the raw column value (col.key on each row), not the
 // rendered HTML, so numeric columns sort numerically even when the cell
 // itself shows formatted text.
+// Renders a table grouped by team (Team One's members, then Team Two's,
+// etc.) when no sort is active - the useful default for a syndicate built
+// around 4 teams of 3. The moment any column header is clicked, this
+// falls back entirely to the normal flat sortableMiniTable, producing a
+// genuine ranking across all 12 members with no team distinctions - the
+// same behaviour every other sortable table in the Hub already has, not
+// a sort-within-teams. Column headers stay clickable in the grouped view
+// too, so clicking one from there is what triggers that switch.
+function teamGroupedMiniTable(tableId, rows, columns) {
+  const sort = state.sort[tableId] || {};
+  if (sort.key) return sortableMiniTable(tableId, rows, columns);
+
+  const rowsByMember = {};
+  rows.forEach(r => { rowsByMember[r.member] = r; });
+  const teamOrder = ['Team One', 'Team Two', 'Team Three', 'Team Four'];
+  const teams = teamOrder.map(team => ({
+    team,
+    members: Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team).sort(),
+  }));
+
+  const head = columns.map(col => {
+    const numClass = col.numeric ? ' class="num"' : '';
+    if (col.sortable === false) return `<th${numClass}>${escapeHtml(col.label)}</th>`;
+    return `<th${numClass} data-mini-table="${tableId}" data-key="${col.key}">${escapeHtml(col.label)}</th>`;
+  }).join('');
+  const body = teams.map(t => {
+    const header = `<tr class="mini-table-team-header"><td colspan="${columns.length}">${escapeHtml(t.team)}</td></tr>`;
+    const memberRows = t.members.map(code => {
+      const row = rowsByMember[code];
+      return row ? `<tr class="${row.rowClass || ''}">${columns.map(col => col.render(row)).join('')}</tr>` : '';
+    }).join('');
+    return header + memberRows;
+  }).join('');
+  setTimeout(() => {
+    document.querySelectorAll(`th[data-mini-table="${tableId}"]`).forEach(th => {
+      th.onclick = () => {
+        const key = th.dataset.key;
+        const current = state.sort[tableId] || {};
+        state.sort[tableId] = { key, dir: current.key === key ? -current.dir : -1 };
+        render();
+      };
+    });
+  }, 0);
+  return `<table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
 function sortableMiniTable(tableId, rows, columns) {
   const sort = state.sort[tableId] || {};
   const sortedRows = sort.key ? rows.slice().sort((a, b) => {
@@ -2045,7 +2091,7 @@ function teamWinningsTally(rows) {
   return [...totals.entries()]
     .map(([team, t]) => {
       const amount = t.payout - t.staked;
-      return { team, amount, staked: t.staked, roi: t.staked ? (amount / t.staked) * 100 : null };
+      return { team, amount, payout: t.payout, staked: t.staked, roi: t.staked ? (amount / t.staked) * 100 : null };
     })
     .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity));
 }
@@ -2456,7 +2502,7 @@ function records(data) {
     const flat = flatTally.get(m) || emptyItem;
     return { member: m, weightedAmount: weighted.amount, weightedItem: weighted, flatAmount: flat.amount, flatItem: flat };
   });
-  const winningsTable = sortableMiniTable('memberWinnings', winningsRows, [
+  const winningsTable = teamGroupedMiniTable('memberWinnings', winningsRows, [
     { key: 'member', label: 'Member', render: r => `<td>${escapeHtml(r.member)}</td>` },
     { key: 'weightedAmount', label: 'Odds-weighted (winnings)', numeric: true, render: r => amountCellHtml(r.weightedItem) },
     { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
@@ -2471,12 +2517,13 @@ function records(data) {
   const teamTallyRows = teamWinningsTally(seasonData);
   const teamTable = sortableMiniTable('teamWinnings', teamTallyRows, [
     { key: 'team', label: 'Team', render: t => `<td>${escapeHtml(t.team)}</td>` },
+    { key: 'payout', label: 'YTD Winnings', numeric: true, render: t => `<td class="${t.payout > 0 ? 'good' : ''}">${fmtMoney(t.payout)}</td>` },
     { key: 'amount', label: 'Net', numeric: true, render: t => amountCellHtml(t) },
   ]);
   const teamRoiSection = `<div class="panel standings-panel">
     <h3>Team winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
-    <p class="muted small">Net profit per team this season, including stake.</p>
-    <p class="muted small info-detail">If the season ended today, this is how much each team has won or lost - total MM payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure is how much came back for every \$1 staked.</p>
+    <p class="muted small">YTD Winnings is gross payout; Net is profit after stake.</p>
+    <p class="muted small info-detail">If the season ended today, this is how much each team has won or lost. YTD Winnings: total MM payout so far this season, gross - stake not subtracted, so it can never go below \$0. Net: that same payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure on Net is how much came back for every \$1 staked.</p>
     <div class="mini-table-wrap">${teamTable}</div>
   </div>`;
 
