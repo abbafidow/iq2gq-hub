@@ -3563,7 +3563,7 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
     }
     signals.push({
       text: `${name} ${text}${staleNote}`,
-      success, sampleSize: Math.min(weightN * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+      success, sampleSize: Math.min(weightN * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP), source: 'realWorld',
     });
   }
 
@@ -3589,7 +3589,7 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
       const success = lastResult === 'W' ? 1 : 0;
       signals.push({
         text: `${name} have ${word} their last ${streak} in a row.${staleNote}`,
-        success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+        success, sampleSize: Math.min(streak * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP), source: 'realWorld',
       });
     }
   }
@@ -3629,7 +3629,7 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
         : '';
       signals.push({
         text: `${name} have ${marginWord} in ${hits} of their last ${marginGames.length} real-world games.${avgMarginText}${staleNote}`,
-        success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+        success, sampleSize: Math.min(marginGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP), source: 'realWorld',
       });
     }
   }
@@ -3647,7 +3647,7 @@ function realWorldSignalsForTeam(name, sportFamily, pointStartValue) {
       const success = hits / scoringGames.length;
       signals.push({
         text: `${name} have scored ${threshold}+ in ${hits} of their last ${scoringGames.length} games.${staleNote}`,
-        success, sampleSize: Math.min(scoringGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP),
+        success, sampleSize: Math.min(scoringGames.length * REAL_WORLD_SIGNAL_WEIGHT_MULTIPLIER, REAL_WORLD_SIGNAL_WEIGHT_CAP), source: 'realWorld',
       });
     }
   }
@@ -4335,7 +4335,7 @@ function ratePotentialPick(name, betType, sport, odds) {
       const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
       const finalSampleSize = recentSuccess !== null ? recentRows.length : comboRows.length;
       const staleness = stalenessCaveat(comboRows); // a genuinely different warning (last pick was a while ago) - kept alongside, not replaced by the picks-count note above
-      signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalSampleSize });
+      signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalSampleSize, source: 'syndicate' });
     } else {
       signals.push({ text: `No real history yet for ${name} ${betLabel} in ${shortSportLabel(sport)} - only ${comboRows.length} pick${comboRows.length === 1 ? '' : 's'} found, so there's nothing reliable to say either way.`, success: null, sampleSize: 0 });
     }
@@ -4371,7 +4371,7 @@ function ratePotentialPick(name, betType, sport, odds) {
         const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
         const finalN = recentSuccess !== null ? recentRows.length : sameTypeBandRows.length;
         const staleness = stalenessCaveat(sameTypeBandRows);
-        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN });
+        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN, source: 'syndicate' });
       }
     }
 
@@ -4395,7 +4395,7 @@ function ratePotentialPick(name, betType, sport, odds) {
         const finalSuccess = recentSuccess !== null ? recentSuccess : allTimeSuccess;
         const finalN = recentSuccess !== null ? recentRows.length : bandRows.length;
         const staleness = stalenessCaveat(bandRows);
-        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN });
+        signals.push({ text: `${headline}${staleness}`, success: finalSuccess, sampleSize: finalN, source: 'syndicate' });
       }
     } else if (sameTypeBandRows.length < 5) {
       signals.push({ text: `Not enough ${shortLabel} picks between ${fmtMoney(bandLow)} and ${fmtMoney(bandHigh)} at any point (only ${bandRows.length} found) to show a trend.`, success: null, sampleSize: 0 });
@@ -4468,6 +4468,30 @@ function ratePotentialPick(name, betType, sport, odds) {
     const totalWeight = usable.reduce((sum, s) => sum + Math.min(s.sampleSize, 50), 0);
     const weightedSuccesses = usable.reduce((sum, s) => sum + s.success * Math.min(s.sampleSize, 50), 0);
     rating = wilsonRating(weightedSuccesses, totalWeight);
+
+    // Corroboration bonus - a smaller-scale version of Worth Watching's own
+    // idea (a bonus when real-world data and syndicate history agree), but
+    // gated much more strictly: Worth Watching only ever checks one pattern
+    // against one syndicate record, so a single positive number is enough.
+    // Rate Your Pick blends several signals from each source, so "genuine
+    // agreement" here means the POOLED real-world evidence and the POOLED
+    // syndicate evidence are both independently strong (60%+) AND close to
+    // each other (within 15 points) - not just each one individually
+    // clearing a bar. Same +1 magnitude as Worth Watching's boost, for
+    // consistency, but it fires in far fewer cases by design.
+    const pooledSuccess = (list) => {
+      if (!list.length) return null;
+      const w = list.reduce((sum, s) => sum + Math.min(s.sampleSize, 50), 0);
+      if (!w) return null;
+      return list.reduce((sum, s) => sum + s.success * Math.min(s.sampleSize, 50), 0) / w;
+    };
+    const realWorldSuccess = pooledSuccess(usable.filter(s => s.source === 'realWorld'));
+    const syndicateSuccess = pooledSuccess(usable.filter(s => s.source === 'syndicate'));
+    if (realWorldSuccess !== null && syndicateSuccess !== null
+      && realWorldSuccess >= 0.6 && syndicateSuccess >= 0.6
+      && Math.abs(realWorldSuccess - syndicateSuccess) <= 0.15) {
+      rating = Math.min(10, rating + REAL_WORLD_RATING_BOOST);
+    }
   }
   const lowConfidence = usable.length > 0 && usable.every(s => s.sampleSize < 15);
 
