@@ -1317,7 +1317,7 @@ function presidentialTeamsSection(currentSeasonRows) {
   ]);
 
   return `<section class="two standings-row">
-    <div class="panel standings-panel"><h3>Presidential race <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="Scoring formula">&#9432;</span></h3><p class="muted small info-detail">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap">${presTable}</div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
+    <div class="panel standings-panel"><h3>Presidential race <span class="info-toggle" onclick="this.closest('h3').parentElement.querySelector('.info-detail').classList.toggle('expanded')" title="Scoring formula">&#9432;</span></h3><p class="muted small info-detail">Current season only. 0.5/win, -1/loss, +1.5 for a successful 3-pick MM, +/-3 for a $2+ win or loss.</p><div class="mini-table-wrap">${presTable}</div>${presidentialRows.some(r => r.needsCoinFlip) ? '<p class="muted small">\u00b9 Tied on every tiebreaker - needs a coin flip / wheel spin to resolve.</p>' : ''}</div>
     <div class="standings-col">
       <div class="panel standings-panel"><h3>Teams competition</h3><div class="mini-table-wrap">${teamTable}</div><p class="muted small">* captain</p></div>
       ${teamQuarterFormPanel()}
@@ -2508,7 +2508,7 @@ function records(data) {
     { key: 'flatAmount', label: '\$10 flat (profit only)', numeric: true, render: r => amountCellHtml(r.flatItem) },
   ]);
   const winningsSection = `<div class="panel standings-panel">
-    <h3>Member winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
+    <h3>Member winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.closest('h3').parentElement.querySelector('.info-detail').classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
     <p class="muted small">How you've done this season, by two different methods - <strong>Odds-weighted</strong> is gross winnings, <strong>\$10 flat</strong> is profit.</p>
     <p class="muted small info-detail">Odds-weighted: your share of team MM winnings (riskier leg earns more credit) - this is gross winnings, not profit; your 1/3 of the ~\$25 stake per MM isn't subtracted, so it can never go below \$0. \$10 flat (profit only): what you'd have made betting solo at \$10 a pick, ignoring your team entirely - profit only, your stake isn't being returned to you here. The bracketed figure is how much came back for every \$1 involved.</p>
     <div class="mini-table-wrap">${winningsTable}</div>
@@ -2521,7 +2521,7 @@ function records(data) {
     { key: 'amount', label: 'Net', numeric: true, render: t => amountCellHtml(t) },
   ]);
   const teamRoiSection = `<div class="panel standings-panel">
-    <h3>Team winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.nextElementSibling.classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
+    <h3>Team winnings tally - ${escapeHtml(cy || 'this season')} <span class="info-toggle" onclick="this.closest('h3').parentElement.querySelector('.info-detail').classList.toggle('expanded')" title="More detail">&#9432;</span></h3>
     <p class="muted small">YTD Winnings is gross payout; Net is profit after stake.</p>
     <p class="muted small info-detail">If the season ended today, this is how much each team has won or lost. YTD Winnings: total MM payout so far this season, gross - stake not subtracted, so it can never go below \$0. Net: that same payout minus the full \$25 stake for every MM dropped (win or lose). The bracketed figure on Net is how much came back for every \$1 staked.</p>
     <div class="mini-table-wrap">${teamTable}</div>
