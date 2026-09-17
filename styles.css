@@ -1042,13 +1042,20 @@ border: 1px solid rgba(255,255,255,0.10);
 .drop-pick-panel { max-width: 480px; margin: 0 auto; }
 .drop-pick-prompt { font-size: 15px; font-weight: 500; margin: 0 0 16px; }
 .drop-pick-team { margin-bottom: 14px; }
-.drop-pick-team-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
+.drop-pick-team-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; display: flex; justify-content: space-between; align-items: center; }
+.drop-pick-team-count { font-size: 10px; letter-spacing: normal; text-transform: none; }
 .drop-pick-tile-row { display: flex; gap: 8px; }
 .drop-pick-tile {
-  flex: 1; border-radius: 10px; border: 1px solid; padding: 14px 0;
+  position: relative; flex: 1; border-radius: 10px; border: 1px solid; padding: 14px 0;
   font-size: 15px; font-weight: 500; cursor: pointer;
 }
 .drop-pick-tile:hover { filter: brightness(1.15); }
+.drop-pick-tile-done { opacity: 0.55; }
+.drop-pick-tile-check {
+  position: absolute; top: -6px; right: -6px; background: var(--good); color: #04210f;
+  width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
 
 .drop-pick-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .drop-pick-badge {
@@ -1123,3 +1130,13 @@ border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
 }
 .table-expand-btn:hover { color: var(--text); border-color: var(--accent); }
+
+.mini-table-team-header td {
+  padding-top: 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+.mini-table-team-header:first-child td { border-top: none; padding-top: 6px; }
