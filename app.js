@@ -591,6 +591,7 @@ async function init() {
     // filling in a moment later once (if) they arrive.
     loadRealWorldGames();
 
+    history.replaceState({ page: state.page }, '');
     bind();
     render();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
@@ -798,11 +799,36 @@ function TEAM_MAP_AS_ROSTER() {
 function bind() {
   document.querySelectorAll('.tab').forEach(button => {
     button.onclick = () => {
-      state.page = button.dataset.page;
+      const page = button.dataset.page;
+      state.page = page;
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
       button.classList.add('active');
-      render();
+      // Record this navigation so the phone/browser back button returns
+      // here instead of exiting the Hub entirely - see popstate below.
+      history.pushState({ page }, '');
+      if (page === 'droppick') {
+        // Always land on the tile grid when (re-)entering this tab, not
+        // wherever the member last left it - fixes returning to the tab
+        // (e.g. after switching away and back) showing a stale pick screen.
+        resetDropPick();
+      } else {
+        render();
+      }
     };
+  });
+
+  window.addEventListener('popstate', (e) => {
+    const dp = state.dropPick;
+    // Mid pick-entry on Drop a Pick: one "back" returns to the tile grid
+    // first, rather than leaving the Hub entirely.
+    if (state.page === 'droppick' && dp.step !== 'grid') {
+      resetDropPick();
+      return;
+    }
+    const targetPage = (e.state && e.state.page) || 'dashboard';
+    state.page = targetPage;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === targetPage));
+    render();
   });
 }
 
@@ -5012,6 +5038,9 @@ function resetDropPick() {
 async function selectDropPickMember(code) {
   state.dropPick.member = code;
   state.dropPick.step = 'checking';
+  // Gives the back button something to "undo" back to the tile grid,
+  // instead of falling through and exiting the Hub - see popstate in bind().
+  history.pushState({ page: 'droppick', dropPickStep: 'checking' }, '');
   render();
   try {
     await fetchDropPickLists();
