@@ -58,6 +58,8 @@ const state = {
     existingPick: null, // { option, betType, sport, odds } if checkPick found one, else null
     form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false },
     error: null,
+    roundStatus: null, // { date, members: [{member, hasPicked}] } - who's already dropped a pick this round, shown on the tile grid
+    roundStatusLoading: false,
   },
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
@@ -4731,6 +4733,20 @@ function dropAPickPage(data) {
   const dp = state.dropPick;
   setTimeout(bindDropAPick, 0);
 
+  if (dp.step === 'grid' && !dp.roundStatus && !dp.roundStatusLoading) {
+    dp.roundStatusLoading = true;
+    fetchDropPickRoundStatus().then(status => {
+      dp.roundStatus = status;
+      dp.roundStatusLoading = false;
+      render();
+    }).catch(() => {
+      // Fails silently - the grid still works fine without status shown,
+      // this is a nice-to-have overlay, not something worth blocking or
+      // erroring the whole page over.
+      dp.roundStatusLoading = false;
+    });
+  }
+
   let body;
   if (dp.step === 'grid') {
     body = dropPickGridHtml();
@@ -4756,17 +4772,32 @@ function dropAPickPage(data) {
 }
 
 function dropPickGridHtml() {
-  const groups = DROP_PICK_TEAMS.map(team => `
+  const statusByMember = {};
+  const status = state.dropPick.roundStatus;
+  if (status && status.members) status.members.forEach(m => { statusByMember[m.member] = m.hasPicked; });
+  const statusLoaded = Boolean(status && status.members);
+
+  const groups = DROP_PICK_TEAMS.map(team => {
+    const doneCount = team.members.filter(code => statusByMember[code]).length;
+    const allDone = statusLoaded && doneCount === team.members.length;
+    const countLabel = statusLoaded
+      ? `<span class="drop-pick-team-count" style="color:${allDone ? 'var(--good)' : 'var(--muted)'};">${doneCount}/${team.members.length} dropped${allDone ? ' - place the bet!' : ''}</span>`
+      : '';
+    return `
     <div class="drop-pick-team">
-      <p class="drop-pick-team-label" style="color:${team.color};">${escapeHtml(team.name)}</p>
+      <p class="drop-pick-team-label" style="color:${team.color};"><span>${escapeHtml(team.name)}</span>${countLabel}</p>
       <div class="drop-pick-tile-row">
-        ${team.members.map(code => `
-          <button type="button" class="drop-pick-tile" data-member="${code}"
-            style="background:${team.dark}; border-color:${team.color}; color:${team.color};">${escapeHtml(code)}</button>
-        `).join('')}
+        ${team.members.map(code => {
+          const done = Boolean(statusByMember[code]);
+          return `
+          <button type="button" class="drop-pick-tile${done ? ' drop-pick-tile-done' : ''}" data-member="${code}"
+            style="background:${team.dark}; border-color:${team.color}; color:${team.color};">${escapeHtml(code)}${done ? '<span class="drop-pick-tile-check">&#10003;</span>' : ''}</button>
+        `;
+        }).join('')}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   return `<p class="drop-pick-prompt">Who's dropping a pick?</p>${groups}`;
 }
 
@@ -4945,6 +4976,12 @@ async function checkDropPickExisting(member) {
   return res.json();
 }
 
+async function fetchDropPickRoundStatus() {
+  const url = `${PICK_ENTRY_API_URL}?action=roundStatus`;
+  const res = await fetch(url);
+  return res.json();
+}
+
 async function submitDropPick(confirmOverwrite) {
   const dp = state.dropPick;
   const body = {
@@ -4967,6 +5004,7 @@ function resetDropPick() {
   state.dropPick = {
     step: 'grid', member: null, lists: state.dropPick.lists, popularity: state.dropPick.popularity, existingPick: null,
     form: { option: '', betType: '', sport: '', odds: '', sportAutoFilled: false }, error: null,
+    roundStatus: null, roundStatusLoading: false,
   };
   render();
 }
