@@ -700,23 +700,19 @@ tr:last-child td { border-bottom: 0; }
 .record-section-bad { color:#ff8a7a; }
 .record-section-career { color:#c9a8e0; }
 
-/* Honour ribbon tiles are now ALWAYS green (tone is always 'good' or the
-   static 'gold' IM Winnings tile) - the back face used to turn gold on
-   every ribbon tile (the old "all-time" convention), which no longer
-   applies now that the back face means "any season" rather than a true
-   all-time career total. These overrides keep the back face the same
-   green as the front instead, since it's still fundamentally a good
-   record, just scoped to a different season. Specificity (two classes)
-   beats the original bare .record-ribbon-back rule regardless of source
-   order, but placed after it here too for clarity. */
-.record-ribbon-good .record-ribbon-back { background:#1a5c34; border-color:#4ade80; color:#4ade80; }
-.record-ribbon-good .record-ribbon-back .record-tile-label { color:#bfe3cc; }
-.record-ribbon-good .record-ribbon-back .record-ribbon-detail { color:#8fc9a3; }
+/* Honour ribbon back face (flipped to "any season") uses the same gold
+   styling as the static IM Winnings tile - matches the pre-existing
+   generic .record-ribbon-back rule above, so no override is needed here;
+   gold marks "any season" consistently across every flippable Honour and
+   Shame tile, distinct from the Career row's green/red good-vs-bad
+   colouring (which never goes gold, since "all-time" there means a
+   genuine career total, not a season-scope flip). */
 
-/* Shame tiles - plain rounded shape (no shield notch), always red on
-   both faces, deliberately distinct from the Honour ribbon shape so the
-   two groups read as visually separate at a glance without needing a
-   label to tell them apart. */
+/* Shame tiles - plain rounded shape (no shield notch) on the front,
+   deliberately distinct from the Honour ribbon shape so the two groups
+   read as visually separate at a glance without needing a label to tell
+   them apart. Back face ("any season") goes gold, same convention as
+   every other Honour/Shame tile's flip - see the comment above. */
 .record-shame-tile { width:172px; height:150px; display:flex; }
 .record-shame-tile .flip-inner { flex:1; display:flex; }
 .record-shame-front, .record-shame-back {
@@ -728,12 +724,18 @@ tr:last-child td { border-bottom: 0; }
   padding: 12px 10px;
   box-sizing: border-box;
   border-radius: 12px;
-  border: 2px solid #ff6b5e;
-  background: #5c1a1a;
+  border: 2px solid;
 }
-.record-shame-tile .record-tile-label { color:#f0b3ac; }
-.record-shame-main { font-size:13px; font-weight:700; color:#fff; margin:0 0 3px; line-height:1.3; }
-.record-shame-detail { font-size:10px; color:#e0a89f; margin:0; min-height:13px; }
+.record-shame-front { border-color:#ff6b5e; background:#5c1a1a; }
+.record-shame-front .record-tile-label { color:#f0b3ac; }
+.record-shame-front .record-shame-main { color:#fff; }
+.record-shame-front .record-shame-detail { color:#e0a89f; }
+.record-shame-back { border-color:#ffd700; background:#4a3908; }
+.record-shame-back .record-tile-label { color:#f0d98a; }
+.record-shame-back .record-shame-main { color:#fff; }
+.record-shame-back .record-shame-detail { color:#e0c878; }
+.record-shame-main { font-size:13px; font-weight:700; margin:0 0 3px; line-height:1.3; }
+.record-shame-detail { font-size:10px; margin:0; min-height:13px; }
 
 /* Career records row - medal-and-ribbon icon, distinct from both the
    ribbon and shame shapes above so a genuine career total reads as a
