@@ -272,9 +272,14 @@ const ODDS = [
 ];
 
 // Team membership, Aug 2026 AGM decision. Captain is the first-named member
-// of each team. This is hardcoded here as a first cut - the agreed long-term
-// source of truth is a Member -> Team lookup on the Lists tab, once that
-// column exists and the Hub API (Code.gs) exposes it.
+// of each team. Hardcoded deliberately, not Sheet-driven - a live fetch
+// from PickEntry.gs was tried but reverted: it made every Drop a Pick
+// request slower and more failure-prone (an extra sheet read on every
+// call), without actually fixing the once-a-year sync risk it was meant
+// to solve. Reshuffled once a year at the AGM - update this AND the
+// matching TEAM_MAP in PickEntry.gs together whenever that happens;
+// nothing enforces the two staying in sync, so this is a genuine manual
+// checklist item at AGM time, not something to forget.
 const TEAM_MAP = {
   MA: 'Team One', AA: 'Team One', SB: 'Team One',
   AF: 'Team Two', LS: 'Team Two', SF: 'Team Two',
@@ -2533,7 +2538,7 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
 
   setTimeout(bindFlipTiles, 0);
 
-  return `<div class="panel"><h2>Records of Glory and Shame</h2><p class="muted small">Tap a tile to flip between this season and any season.</p>${recordMedalDefs()}<div class="record-rows">
+  return `<div class="panel"><p class="muted small">Tap a tile to flip between this season and any season.</p>${recordMedalDefs()}<div class="record-rows">
     <p class="record-section-label record-section-good">Honour</p>
     <div class="record-row">${honourRow}</div>
     <p class="record-section-label record-section-bad">Shame</p>
@@ -2996,14 +3001,28 @@ function financialTilesStrip(data, previousSeasonRows) {
   // not the raw `data` this function otherwise works from.
   const tkSeasonData = recordsPool(true);
   const tkAllTimeData = recordsPool(false);
-  const tierKillersTile = recordPlaqueTile('Tier Killers', String(tierCrasherCount(tkSeasonData)), String(tierCrasherCount(tkAllTimeData)), {
-    seasonDetail: leaderDetail(memberFlagLeaderboard(tkSeasonData, 'tierKiller')),
-    allTimeDetail: leaderDetail(memberFlagLeaderboard(tkAllTimeData, 'tierKiller')),
-  });
-  const perfectRoundsTile = recordPlaqueTile('Perfect Rounds', String(perfectRoundCount(tkSeasonData)), String(perfectRoundCount(tkAllTimeData)), {
-    seasonDetail: 'Everyone active that day - no split within one season',
-    allTimeDetail: leaderDetail(perfectRoundMemberLeaderboard(tkAllTimeData)),
-  });
+  const tierKillersCountThisYear = tierCrasherCount(tkSeasonData);
+  const perfectRoundsCountThisYear = perfectRoundCount(tkSeasonData);
+  // Hidden entirely until the event has actually happened this current
+  // syndicate year - showing a permanent "0" tile for something that may
+  // not occur most seasons reads as clutter rather than useful status;
+  // once it DOES happen this year, the tile appears (and stays visible
+  // for the rest of that season, even if the count doesn't change again).
+  const tierKillersTile = tierKillersCountThisYear
+    ? recordPlaqueTile('Tier Killers', String(tierKillersCountThisYear), String(tierCrasherCount(tkAllTimeData)), {
+        seasonDetail: leaderDetail(memberFlagLeaderboard(tkSeasonData, 'tierKiller')),
+        allTimeDetail: leaderDetail(memberFlagLeaderboard(tkAllTimeData, 'tierKiller')),
+      })
+    : '';
+  const perfectRoundsTile = perfectRoundsCountThisYear
+    ? recordPlaqueTile('Perfect Rounds', String(perfectRoundsCountThisYear), String(perfectRoundCount(tkAllTimeData)), {
+        seasonDetail: 'Everyone active that day - no split within one season',
+        allTimeDetail: leaderDetail(perfectRoundMemberLeaderboard(tkAllTimeData)),
+      })
+    : '';
+  const tierKillersPanel = (tierKillersTile || perfectRoundsTile)
+    ? `<div class="panel">${recordMedalDefs()}<div class="record-row">${tierKillersTile}${perfectRoundsTile}</div></div>`
+    : '';
 
   setTimeout(bindFlipTiles, 0);
 
@@ -3012,7 +3031,7 @@ function financialTilesStrip(data, previousSeasonRows) {
     ${tile('sport-afl', 'Outstanding fines', fmtMoney(totalOutstanding), `${outstandingFines.length} fine${outstandingFines.length === 1 ? '' : 's'} owing`, outstandingBack)}
     ${tile(positionCls, 'YTD position', (netPosition >= 0 ? '+' : '') + fmtMoney(netPosition), lastYearHint, positionBack)}
   </div></div>
-  <div class="panel">${recordMedalDefs()}<div class="record-row">${tierKillersTile}${perfectRoundsTile}</div></div>`;
+  ${tierKillersPanel}`;
 }
 
 function pickAssistant(data) {
@@ -4948,12 +4967,31 @@ function escapeHtml(value) {
 
 const PICK_ENTRY_API_URL = 'https://script.google.com/macros/s/AKfycbxK9UTzbay0j3bZpmjJLUikWFlnSN38lv83Fjwymq22FsiICf0-DDH2tpjFqFyz6FWN/exec';
 
+// Kept in sync with TEAM_MAP above - see that constant's comment for why
+// this is hardcoded rather than Sheet-driven, and for the AGM-time
+// reminder to update PickEntry.gs's own TEAM_MAP alongside this one.
 const DROP_PICK_TEAMS = [
-  { name: 'Team 1', color: '#e57373', dark: '#3a1f1f', members: ['MA', 'AA', 'SB'] },
-  { name: 'Team 2', color: '#f0d878', dark: '#3a331a', members: ['AF', 'LS', 'SF'] },
-  { name: 'Team 3', color: '#79d99a', dark: '#1a3324', members: ['AT', 'PN', 'TP'] },
-  { name: 'Team 4', color: '#7bb8e8', dark: '#1a2a3a', members: ['MV', 'JF', 'TF'] },
+  { name: 'Team One', color: '#e57373', dark: '#3a1f1f', members: ['MA', 'AA', 'SB'] },
+  { name: 'Team Two', color: '#f0d878', dark: '#3a331a', members: ['AF', 'LS', 'SF'] },
+  { name: 'Team Three', color: '#79d99a', dark: '#1a3324', members: ['AT', 'PN', 'TP'] },
+  { name: 'Team Four', color: '#7bb8e8', dark: '#1a2a3a', members: ['MV', 'JF', 'TF'] },
 ];
+
+// Mirrors PickEntry.gs's getCurrentRoundDate() (nearest Friday, rolling
+// forward the moment it becomes Saturday) - computed client-side too so
+// the "Who's dropping a pick for [date]" heading shows a correct date
+// immediately, rather than waiting on the roundStatus fetch to resolve.
+// Uses the browser's own local time rather than the Sheet's timezone;
+// a reasonable simplification since every member is in NZ anyway.
+function currentRoundDateLabel() {
+  const now = new Date();
+  const daysUntilFriday = (5 - now.getDay() + 7) % 7;
+  const roundDate = new Date(now);
+  roundDate.setDate(now.getDate() + daysUntilFriday);
+  const dd = String(roundDate.getDate()).padStart(2, '0');
+  const mm = String(roundDate.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${roundDate.getFullYear()}`;
+}
 
 function dropAPickPage(data) {
   const dp = state.dropPick;
@@ -5002,6 +5040,11 @@ function dropPickGridHtml() {
   const status = state.dropPick.roundStatus;
   if (status && status.members) status.members.forEach(m => { statusByMember[m.member] = m.hasPicked; });
   const statusLoaded = Boolean(status && status.members);
+  // Prefer the Sheet's own round date (from the roundStatus fetch) once
+  // it's arrived - falls back to the same Friday-rolling calculation
+  // computed client-side (see currentRoundDateLabel), so the heading
+  // shows a correct date immediately rather than waiting on that fetch.
+  const roundDateLabel = (status && status.date) ? status.date : currentRoundDateLabel();
 
   const groups = DROP_PICK_TEAMS.map(team => {
     const doneCount = team.members.filter(code => statusByMember[code]).length;
@@ -5024,7 +5067,7 @@ function dropPickGridHtml() {
     </div>
   `;
   }).join('');
-  return `<p class="drop-pick-prompt">Who's dropping a pick?</p>${groups}`;
+  return `<p class="drop-pick-prompt">Who's dropping a pick for ${escapeHtml(roundDateLabel)}?</p>${groups}`;
 }
 
 function dropPickHeaderHtml() {
