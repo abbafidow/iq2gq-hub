@@ -176,7 +176,7 @@ h1, h2, h3 { margin: 0; }
 .search-filters-actions button:hover { background: var(--accent); color: #061022; }
 
 /* Member picker (Pick Assistant, Stats -> Members) */
-.member-pick-prompt { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
+.member-pick-prompt { font-size: 17px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
 .member-pick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -188,17 +188,20 @@ h1, h2, h3 { margin: 0; }
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 10px;
-  padding: 10px 4px;
+  /* Taller, not wider - extra padding is top/bottom only, left/right
+     unchanged, so the tile grows in height without eating into the
+     4-per-row grid's horizontal density. */
+  padding: 18px 4px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
 }
 .member-pick-btn:hover { border-color: var(--accent); }
-.member-pick-code { font-size: 13px; font-weight: 700; }
-.member-pick-nick { font-size: 10px; color: var(--muted); font-weight: 400; display: inline-flex; align-items: center; gap: 4px; }
-.member-pick-trophies { display: inline-flex; gap: 1px; }
+.member-pick-code { font-size: 17px; font-weight: 700; }
+.member-pick-nick { font-size: 11px; color: var(--muted); font-weight: 400; display: inline-flex; align-items: center; gap: 4px; }
+.member-pick-trophies { display: inline-flex; gap: 3px; }
 .change-member-link { color: var(--accent); text-decoration: none; margin-left: 6px; }
 .change-member-link:hover { text-decoration: underline; }
 
@@ -551,8 +554,11 @@ tr:last-child td { border-bottom: 0; }
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 0 18px 18px 0;
-  border-color: transparent var(--border-strong, rgba(255,255,255,0.18)) transparent transparent;
+  /* Bumped from 18px/0.18 opacity - the corner-fold "this flips" signal
+     was too faint to register at a glance, hub-wide (Pick Assistant,
+     Dashboard's Financial position tiles, Records). */
+  border-width: 0 20px 20px 0;
+  border-color: transparent var(--border-strong, rgba(255,255,255,0.34)) transparent transparent;
   pointer-events: none;
 }
 .flip-face.flip-back { display: none; flex-direction: column; align-items: stretch; justify-content: flex-start; }
@@ -686,8 +692,125 @@ tr:last-child td { border-bottom: 0; }
 .record-plaque-detail { font-size:10px; margin:0; color:#7fb8dc; }
 .record-plaque-back .record-plaque-detail { color:#e0c878; }
 
+/* Honour/Shame/Career section labels (Records of Glory and Shame) - the
+   colour alone marks which group a row belongs to, so the tiles beneath
+   it don't need to repeat that signal through shape or background. */
+.record-section-label { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; text-align:center; }
+.record-section-good { color:#4ade80; }
+.record-section-bad { color:#ff8a7a; }
+.record-section-career { color:#c9a8e0; }
+
+/* Honour ribbon tiles are now ALWAYS green (tone is always 'good' or the
+   static 'gold' IM Winnings tile) - the back face used to turn gold on
+   every ribbon tile (the old "all-time" convention), which no longer
+   applies now that the back face means "any season" rather than a true
+   all-time career total. These overrides keep the back face the same
+   green as the front instead, since it's still fundamentally a good
+   record, just scoped to a different season. Specificity (two classes)
+   beats the original bare .record-ribbon-back rule regardless of source
+   order, but placed after it here too for clarity. */
+.record-ribbon-good .record-ribbon-back { background:#1a5c34; border-color:#4ade80; color:#4ade80; }
+.record-ribbon-good .record-ribbon-back .record-tile-label { color:#bfe3cc; }
+.record-ribbon-good .record-ribbon-back .record-ribbon-detail { color:#8fc9a3; }
+
+/* Shame tiles - plain rounded shape (no shield notch), always red on
+   both faces, deliberately distinct from the Honour ribbon shape so the
+   two groups read as visually separate at a glance without needing a
+   label to tell them apart. */
+.record-shame-tile { width:172px; height:150px; display:flex; }
+.record-shame-tile .flip-inner { flex:1; display:flex; }
+.record-shame-front, .record-shame-back {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 10px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 2px solid #ff6b5e;
+  background: #5c1a1a;
+}
+.record-shame-tile .record-tile-label { color:#f0b3ac; }
+.record-shame-main { font-size:13px; font-weight:700; color:#fff; margin:0 0 3px; line-height:1.3; }
+.record-shame-detail { font-size:10px; color:#e0a89f; margin:0; min-height:13px; }
+
+/* Career records row - medal-and-ribbon icon, distinct from both the
+   ribbon and shame shapes above so a genuine career total reads as a
+   bigger deal than a single-season figure. Front (default, unflipped)
+   is always the green/good half of the pair; back is the matching red/
+   shame half - see recordCareerTile in app.js. */
+.record-career-row { align-items: flex-start; }
+.record-career-pair { display:flex; flex-direction:column; gap:6px; }
+.record-career-tile { width:170px; height:158px; display:flex; }
+.record-career-tile .flip-inner { flex:1; display:flex; }
+.record-career-front, .record-career-back {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px 8px 12px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 2px solid;
+}
+.record-career-front { background:#0f2a1a; border-color:#4ade80; }
+.record-career-back { background:#241418; border-color:#ff6b5e; }
+.record-career-front .record-tile-label { color:#bfe3cc; }
+.record-career-back .record-tile-label { color:#f0b3ac; }
+.record-career-value { font-size:12px; font-weight:700; color:#fff; margin:4px 0 0; line-height:1.3; }
+.record-career-caveat { margin-top:2px; max-width:170px; }
+
+/* Corner-fold flip signal for the Records tiles specifically - applied
+   to the TILE WRAPPER (not the clipped inner front/back faces, which
+   would otherwise risk the fold being cut off by the ribbon tile's
+   shield clip-path) and hidden once flipped, matching the same "front
+   only" convention .flip-face.flip-front::after already uses everywhere
+   else in the Hub. Tone-matched colour per tile type, and noticeably
+   bolder than the hub-wide default so it reads clearly against these
+   larger, more colourful tiles. */
+.record-ribbon-tile, .record-shame-tile, .record-career-tile { position: relative; }
+.flip-tile.record-ribbon-tile:not(.is-flipped)::after,
+.flip-tile.record-career-tile:not(.is-flipped)::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 22px 22px 0;
+  border-color: transparent rgba(74,222,128,0.55) transparent transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+.flip-tile.record-shame-tile:not(.is-flipped)::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 20px 20px 0;
+  border-color: transparent rgba(255,107,94,0.55) transparent transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+.flip-tile.record-ribbon-tile:not(.is-flipped)::before,
+.flip-tile.record-shame-tile:not(.is-flipped)::before,
+.flip-tile.record-career-tile:not(.is-flipped)::before {
+  content: '';
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 6px 6px 0;
+  border-color: transparent rgba(255,255,255,0.55) transparent transparent;
+  pointer-events: none;
+  z-index: 3;
+}
+
 @media (max-width: 640px) {
-  .record-ribbon-tile, .record-laurel-tile, .record-plaque-tile { width:172px; }
+  .record-ribbon-tile, .record-laurel-tile, .record-plaque-tile, .record-shame-tile, .record-career-tile { width:172px; }
 }
 
 /* ---------- President / Benson year dial (Records page) ---------- */
