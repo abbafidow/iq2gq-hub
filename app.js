@@ -270,9 +270,14 @@ const ODDS = [
 ];
 
 // Team membership, Aug 2026 AGM decision. Captain is the first-named member
-// of each team. This is hardcoded here as a first cut - the agreed long-term
-// source of truth is a Member -> Team lookup on the Lists tab, once that
-// column exists and the Hub API (Code.gs) exposes it.
+// of each team. Hardcoded deliberately, not Sheet-driven - a live fetch
+// from PickEntry.gs was tried but reverted: it made every Drop a Pick
+// request slower and more failure-prone (an extra sheet read on every
+// call), without actually fixing the once-a-year sync risk it was meant
+// to solve. Reshuffled once a year at the AGM - update this AND the
+// matching TEAM_MAP in PickEntry.gs together whenever that happens;
+// nothing enforces the two staying in sync, so this is a genuine manual
+// checklist item at AGM time, not something to forget.
 const TEAM_MAP = {
   MA: 'Team One', AA: 'Team One', SB: 'Team One',
   AF: 'Team Two', LS: 'Team Two', SF: 'Team Two',
@@ -4748,11 +4753,14 @@ function escapeHtml(value) {
 
 const PICK_ENTRY_API_URL = 'https://script.google.com/macros/s/AKfycbxK9UTzbay0j3bZpmjJLUikWFlnSN38lv83Fjwymq22FsiICf0-DDH2tpjFqFyz6FWN/exec';
 
+// Kept in sync with TEAM_MAP above - see that constant's comment for why
+// this is hardcoded rather than Sheet-driven, and for the AGM-time
+// reminder to update PickEntry.gs's own TEAM_MAP alongside this one.
 const DROP_PICK_TEAMS = [
-  { name: 'Team 1', color: '#e57373', dark: '#3a1f1f', members: ['MA', 'AA', 'SB'] },
-  { name: 'Team 2', color: '#f0d878', dark: '#3a331a', members: ['AF', 'LS', 'SF'] },
-  { name: 'Team 3', color: '#79d99a', dark: '#1a3324', members: ['AT', 'PN', 'TP'] },
-  { name: 'Team 4', color: '#7bb8e8', dark: '#1a2a3a', members: ['MV', 'JF', 'TF'] },
+  { name: 'Team One', color: '#e57373', dark: '#3a1f1f', members: ['MA', 'AA', 'SB'] },
+  { name: 'Team Two', color: '#f0d878', dark: '#3a331a', members: ['AF', 'LS', 'SF'] },
+  { name: 'Team Three', color: '#79d99a', dark: '#1a3324', members: ['AT', 'PN', 'TP'] },
+  { name: 'Team Four', color: '#7bb8e8', dark: '#1a2a3a', members: ['MV', 'JF', 'TF'] },
 ];
 
 function dropAPickPage(data) {
