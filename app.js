@@ -1673,15 +1673,38 @@ function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason
     longevity = `Joined the syndicate this season and still building a pick history.`;
   }
 
+  // Compared against the whole syndicate's own average odds (all
+  // resulted picks, every member), not just described in isolation -
+  // "averaging 1.64" means very little on its own without knowing
+  // whether that's cautious or bold relative to everyone else.
+  const oddsRowsAll = allData.filter(r => Number.isFinite(r.odds) && (r.win || r.loss));
+  const syndicateAvgOdds = oddsRowsAll.length ? oddsRowsAll.reduce((sum, r) => sum + r.odds, 0) / oddsRowsAll.length : null;
+  const oddsComparison = syndicateAvgOdds ? ` (syndicate average: ${oddsFmt(syndicateAvgOdds)})` : '';
+
   let risk;
   if (!careerAll.picks) {
     risk = `Too early to characterise a clear betting style yet.`;
   } else if (careerAll.avgOdds < 1.4) {
-    risk = `Favours safer, shorter-odds picks over bigger swings (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+    risk = `Favours safer, shorter-odds picks over bigger swings, averaging ${oddsFmt(careerAll.avgOdds)}${oddsComparison}.`;
   } else if (careerAll.avgOdds < 1.9) {
-    risk = `Takes a balanced approach to odds, neither especially cautious nor especially bold (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+    risk = `Takes a balanced approach to odds, averaging ${oddsFmt(careerAll.avgOdds)}${oddsComparison}.`;
   } else {
-    risk = `Comfortable taking on longer odds when the value looks right (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+    risk = `Comfortable taking on longer odds when the value looks right, averaging ${oddsFmt(careerAll.avgOdds)}${oddsComparison}.`;
+  }
+
+  // Most successful specific pick+bet-type combo, reusing the exact same
+  // matching logic Pick Assistant already uses (comboCandidates) rather
+  // than a separate calculation, so this never disagrees with what
+  // Worth Watching/Rate Your Pick would say about the same combo. A
+  // minimum of 5 picks keeps this from crowning a 1-from-1 fluke as
+  // someone's "most successful pick" - if nothing clears that bar yet,
+  // this sentence is simply left out rather than forcing a weak claim.
+  const qualifyingCombos = comboCandidates(allMemberRows).filter(c => c.picks >= 5);
+  let bestPick = null;
+  if (qualifyingCombos.length) {
+    const top = qualifyingCombos.slice().sort(byBestStory)[0];
+    const betType = extractBetOption(top.label, top.team);
+    bestPick = `Your most successful pick is ${top.team} with a ${betType}, which you've dropped ${top.picks} time${top.picks === 1 ? '' : 's'} for ${top.wins} win${top.wins === 1 ? '' : 's'}.`;
   }
 
   let aptitude;
@@ -1719,7 +1742,7 @@ function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason
     contribution = `Not currently attached to an active team.`;
   }
 
-  return [longevity, risk, aptitude, contribution];
+  return [longevity, risk, bestPick, aptitude, contribution].filter(Boolean);
 }
 
 function memberIntelligence(member, data) {
@@ -1758,6 +1781,17 @@ function memberIntelligence(member, data) {
   // and Current streak duplicated the Best W/Worst L hint already shown
   // in Member records below).
   const careerWinnings = allMemberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+  // "Career winnings" previously gave no sense of what span of time it
+  // covered or whether it was a big or small number for this syndicate -
+  // both addressed here: the earliest season actually included, and
+  // where this member ranks against everyone else's career total.
+  const memberSeasonsForWinnings = uniq(allMemberRows.map(r => normalisedSeason(r.year))).filter(Boolean).sort((a, b) => seasonStart(a) - seasonStart(b));
+  const careerWinningsSince = memberSeasonsForWinnings[0] || null;
+  const allMembersCareerWinnings = Object.keys(TEAM_MAP).map(code => ({
+    member: code,
+    amount: state.raw.filter(r => r.member === code).reduce((sum, r) => sum + (r.mmReturn || 0), 0),
+  })).sort((a, b) => b.amount - a.amount);
+  const careerWinningsRank = allMembersCareerWinnings.findIndex(r => r.member === member) + 1;
   const mmKillBest = memberMMKillYearRecord(state.raw, member, true);
   const mmKillWorst = memberMMKillYearRecord(state.raw, member, false);
   const finishRegular = FINISH_ORDER_REGULAR[member] || null;
@@ -1774,6 +1808,10 @@ function memberIntelligence(member, data) {
       };
     }
   }, 0);
+  // Flip tiles (MM Killers/finish-order best-vs-worst) need this to
+  // actually respond to a tap - every other flip-tile page on the Hub
+  // already calls this, this page just never did.
+  setTimeout(bindFlipTiles, 0);
 
   return `<section class="member-profile">
     <div class="panel profile-hero">
@@ -1789,7 +1827,7 @@ function memberIntelligence(member, data) {
         </div>
       </div>
       <div class="profile-hero-narrative">
-        <p class="eyebrow">Snapshot</p>
+        <p class="eyebrow">About You</p>
         ${narrative.map(sentence => `<p>${escapeHtml(sentence)}</p>`).join('')}
       </div>
     </div>
@@ -1808,7 +1846,7 @@ function memberIntelligence(member, data) {
       <div class="member-kpi-shield">
         <p class="member-kpi-label">Your career winnings</p>
         <p class="member-kpi-value">${fmtMoney(careerWinnings)}</p>
-        <p class="member-kpi-hint">Total MM payouts involved in</p>
+        <p class="member-kpi-hint">${careerWinningsSince ? `Since ${escapeHtml(careerWinningsSince)}` : ''} \u00b7 ${ordinal(careerWinningsRank)} of ${allMembersCareerWinnings.length}</p>
       </div>
       <div class="flip-tile member-kpi-flip">
         <div class="flip-inner">
