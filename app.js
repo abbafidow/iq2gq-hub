@@ -971,7 +971,7 @@ function aggregate(data, key) {
     ...item,
     success: item.picks ? item.wins / item.picks : 0,
     avgOdds: item.picks ? item.oddsSum / item.picks : 0,
-    confidence: item.picks >= 50 ? 'High' : item.picks >= 20 ? 'Moderate' : 'Low',
+    confidence: confidence(item.picks),
   }));
 }
 
@@ -1734,7 +1734,7 @@ function memberOddsBands(data) {
       losses: rows.length - wins,
       success: rows.length ? wins / rows.length : 0,
       avgOdds: oddsRows.length ? oddsRows.reduce((sum, r) => sum + r.odds, 0) / oddsRows.length : 0,
-      confidence: rows.length >= 50 ? 'High' : rows.length >= 20 ? 'Moderate' : 'Low',
+      confidence: confidence(rows.length),
     };
   }).filter(x => x.picks > 0);
 }
@@ -1769,7 +1769,7 @@ function odds(data) {
       losses,
       success: bandRows.length ? wins / bandRows.length : 0,
       avgOdds,
-      confidence: bandRows.length >= 50 ? 'High' : bandRows.length >= 20 ? 'Moderate' : 'Low',
+      confidence: confidence(bandRows.length),
     };
   });
 
@@ -1788,7 +1788,7 @@ function odds(data) {
       name: oddsFmt(Number(key)),
       picks: oddsRows.length,
       success: oddsRows.length ? wins / oddsRows.length : 0,
-      confidence: oddsRows.length >= 50 ? 'High' : oddsRows.length >= 20 ? 'Moderate' : 'Low',
+      confidence: confidence(oddsRows.length),
     };
   });
   const topFive = exactOddsRows
@@ -3300,12 +3300,18 @@ function currentFormCard(data) {
     };
 }
     function highConfidenceCard(data) {
+  // Threshold now matches confidence()'s own "High" tier (50+ picks)
+  // rather than an arbitrary 100 - previously this card demanded double
+  // the sample size that everywhere else on the Hub already calls "High
+  // confidence" (Stats' tables, member records), so a sport could be
+  // labelled High confidence on Stats while not even qualifying to be
+  // featured here.
   const sportRows = aggregate(data, 'group')
-    .filter(x => x.picks >= 100)
+    .filter(x => x.picks >= 50)
     .sort((a, b) => b.success - a.success || b.picks - a.picks);
 
   const betTypeRows = aggregate(data, 'betTypeGroup')
-    .filter(x => x.picks >= 100)
+    .filter(x => x.picks >= 50)
     .sort((a, b) => b.success - a.success || b.picks - a.picks);
 
   const sport = sportRows[0];
@@ -4857,11 +4863,18 @@ function ratingBadgeHtml(rating) {
 }
 
 
+// Single shared confidence tier, used everywhere on the Hub a pick count
+// needs a plain-English label. Previously TWO different scales existed
+// side by side: Stats' tables (aggregate() and the odds-band tables)
+// used 50/20 picks for High/Moderate/Low, while this function used a
+// completely different 100/40/10 scale with a 4th "Very low" tier and
+// "Medium" instead of "Moderate" - meaning "High confidence" could mean
+// two different things depending on which tile a member was looking at.
+// Every caller now routes through this one function and one scale.
 function confidence(n) {
-  if (n >= 100) return 'High';
-  if (n >= 40) return 'Medium';
-  if (n >= 10) return 'Low';
-  return 'Very low';
+  if (n >= 50) return 'High';
+  if (n >= 20) return 'Moderate';
+  return 'Low';
 }
 
 function nextRoundInsightCards(data) {
