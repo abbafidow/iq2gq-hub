@@ -2912,24 +2912,29 @@ function updateSearchResults(data) {
 //     produces the correct cumulative total for an ongoing bad run.
 // ----------------------------------------------------------------------
 
-// Current-season fine tracking. A fine applies to an INDIVIDUAL member
-// whose own pick lost that round - nothing to do with the team-level
-// "crash" concept tracked elsewhere on the Hub (Most crashes, Tier
-// Killers etc., which are about a whole team's MM failing together).
-// Escalates $10 per CONSECUTIVE personal loss, caps at $40 on the 4th
-// straight loss, at which point the member forfeits a week of betting
-// and their streak resets to zero - confirmed against a worked example
-// (three straight losses for one member, two for another, one for a
-// third, all mid-escalation with none reaching the cap) that matched
-// this exact formula. An earlier version of this function instead
-// trusted the Sheet's own Fines column directly, on the theory that the
-// real rule might not match a simple formula - that theory turned out to
-// be wrong: the rule IS this formula, computed here rather than read
-// from the Sheet, which also means a fine can never again go missing
-// just because nobody typed a number into that column (as happened with
-// one member's crash a few weeks back). Each fine still carries the date
-// it was EARNED (the losing pick's own date, not when it was paid), read
-// from the same "Date MM / Fine Paid" column as before.
+// Current-season fine tracking - a hybrid, resolving the tension between
+// two things that are both true:
+//   1. Paid fines can legitimately exceed the standard escalation - e.g.
+//      an extra $10 for dropping an MM late, or a flat $25 for something
+//      else entirely, added on top of (or instead of) the normal crash
+//      fine. LS's real $35 on 11/09/2026 is exactly this - not a
+//      multiple of $10, so no formula could ever predict it; only the
+//      Sheet's own recorded amount, once actually paid, is trustworthy.
+//   2. A fine that HASN'T been paid yet often hasn't been entered into
+//      the Fines column either (see JF's crash a few weeks back, which
+//      sat invisible for exactly this reason) - waiting on that column
+//      to be filled in before showing anything means genuinely-owed
+//      fines can silently vanish from Outstanding fines indefinitely.
+// So: for a PAID fine, the amount shown is whatever the Sheet actually
+// recorded (respects real-world extras/adjustments like LS's $35). For
+// an UNPAID one, the amount is always the standard escalating formula -
+// $10 per consecutive personal loss, capped at $40 on the 4th straight
+// loss (at which point the member forfeits a week and the streak resets
+// to zero) - computed live regardless of whether column M has anything
+// in it yet, so an unpaid fine always shows a predicted amount rather
+// than disappearing. The moment "Date MM / Fine Paid" gets filled in,
+// that fine drops out of Outstanding entirely and its real recorded
+// amount (not the earlier prediction) counts toward fines collected.
 function currentSeasonFines(data) {
   const season = currentYear(data);
   const seasonRows = data.filter(r => seasonEqual(r.year, season) && r.result);
@@ -2946,16 +2951,18 @@ function currentSeasonFines(data) {
     const fines = [];
     sorted.forEach(r => {
       if (r.win) { streak = 0; return; }
-      if (r.loss) {
-        streak += 1;
-        const cappedStreak = Math.min(streak, 4);
-        fines.push({ date: r.date, amount: cappedStreak * 10, paid: Boolean(clean(r.row['Date MM / Fine Paid'])) });
-        // Forfeit-and-reset: the 4th consecutive loss is the last one
-        // that escalates - the member sits out the following week, and
-        // whatever pick they resume with afterward starts a fresh streak
-        // rather than continuing to climb past $40.
-        if (streak >= 4) streak = 0;
-      }
+      if (!r.loss) return; // no result yet, or a Stand Down - skip without resetting the streak
+      streak += 1;
+      const cappedStreak = Math.min(streak, 4);
+      const paid = Boolean(clean(r.row['Date MM / Fine Paid']));
+      const recordedAmount = Number(r.row?.Fines);
+      const amount = paid && recordedAmount > 0 ? recordedAmount : cappedStreak * 10;
+      fines.push({ date: r.date, amount, paid });
+      // Forfeit-and-reset: the 4th consecutive loss is the last one that
+      // escalates - the member sits out the following week, and whatever
+      // pick they resume with afterward starts a fresh streak rather
+      // than continuing to climb past $40.
+      if (streak >= 4) streak = 0;
     });
     if (fines.length) {
       const outstanding = fines.filter(f => !f.paid).reduce((sum, f) => sum + f.amount, 0);
