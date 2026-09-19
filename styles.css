@@ -381,9 +381,21 @@ tr:last-child td { border-bottom: 0; }
   border-radius: 14px;
   padding: 16px 18px;
 }
+/* .eyebrow had no dedicated style anywhere on the Hub before this - it
+   was rendering as completely unstyled default paragraph text, which is
+   why "Member Intelligence Centre" (and the new "About You" label right
+   next to it) looked flat and out of place next to the bold heading
+   beside them. Matches the small-uppercase-label convention already
+   used by Smart Insights' tiles, rather than inventing a new one. */
+.eyebrow { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin: 0; }
 .profile-hero-narrative .eyebrow { margin-bottom: 8px; }
 .profile-hero-narrative p:not(.eyebrow) { color: var(--text); font-size: 13px; line-height: 1.55; margin: 0 0 8px; }
 .profile-hero-narrative p:not(.eyebrow):last-child { margin-bottom: 0; }
+/* Matches Smart Insights' .insight span convention (11px, .08em
+   letter-spacing) instead of the bespoke 10px/.04em variant this used
+   originally - one less font/spacing combination competing for
+   attention on the same page. */
+.member-kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
 .profile-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-top: 10px; }
 .profile-badges span { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 7px 12px; color: var(--muted); font-size: 12px; }
 
@@ -407,7 +419,6 @@ tr:last-child td { border-bottom: 0; }
   min-height: 118px;
   box-sizing: border-box;
 }
-.member-kpi-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; }
 .member-kpi-value { color: var(--text); font-size: 20px; font-weight: 700; margin: 0; }
 .member-kpi-hint { color: var(--muted); font-size: 11px; margin: 6px 0 0; min-height: 14px; }
 .member-kpi-flip { position: relative; }
