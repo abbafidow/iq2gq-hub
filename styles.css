@@ -369,9 +369,59 @@ tr:last-child td { border-bottom: 0; }
 
 .profile-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
 .profile-hero h2 { font-size: 32px; margin: 4px 0; }
-.profile-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+/* Left = who/what they are (name, badges); right = the balanced 4-part
+   narrative snapshot. Left badges now left-aligned (was flex-end,
+   right-aligned against the old single-column layout) since they sit in
+   their own column now rather than needing to push toward the far edge. */
+.profile-hero-left { flex: 1 1 320px; }
+.profile-hero-narrative {
+  flex: 1 1 320px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.profile-hero-narrative .eyebrow { margin-bottom: 8px; }
+.profile-hero-narrative p:not(.eyebrow) { color: var(--text); font-size: 13px; line-height: 1.55; margin: 0 0 8px; }
+.profile-hero-narrative p:not(.eyebrow):last-child { margin-bottom: 0; }
+.profile-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-top: 10px; }
 .profile-badges span { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 7px 12px; color: var(--muted); font-size: 12px; }
-.profile-kpis { margin-bottom: 16px; }
+
+/* KPI row - shield outline (no fill), matching the Records Honour tile
+   shape but transparent, so it reads as a distinct shape for personal
+   stats without borrowing Records' "this is an award" colouring. Three
+   plain tiles (win %, longest streak, career winnings) plus three flip
+   tiles (front = best, back = worst) using the same .flip-tile/
+   .flip-face machinery as the rest of the Hub, so the corner-fold flip
+   signal applies automatically with no extra CSS needed. */
+.member-kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+.member-kpi-shield {
+  background: transparent;
+  border: 1px solid var(--line);
+  clip-path: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
+  padding: 16px 12px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 118px;
+  box-sizing: border-box;
+}
+.member-kpi-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; }
+.member-kpi-value { color: var(--text); font-size: 20px; font-weight: 700; margin: 0; }
+.member-kpi-hint { color: var(--muted); font-size: 11px; margin: 6px 0 0; min-height: 14px; }
+.member-kpi-flip { position: relative; }
+.member-kpi-flip .flip-inner { height: 100%; }
+.member-kpi-flip .member-kpi-shield { height: 100%; }
+
+@media (max-width: 900px) {
+  .member-kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .member-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .member-kpi-value { font-size: 18px; }
+  .profile-badges { justify-content: flex-start; }
+}
 
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .form-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
