@@ -705,7 +705,21 @@ function computeTeamMM(rows) {
   const result = new Map();
   perTeamDate.forEach((byDate, team) => {
     const teamMembers = Object.keys(TEAM_MAP).filter(m => TEAM_MAP[m] === team);
-    byDate.forEach((memberRows, date) => {
+    byDate.forEach((rawMemberRows, date) => {
+      // A member should only ever have ONE row for a given team+date, but
+      // a duplicate row in the Sheet (confirmed happening at least once -
+      // see the Most crashes in a season bug this fixed, where SB/SF/AT's
+      // real 3 crashes each were reading as 6) would otherwise double-
+      // count everything downstream that reads memberRows: crash totals,
+      // MM Killer tallies, successful-MM detection. Deduplicated here, at
+      // the source, rather than in each of those callers separately - one
+      // row per member per date, keeping the first one seen.
+      const seen = new Set();
+      const memberRows = rawMemberRows.filter(r => {
+        if (seen.has(r.member)) return false;
+        seen.add(r.member);
+        return true;
+      });
       const membersPresent = uniq(memberRows.map(r => r.member));
       const dropped = teamMembers.length > 0 && teamMembers.every(m => membersPresent.includes(m));
       if (!dropped) return;
@@ -740,7 +754,14 @@ function computeTeamMMForRoster(rows, roster) {
   const result = new Map();
   perTeamDate.forEach((byDate, team) => {
     const teamMembers = roster[team] || [];
-    byDate.forEach((memberRows, date) => {
+    byDate.forEach((rawMemberRows, date) => {
+      // Same duplicate-row guard as computeTeamMM above - see its comment.
+      const seen = new Set();
+      const memberRows = rawMemberRows.filter(r => {
+        if (seen.has(r.member)) return false;
+        seen.add(r.member);
+        return true;
+      });
       const membersPresent = uniq(memberRows.map(r => r.member));
       const dropped = teamMembers.length > 0 && teamMembers.every(m => membersPresent.includes(m));
       if (!dropped) return;
@@ -775,9 +796,13 @@ function teamGrossEarningsForRoster(rows, roster) {
 // years). Not a cumulative sum across years - team membership changes
 // every season, so "Team One's all-time total" would silently blend
 // several unrelated groups of people together. This finds whichever one
-// team, in whichever one season, actually earned the most.
+// team, in whichever one PAST season, actually earned the most - the
+// current in-progress season is deliberately excluded (it isn't yet a
+// completed "any season" to compare against, and it's already shown on
+// this tile's own front face), so it can never win its own "any season"
+// comparison against itself.
 function bestTeamSeasonGrossEarnings(allTimeData) {
-  const seasons = { ...TEAM_ROSTERS_BY_SEASON, [currentYear(allTimeData)]: TEAM_MAP_AS_ROSTER() };
+  const seasons = { ...TEAM_ROSTERS_BY_SEASON };
   let best = null;
   Object.entries(seasons).forEach(([season, roster]) => {
     if (!season || !roster) return;
@@ -2271,7 +2296,13 @@ function recordCareerTile(goodLabel, goodValue, badLabel, badValue, caveat) {
     <p class="record-tile-label">${escapeHtml(label)} - all-time</p>
     <p class="record-career-value">${escapeHtml(value)}</p>
   `;
-  const caveatHtml = caveat ? `<p class="muted small record-career-caveat">&#9432; ${escapeHtml(caveat)}</p>` : '';
+  // Same info-toggle/.info-detail click-to-expand pattern already used
+  // elsewhere (Presidential race's scoring formula, Financial position's
+  // captions) - sits OUTSIDE the .flip-tile itself, so tapping it never
+  // also triggers the tile's own flip, and no stopPropagation is needed.
+  const caveatHtml = caveat
+    ? `<p class="muted small record-career-caveat-row"><span class="info-toggle" onclick="this.closest('.record-career-pair').querySelector('.info-detail').classList.toggle('expanded')" title="More detail">&#9432;</span> Eligibility</p><p class="muted small record-career-caveat info-detail">${escapeHtml(caveat)}</p>`
+    : '';
   return `<div class="record-career-pair">
     <div class="flip-tile record-career-tile">
       <div class="flip-inner">
@@ -2353,11 +2384,11 @@ function lonesomeLoserBySeasonRecord(data) {
 }
 
 // Worst performing team - mirrors bestTeamSeasonGrossEarnings exactly
-// (single best team-in-a-season by gross MM earnings since 2021/22,
-// TEAM_ROSTERS_BY_SEASON's earliest covered season), just picking the
-// minimum instead of the maximum.
+// (single worst team-in-a-season by gross MM earnings since 2021/22,
+// TEAM_ROSTERS_BY_SEASON's earliest covered season, current in-progress
+// season excluded), just picking the minimum instead of the maximum.
 function worstTeamSeasonGrossEarnings(allTimeData) {
-  const seasons = { ...TEAM_ROSTERS_BY_SEASON, [currentYear(allTimeData)]: TEAM_MAP_AS_ROSTER() };
+  const seasons = { ...TEAM_ROSTERS_BY_SEASON };
   let worst = null;
   Object.entries(seasons).forEach(([season, roster]) => {
     if (!season || !roster) return;
@@ -2419,11 +2450,11 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   const mostWinsSeasonText = (r) => r
     ? { main: `${fullName(r.member)} - ${r.wins.toLocaleString()}`, detail: r.season }
     : { main: 'Not enough data yet.', detail: null };
-  const teamText = (t) => t
-    ? { main: `${t.team} - ${fmtMoney(t.amount)}`, detail: null }
+  const teamText = (t, roster) => t
+    ? { main: `${t.team} - ${fmtMoney(t.amount)}`, detail: roster && roster[t.team] ? namesOrInitials(roster[t.team]) : null }
     : { main: 'Not enough data yet.', detail: null };
   const teamSeasonText = (t) => t
-    ? { main: `${t.team} - ${fmtMoney(t.amount)}`, detail: t.season }
+    ? { main: `${t.team} - ${fmtMoney(t.amount)}`, detail: `${t.season} - ${namesOrInitials(t.members)}` }
     : { main: 'Not enough data yet.', detail: null };
   const mmKillersSeasonText = (r) => r
     ? { main: `${namesOrInitials(r.members)} - ${r.count}`, detail: r.members.length === 1 ? r.season : null }
@@ -2471,7 +2502,8 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
   };
 
   // ---------- Honour: every tile green, same shield shape, IM Winnings last ----------
-  const currentTeamRanked = teamGrossEarningsForRoster(seasonData, TEAM_MAP_AS_ROSTER());
+  const currentRoster = TEAM_MAP_AS_ROSTER();
+  const currentTeamRanked = teamGrossEarningsForRoster(seasonData, currentRoster);
   const topTeamSeason = currentTeamRanked[0];
   const worstTeamSeason = currentTeamRanked[currentTeamRanked.length - 1];
   const bestTeamEver = bestTeamSeasonGrossEarnings(allTimeData);
@@ -2482,7 +2514,7 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
     recordRibbonTile('good', 'Longest winning streak', streakParts(longestStreakRecord(seasonData, true)), streakParts(longestStreakRecord(allTimeData, true)), false, cy),
     recordRibbonTile('good', 'Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), bestSeasonWinPctText(bestAnnualWinPercentRecord(allTimeData, 10)), false, cy),
     recordRibbonTile('good', 'Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsSeasonText(mostWinsInSeasonRecord(allTimeData)), false, cy),
-    recordRibbonTile('good', 'Highest earning team', teamText(topTeamSeason), teamSeasonText(bestTeamEver), false, cy),
+    recordRibbonTile('good', 'Highest earning team', teamText(topTeamSeason, currentRoster), teamSeasonText(bestTeamEver), false, cy),
     // Static - IMs aren't tracked in the Sheet, so this is a manually
     // maintained figure rather than something computed from the data, and
     // it's inherently a one-off (there's no "this season's IM Winnings"
@@ -2499,7 +2531,7 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
     recordShameTile('Most crashes in a season', crashesSeasonText(memberCrashesBySeasonRecord(seasonData)), crashesSeasonText(memberCrashesBySeasonRecord(allTimeData)), cy),
     recordShameTile('Most MM Killers in a season', mmKillersSeasonText(mmKillersBySeasonRecord(seasonData)), mmKillersSeasonText(mmKillersBySeasonRecord(allTimeData)), cy),
     recordShameTile('Most Lonesome Loser in a season', lonesomeSeasonText(lonesomeLoserBySeasonRecord(seasonData)), lonesomeSeasonText(lonesomeLoserBySeasonRecord(allTimeData)), cy),
-    recordShameTile('Worst performing team', teamText(worstTeamSeason), teamSeasonText(worstTeamEver), cy),
+    recordShameTile('Worst performing team', teamText(worstTeamSeason, currentRoster), teamSeasonText(worstTeamEver), cy),
   ].join('');
 
   // ---------- Career records: true cumulative career totals - "all-time"
@@ -2923,6 +2955,31 @@ function currentSeasonFines(data) {
   return { season, members: results };
 }
 
+// A crash (unsuccessful team MM) is what actually triggers a fine, per
+// the syndicate's own process - but currentSeasonFines above can only
+// total what the Sheet has actually recorded in the Fines column, so a
+// crash that's happened but never had its fine amount entered (a data-
+// entry gap, not a code bug) silently disappears from Outstanding fines
+// with no trace. This flags exactly that gap: any current-season crash
+// where one or more of the affected members' rows still shows a blank
+// Fines value, so it gets surfaced rather than quietly vanishing. Found
+// via a real example - JF's crash on 28/08/2026 had no Fines value
+// recorded in Raw_Live, so the fine it should have generated never
+// showed up as outstanding.
+function possiblyMissingFines(seasonRows) {
+  const teamMM = computeTeamMM(seasonRows);
+  const flagged = [];
+  teamMM.forEach(entry => {
+    if (entry.successful) return;
+    entry.memberRows.forEach(r => {
+      if (!(Number(r.row?.Fines) > 0)) {
+        flagged.push({ member: r.member, date: r.date });
+      }
+    });
+  });
+  return flagged;
+}
+
 // Number of teams sharing the $25/team/week MM cost - assumed 4, matching
 // the syndicate's rotating four-team structure. Flagged clearly here since
 // it's an assumption, not something confirmed from the data itself.
@@ -2942,6 +2999,10 @@ function financialTilesStrip(data, previousSeasonRows) {
   const finesCollected = allFines.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0);
   const outstandingFines = allFines.filter(f => !f.paid);
   const totalOutstanding = outstandingFines.reduce((sum, f) => sum + f.amount, 0);
+  const missingFinesEntries = possiblyMissingFines(seasonRows);
+  const missingFinesHtml = missingFinesEntries.length
+    ? `<p class="flip-rationale" style="color:#e0a020; margin-top:10px;">&#9888; ${missingFinesEntries.length === 1 ? 'A crash has' : `${missingFinesEntries.length} crashes have`} no fine recorded in the Sheet yet: ${missingFinesEntries.map(f => `${escapeHtml(f.member)} - ${escapeHtml(f.date)}`).join(', ')}.</p>`
+    : '';
   const grossRevenue = mmWinnings + finesCollected;
 
   const roundsSoFar = uniq(seasonRows.filter(r => r.result).map(r => r.date)).length;
@@ -2984,8 +3045,8 @@ function financialTilesStrip(data, previousSeasonRows) {
     ? `<div class="flip-options-list">${outstandingFines
         .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
         .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
-        .join('')}</div>`
-    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`;
+        .join('')}</div>${missingFinesHtml}`
+    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>${missingFinesHtml}`;
 
   const positionCls = netPosition >= 0 ? 'sport-league' : 'sport-nfl';
   const positionBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) + fines collected (${fmtMoney(finesCollected)}) - MM costs (${fmtMoney(mmCosts)}, ${MM_COST_TEAM_COUNT} teams &times; ${roundsSoFar} rounds &times; $${MM_COST_PER_TEAM_PER_WEEK}) = ${fmtMoney(netPosition)}.</p>`;

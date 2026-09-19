@@ -763,6 +763,7 @@ tr:last-child td { border-bottom: 0; }
 .record-career-front .record-tile-label { color:#bfe3cc; }
 .record-career-back .record-tile-label { color:#f0b3ac; }
 .record-career-value { font-size:12px; font-weight:700; color:#fff; margin:4px 0 0; line-height:1.3; }
+.record-career-caveat-row { margin-top:2px; cursor:pointer; user-select:none; }
 .record-career-caveat { margin-top:2px; max-width:170px; }
 
 /* Corner-fold flip signal for the Records tiles specifically - applied
