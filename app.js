@@ -120,6 +120,58 @@ function namesOrInitials(codes) {
 // in progress shows 'TBC'; empty strings (not 'N/A') for venue/activity/
 // winner mean no AGM process was held that year, and the Records page
 // hides that info entirely rather than showing blank fields.
+// Best/worst-ever finish, hardcoded from the syndicate's own "Syndicate
+// Finish Order" spreadsheets - same source/maintenance convention as
+// PRESIDENTS_DIAL_DATA and AVERAGE_FINISH_DATA (manually updated once a
+// season's finish order is finalised, not derived from picks data, since
+// the Presidential Race scoring model itself has changed several times
+// over the syndicate's history - see PRESIDENTS_DIAL_DATA's own comment).
+// Two separate datasets, since the Post Season Finals Series (introduced
+// under Model 4.0) can move a member's final placement up or down from
+// where they sat in the regular season - a member's best/worst REGULAR
+// SEASON finish and best/worst POST SEASON finish are genuinely
+// different figures, not the same number relabelled. Manually
+// transcribed from the syndicate's two finish-order spreadsheets; ties
+// on the same position were broken by taking the more recent season.
+// Worth a spot check against the source spreadsheets before relying on
+// this - a grid this size, read by eye, is the kind of thing a single
+// transcription slip can hide in.
+const FINISH_ORDER_REGULAR = {
+  AF: { best: { position: 2, season: '2016/17' }, worst: { position: 12, season: '2024/25' } },
+  LS: { best: { position: 1, season: '2016/17' }, worst: { position: 11, season: '2022/23' } },
+  MA: { best: { position: 1, season: '2017/18' }, worst: { position: 12, season: '2025/26' } },
+  SB: { best: { position: 1, season: '2025/26' }, worst: { position: 12, season: '2020/21' } },
+  TF: { best: { position: 1, season: '2024/25' }, worst: { position: 9, season: '2017/18' } },
+  TP: { best: { position: 1, season: '2017/18' }, worst: { position: 10, season: '2024/25' } },
+  MV: { best: { position: 1, season: '2020/21' }, worst: { position: 12, season: '2021/22' } },
+  JF: { best: { position: 3, season: '2023/24' }, worst: { position: 10, season: '2018/19' } },
+  AT: { best: { position: 1, season: '2021/22' }, worst: { position: 10, season: '2019/20' } },
+  PN: { best: { position: 3, season: '2019/20' }, worst: { position: 12, season: '2023/24' } },
+  SF: { best: { position: 4, season: '2024/25' }, worst: { position: 11, season: '2019/20' } },
+  AA: { best: { position: 2, season: '2025/26' }, worst: { position: 13, season: '2020/21' } },
+};
+const FINISH_ORDER_POST_SEASON = {
+  AF: { best: { position: 2, season: '2016/17' }, worst: { position: 12, season: '2024/25' } },
+  LS: { best: { position: 1, season: '2016/17' }, worst: { position: 11, season: '2022/23' } },
+  MA: { best: { position: 1, season: '2021/22' }, worst: { position: 12, season: '2025/26' } },
+  SB: { best: { position: 1, season: '2024/25' }, worst: { position: 12, season: '2020/21' } },
+  TF: { best: { position: 1, season: '2018/19' }, worst: { position: 9, season: '2017/18' } },
+  TP: { best: { position: 1, season: '2014/15' }, worst: { position: 10, season: '2024/25' } },
+  MV: { best: { position: 1, season: '2020/21' }, worst: { position: 12, season: '2021/22' } },
+  JF: { best: { position: 2, season: '2023/24' }, worst: { position: 10, season: '2018/19' } },
+  AT: { best: { position: 3, season: '2022/23' }, worst: { position: 10, season: '2019/20' } },
+  PN: { best: { position: 3, season: '2023/24' }, worst: { position: 12, season: '2022/23' } },
+  SF: { best: { position: 6, season: '2024/25' }, worst: { position: 11, season: '2019/20' } },
+  AA: { best: { position: 1, season: '2025/26' }, worst: { position: 13, season: '2020/21' } },
+};
+
+// 1 -> "1st", 2 -> "2nd", 11 -> "11th", etc.
+function ordinal(n) {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return `${n}${suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]}`;
+}
+
 const PRESIDENTS_DIAL_DATA = [
   { term: '2011/12', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
   { term: '2012/13', president: 'N/A', honorific: '', benson: 'N/A', venue: '', activity: '', winner: '' },
@@ -1566,6 +1618,110 @@ function members(data) {
 }
 
 
+// Per-member best/worst YEAR for MM Killers (fewest/most times named as
+// the MM Killer in a single season) - distinct from the Records page's
+// syndicate-wide leaderboard versions (memberFieldLeaderboard etc.),
+// which find who leads across ALL members; this is scoped to one
+// member's own season-by-season history. "Best" means fewest, since
+// being named MM Killer isn't something to rack up. Every season the
+// member was actually active counts, even a clean 0-kill season, so
+// this isn't just picking the biggest number among seasons where a kill
+// happened to occur.
+function memberMMKillYearRecord(allData, member, wantBest) {
+  const activeSeasons = new Set();
+  allData.forEach(r => { if (r.member === member) activeSeasons.add(normalisedSeason(r.year)); });
+  if (!activeSeasons.size) return null;
+  const counts = {};
+  activeSeasons.forEach(s => { counts[s] = 0; });
+  allData.forEach(r => {
+    if (r.mmKiller === member) {
+      const s = normalisedSeason(r.year);
+      if (Object.prototype.hasOwnProperty.call(counts, s)) counts[s] += 1;
+    }
+  });
+  const entries = Object.entries(counts);
+  const target = wantBest ? Math.min(...entries.map(([, c]) => c)) : Math.max(...entries.map(([, c]) => c));
+  const tied = entries.filter(([, c]) => c === target).sort((a, b) => seasonStart(b[0]) - seasonStart(a[0]));
+  return { season: tied[0][0], count: target };
+}
+
+// Balanced, plain-language 4-part summary: longevity, risk appetite,
+// betting aptitude, overall contribution. Deliberately built from
+// season/career-level figures rather than day-to-day numbers, so it
+// naturally reads like a monthly snapshot without needing any actual
+// snapshot/caching mechanism - it's computed fresh every visit, but the
+// underlying inputs just don't move week to week. Tone is genuinely
+// balanced, not positively spun: a quieter patch is stated plainly
+// alongside the long-term number, never dressed up with a forced silver
+// lining - the member's real numbers sit right next to this panel
+// anyway, so overselling would just look hollow.
+function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason, active, allData) {
+  const seasons = uniq(allMemberRows.map(r => normalisedSeason(r.year))).filter(Boolean).sort((a, b) => seasonStart(a) - seasonStart(b));
+  const firstSeason = seasons[0];
+  const earliestSyndicateSeason = uniq(allData.map(r => normalisedSeason(r.year))).filter(Boolean).sort((a, b) => seasonStart(a) - seasonStart(b))[0];
+
+  let longevity;
+  if (!firstSeason) {
+    longevity = `No resulted picks recorded yet.`;
+  } else if (firstSeason === earliestSyndicateSeason) {
+    longevity = `A founding-era member of the syndicate, involved since the very first season (${firstSeason}).`;
+  } else if (seasons.length >= 5) {
+    longevity = `One of the syndicate's longest-standing members, active since ${firstSeason}.`;
+  } else if (seasons.length >= 2) {
+    longevity = `An established member, active since ${firstSeason}.`;
+  } else {
+    longevity = `Joined the syndicate this season and still building a pick history.`;
+  }
+
+  let risk;
+  if (!careerAll.picks) {
+    risk = `Too early to characterise a clear betting style yet.`;
+  } else if (careerAll.avgOdds < 1.4) {
+    risk = `Favours safer, shorter-odds picks over bigger swings (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+  } else if (careerAll.avgOdds < 1.9) {
+    risk = `Takes a balanced approach to odds, neither especially cautious nor especially bold (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+  } else {
+    risk = `Comfortable taking on longer odds when the value looks right (average odds ${oddsFmt(careerAll.avgOdds)}).`;
+  }
+
+  let aptitude;
+  if (!careerAll.picks) {
+    aptitude = `No resulted picks yet, so career figures aren't meaningful either way.`;
+  } else {
+    const tier = confidence(careerAll.picks);
+    if (tier === 'Low') {
+      aptitude = `Career figures are still taking shape, with ${careerAll.wins} wins from ${careerAll.picks} resulted picks so far.`;
+    } else {
+      const allResulted = allData.filter(r => r.win || r.loss);
+      const syndicateAvg = allResulted.length ? allResulted.filter(r => r.win).length / allResulted.length : 0;
+      const diff = careerAll.success - syndicateAvg;
+      const comparison = Math.abs(diff) < 0.03
+        ? 'close to the syndicate average'
+        : diff > 0 ? 'above the syndicate average' : 'below the syndicate average';
+      aptitude = `Career success sits at ${pct(careerAll.success)} across a ${tier.toLowerCase()}-confidence sample of ${careerAll.picks.toLocaleString()} picks - ${comparison}.`;
+    }
+  }
+
+  const team = teamOf(member);
+  const currentTermInfo = PRESIDENTS_DIAL_DATA.find(d => d.term === currentSeason);
+  const isCurrentPresident = Boolean(currentTermInfo && currentTermInfo.president === fullName(member));
+  const pastPresidencies = presidentTermCount(member) - (isCurrentPresident ? 1 : 0);
+  let contribution;
+  if (isCurrentPresident) {
+    contribution = `Currently serving as syndicate President this term.`;
+  } else if (pastPresidencies > 0) {
+    contribution = `Has previously held the Presidency (${pastPresidencies} term${pastPresidencies === 1 ? '' : 's'})${team ? `, currently part of ${team}'s lineup` : ''}.`;
+  } else if (active.count >= 3) {
+    contribution = `Currently on a ${active.count}${active.type === 'Win' ? '-win' : '-loss'} run${team ? ` for ${team}` : ''} this season.`;
+  } else if (team) {
+    contribution = `A contributing member of ${team}'s lineup this season.`;
+  } else {
+    contribution = `Not currently attached to an active team.`;
+  }
+
+  return [longevity, risk, aptitude, contribution];
+}
+
 function memberIntelligence(member, data) {
   const allMemberRows = state.raw.filter(r => r.member === member).sort(comparePickOrder);
   const currentSeason = currentYear(state.raw);
@@ -1596,6 +1752,18 @@ function memberIntelligence(member, data) {
   const oddsRows = rank(sortRows(memberOddsBands(profileData), `memberOdds-${member}`, 'success'));
   const worstSports = rank(sortRows(aggregate(profileData, 'group').filter(x => x.picks >= 5), `memberWorstSports-${member}`, 'success').reverse().slice(0, 5));
 
+  // New KPI row data (replaces the old Filtered/Career/Current season/
+  // Current streak 4-tile grid - Filtered and Career success were
+  // functionally the same figure whenever Search filters weren't active,
+  // and Current streak duplicated the Best W/Worst L hint already shown
+  // in Member records below).
+  const careerWinnings = allMemberRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
+  const mmKillBest = memberMMKillYearRecord(state.raw, member, true);
+  const mmKillWorst = memberMMKillYearRecord(state.raw, member, false);
+  const finishRegular = FINISH_ORDER_REGULAR[member] || null;
+  const finishPost = FINISH_ORDER_POST_SEASON[member] || null;
+  const narrative = memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason, active, state.raw);
+
   setTimeout(() => {
     const changeLink = document.querySelector('.change-member-link');
     if (changeLink) {
@@ -1609,24 +1777,81 @@ function memberIntelligence(member, data) {
 
   return `<section class="member-profile">
     <div class="panel profile-hero">
-      <div>
+      <div class="profile-hero-left">
         <p class="eyebrow">Member Intelligence Centre</p>
         <h2>${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h2>
         <p class="muted">Full career analysis. <a href="#" class="change-member-link">Not you?</a></p>
+        <div class="profile-badges">
+          <span>${career.picks.toLocaleString()} filtered picks</span>
+          <span>${careerAll.picks.toLocaleString()} career picks</span>
+          <span>${confidence(career.picks)} confidence</span>
+          <span>${highWin ? `Highest win ${oddsFmt(highWin.odds)} \u00b7 ${highWin.name || highWin.sport || 'Unknown'}` : 'No winning odds found'}</span>
+        </div>
       </div>
-      <div class="profile-badges">
-        <span>${career.picks.toLocaleString()} filtered picks</span>
-        <span>${careerAll.picks.toLocaleString()} career picks</span>
-        <span>${confidence(career.picks)} confidence</span>
-        <span>${highWin ? `Highest win ${oddsFmt(highWin.odds)} \u00b7 ${highWin.name || highWin.sport || 'Unknown'}` : 'No winning odds found'}</span>
+      <div class="profile-hero-narrative">
+        <p class="eyebrow">Snapshot</p>
+        ${narrative.map(sentence => `<p>${escapeHtml(sentence)}</p>`).join('')}
       </div>
     </div>
 
-    <section class="grid profile-kpis">
-      <div class="kpi"><div class="label">Filtered success</div><div class="value">${pct(career.success)}</div><div class="hint">${career.wins.toLocaleString()} wins / ${career.losses.toLocaleString()} losses</div></div>
-      <div class="kpi"><div class="label">Career success</div><div class="value">${pct(careerAll.success)}</div><div class="hint">${careerAll.picks.toLocaleString()} all-time picks</div></div>
-      <div class="kpi"><div class="label">${escapeHtml(currentSeason || 'Current season')}</div><div class="value">${season.picks ? pct(season.success) : '-'}</div><div class="hint">${season.picks.toLocaleString()} current-season picks</div></div>
-      <div class="kpi"><div class="label">Current streak</div><div class="value">${active.count ? `${active.count}${active.type === 'Win' ? 'W' : 'L'}` : '-'}</div><div class="hint">Best W${bestWin} / Worst L${bestLoss}</div></div>
+    <section class="member-kpi-row">
+      <div class="member-kpi-shield">
+        <p class="member-kpi-label">Your win percentage</p>
+        <p class="member-kpi-value">${season.picks ? pct(season.success) : '-'}</p>
+        <p class="member-kpi-hint">All-time: ${pct(careerAll.success)}</p>
+      </div>
+      <div class="member-kpi-shield">
+        <p class="member-kpi-label">Your longest winning streak</p>
+        <p class="member-kpi-value">${bestWin}</p>
+        <p class="member-kpi-hint">Career-best run</p>
+      </div>
+      <div class="member-kpi-shield">
+        <p class="member-kpi-label">Your career winnings</p>
+        <p class="member-kpi-value">${fmtMoney(careerWinnings)}</p>
+        <p class="member-kpi-hint">Total MM payouts involved in</p>
+      </div>
+      <div class="flip-tile member-kpi-flip">
+        <div class="flip-inner">
+          <div class="flip-face flip-front member-kpi-shield">
+            <p class="member-kpi-label">Your best year for MM Killers</p>
+            <p class="member-kpi-value">${mmKillBest ? mmKillBest.count : '-'}</p>
+            <p class="member-kpi-hint">${mmKillBest ? escapeHtml(mmKillBest.season) : ''}</p>
+          </div>
+          <div class="flip-face flip-back member-kpi-shield">
+            <p class="member-kpi-label">Your worst year for MM Killers</p>
+            <p class="member-kpi-value">${mmKillWorst ? mmKillWorst.count : '-'}</p>
+            <p class="member-kpi-hint">${mmKillWorst ? escapeHtml(mmKillWorst.season) : ''}</p>
+          </div>
+        </div>
+      </div>
+      <div class="flip-tile member-kpi-flip">
+        <div class="flip-inner">
+          <div class="flip-face flip-front member-kpi-shield">
+            <p class="member-kpi-label">Your best regular season finish</p>
+            <p class="member-kpi-value">${finishRegular ? ordinal(finishRegular.best.position) : '-'}</p>
+            <p class="member-kpi-hint">${finishRegular ? escapeHtml(finishRegular.best.season) : ''}</p>
+          </div>
+          <div class="flip-face flip-back member-kpi-shield">
+            <p class="member-kpi-label">Your worst regular season finish</p>
+            <p class="member-kpi-value">${finishRegular ? ordinal(finishRegular.worst.position) : '-'}</p>
+            <p class="member-kpi-hint">${finishRegular ? escapeHtml(finishRegular.worst.season) : ''}</p>
+          </div>
+        </div>
+      </div>
+      <div class="flip-tile member-kpi-flip">
+        <div class="flip-inner">
+          <div class="flip-face flip-front member-kpi-shield">
+            <p class="member-kpi-label">Your best Post Season finish</p>
+            <p class="member-kpi-value">${finishPost ? ordinal(finishPost.best.position) : '-'}</p>
+            <p class="member-kpi-hint">${finishPost ? escapeHtml(finishPost.best.season) : ''}</p>
+          </div>
+          <div class="flip-face flip-back member-kpi-shield">
+            <p class="member-kpi-label">Your worst Post Season finish</p>
+            <p class="member-kpi-value">${finishPost ? ordinal(finishPost.worst.position) : '-'}</p>
+            <p class="member-kpi-hint">${finishPost ? escapeHtml(finishPost.worst.season) : ''}</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     ${insights(profileData)}
