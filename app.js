@@ -2007,20 +2007,24 @@ function perfectRoundMemberLeaderboard(data) {
   const best = Math.max(...entries.map(([, c]) => c));
   return { count: best, members: entries.filter(([, c]) => c === best).map(([m]) => m) };
 }
-// A "crash" is the established Tier Crasher event - a whole team's MM
-// fails. Tracked per MEMBER rather than per team, since team composition
-// isn't stable year to year, but a member's own code is.
+// A "crash" is an individual's own pick losing - the same definition the
+// escalating fine system uses (see currentSeasonFines), and a genuinely
+// different thing from the separate team-level MM-failure concept
+// tracked elsewhere on the Hub (Tier Killers, successful/unsuccessful MM
+// detection) - those are about a whole team's 3-person parlay failing
+// together, not one person's own pick. Was previously built on
+// computeTeamMM (team crashes), which meant a member could show
+// "crashes" from a teammate's loss even when their own pick won - fixed
+// to count purely personal losses instead, matching how fines actually
+// work.
 function memberCrashesBySeasonRecord(data) {
-  const teamMM = computeTeamMM(data);
   const groups = {};
-  teamMM.forEach(entry => {
-    if (entry.successful) return;
-    entry.memberRows.forEach(r => {
-      const season = normalisedSeason(r.year);
-      const key = `${r.member}||${season}`;
-      if (!groups[key]) groups[key] = { member: r.member, season, crashes: 0 };
-      groups[key].crashes += 1;
-    });
+  data.forEach(r => {
+    if (!r.loss) return;
+    const season = normalisedSeason(r.year);
+    const key = `${r.member}||${season}`;
+    if (!groups[key]) groups[key] = { member: r.member, season, crashes: 0 };
+    groups[key].crashes += 1;
   });
   const rows = Object.values(groups);
   if (!rows.length) return null;
@@ -2316,16 +2320,13 @@ function recordCareerTile(goodLabel, goodValue, badLabel, badValue, caveat) {
 
 // ---------- Career-record data helpers (true cumulative totals) ----------
 
-// Cumulative career crash count per member - unlike memberCrashesBySeasonRecord
-// (which finds the single best/worst SEASON), this sums every crash a
-// member has ever been part of across their whole tenure.
+// Cumulative career crash count per member - same individual-loss
+// definition as memberCrashesBySeasonRecord above (not the team-level MM
+// concept), just without the season grouping: a true whole-career total
+// rather than a best/worst single season.
 function careerCrashCounts(data) {
-  const teamMM = computeTeamMM(data);
   const counts = {};
-  teamMM.forEach(entry => {
-    if (entry.successful) return;
-    entry.memberRows.forEach(r => { counts[r.member] = (counts[r.member] || 0) + 1; });
-  });
+  data.forEach(r => { if (r.loss) counts[r.member] = (counts[r.member] || 0) + 1; });
   const entries = Object.entries(counts);
   if (!entries.length) return { count: 0, members: [] };
   const max = Math.max(...entries.map(([, c]) => c));
@@ -2911,22 +2912,24 @@ function updateSearchResults(data) {
 //     produces the correct cumulative total for an ongoing bad run.
 // ----------------------------------------------------------------------
 
-// Current-season fine tracking. Reads each fine's amount straight from
-// the Sheet's own Fines column (r.row.Fines) - exactly how the
-// previous-season comparison a little further down already works -
-// rather than recomputing it from a streak formula. That recomputation
-// used to assume every fine was exactly (consecutive-loss-streak x $10)
-// with no ceiling, which silently diverged from reality whenever the
-// real fine process didn't match that exact rule - in particular, real
-// fines escalate $10/week for CONSECUTIVE losing weeks but cap at $40
-// (4 weeks), a rule nowhere encoded here now that the Sheet's own
-// already-correct value is simply trusted instead. Confirmed as the
-// cause of Financial position under-reporting fines (showing $220
-// against the Sheet's real $275). Each fine still carries the date it
-// was EARNED (the losing pick's own date, not when it was paid), and
-// the Outstanding fines list below already shows every unpaid fine
-// regardless of age, sorted newest-first - neither of those needed any
-// change, only the amount source did.
+// Current-season fine tracking. A fine applies to an INDIVIDUAL member
+// whose own pick lost that round - nothing to do with the team-level
+// "crash" concept tracked elsewhere on the Hub (Most crashes, Tier
+// Killers etc., which are about a whole team's MM failing together).
+// Escalates $10 per CONSECUTIVE personal loss, caps at $40 on the 4th
+// straight loss, at which point the member forfeits a week of betting
+// and their streak resets to zero - confirmed against a worked example
+// (three straight losses for one member, two for another, one for a
+// third, all mid-escalation with none reaching the cap) that matched
+// this exact formula. An earlier version of this function instead
+// trusted the Sheet's own Fines column directly, on the theory that the
+// real rule might not match a simple formula - that theory turned out to
+// be wrong: the rule IS this formula, computed here rather than read
+// from the Sheet, which also means a fine can never again go missing
+// just because nobody typed a number into that column (as happened with
+// one member's crash a few weeks back). Each fine still carries the date
+// it was EARNED (the losing pick's own date, not when it was paid), read
+// from the same "Date MM / Fine Paid" column as before.
 function currentSeasonFines(data) {
   const season = currentYear(data);
   const seasonRows = data.filter(r => seasonEqual(r.year, season) && r.result);
@@ -2939,13 +2942,21 @@ function currentSeasonFines(data) {
   const results = [];
   byMember.forEach((rows, member) => {
     const sorted = [...rows].sort((a, b) => (parseDMY(a.date) || 0) - (parseDMY(b.date) || 0));
-    const fines = sorted
-      .filter(r => Number(r.row?.Fines) > 0)
-      .map(r => ({
-        date: r.date,
-        amount: Number(r.row.Fines),
-        paid: Boolean(clean(r.row['Date MM / Fine Paid'])),
-      }));
+    let streak = 0;
+    const fines = [];
+    sorted.forEach(r => {
+      if (r.win) { streak = 0; return; }
+      if (r.loss) {
+        streak += 1;
+        const cappedStreak = Math.min(streak, 4);
+        fines.push({ date: r.date, amount: cappedStreak * 10, paid: Boolean(clean(r.row['Date MM / Fine Paid'])) });
+        // Forfeit-and-reset: the 4th consecutive loss is the last one
+        // that escalates - the member sits out the following week, and
+        // whatever pick they resume with afterward starts a fresh streak
+        // rather than continuing to climb past $40.
+        if (streak >= 4) streak = 0;
+      }
+    });
     if (fines.length) {
       const outstanding = fines.filter(f => !f.paid).reduce((sum, f) => sum + f.amount, 0);
       const totalFined = fines.reduce((sum, f) => sum + f.amount, 0);
@@ -2953,31 +2964,6 @@ function currentSeasonFines(data) {
     }
   });
   return { season, members: results };
-}
-
-// A crash (unsuccessful team MM) is what actually triggers a fine, per
-// the syndicate's own process - but currentSeasonFines above can only
-// total what the Sheet has actually recorded in the Fines column, so a
-// crash that's happened but never had its fine amount entered (a data-
-// entry gap, not a code bug) silently disappears from Outstanding fines
-// with no trace. This flags exactly that gap: any current-season crash
-// where one or more of the affected members' rows still shows a blank
-// Fines value, so it gets surfaced rather than quietly vanishing. Found
-// via a real example - JF's crash on 28/08/2026 had no Fines value
-// recorded in Raw_Live, so the fine it should have generated never
-// showed up as outstanding.
-function possiblyMissingFines(seasonRows) {
-  const teamMM = computeTeamMM(seasonRows);
-  const flagged = [];
-  teamMM.forEach(entry => {
-    if (entry.successful) return;
-    entry.memberRows.forEach(r => {
-      if (!(Number(r.row?.Fines) > 0)) {
-        flagged.push({ member: r.member, date: r.date });
-      }
-    });
-  });
-  return flagged;
 }
 
 // Number of teams sharing the $25/team/week MM cost - assumed 4, matching
@@ -2999,10 +2985,6 @@ function financialTilesStrip(data, previousSeasonRows) {
   const finesCollected = allFines.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0);
   const outstandingFines = allFines.filter(f => !f.paid);
   const totalOutstanding = outstandingFines.reduce((sum, f) => sum + f.amount, 0);
-  const missingFinesEntries = possiblyMissingFines(seasonRows);
-  const missingFinesHtml = missingFinesEntries.length
-    ? `<p class="flip-rationale" style="color:#e0a020; margin-top:10px;">&#9888; ${missingFinesEntries.length === 1 ? 'A crash has' : `${missingFinesEntries.length} crashes have`} no fine recorded in the Sheet yet: ${missingFinesEntries.map(f => `${escapeHtml(f.member)} - ${escapeHtml(f.date)}`).join(', ')}.</p>`
-    : '';
   const grossRevenue = mmWinnings + finesCollected;
 
   const roundsSoFar = uniq(seasonRows.filter(r => r.result).map(r => r.date)).length;
@@ -3045,8 +3027,8 @@ function financialTilesStrip(data, previousSeasonRows) {
     ? `<div class="flip-options-list">${outstandingFines
         .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
         .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
-        .join('')}</div>${missingFinesHtml}`
-    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>${missingFinesHtml}`;
+        .join('')}</div>`
+    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`;
 
   const positionCls = netPosition >= 0 ? 'sport-league' : 'sport-nfl';
   const positionBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) + fines collected (${fmtMoney(finesCollected)}) - MM costs (${fmtMoney(mmCosts)}, ${MM_COST_TEAM_COUNT} teams &times; ${roundsSoFar} rounds &times; $${MM_COST_PER_TEAM_PER_WEEK}) = ${fmtMoney(netPosition)}.</p>`;
