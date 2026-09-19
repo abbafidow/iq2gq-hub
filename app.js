@@ -1618,6 +1618,7 @@ function memberIntelligence(member, data) {
         <span>${career.picks.toLocaleString()} filtered picks</span>
         <span>${careerAll.picks.toLocaleString()} career picks</span>
         <span>${confidence(career.picks)} confidence</span>
+        <span>${highWin ? `Highest win ${oddsFmt(highWin.odds)} \u00b7 ${highWin.name || highWin.sport || 'Unknown'}` : 'No winning odds found'}</span>
       </div>
     </div>
 
@@ -1635,7 +1636,6 @@ function memberIntelligence(member, data) {
         ${formCard('Last 5', recentRecord(allMemberRows, 5))}
         ${formCard('Last 10', last10)}
         ${formCard('Last 20', last20)}
-        ${formCard('Highest win', { text: highWin ? oddsFmt(highWin.odds) : '-', detail: highWin ? `${highWin.name || highWin.sport || 'Unknown'} (${highWin.year || '-'})` : 'No winning odds found' })}
       </div></div>
       <div class="panel"><h2>Member records</h2><div class="record-list">
         <div><span>Longest winning streak</span><strong>${bestWin}</strong></div>
