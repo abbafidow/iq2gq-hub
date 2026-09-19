@@ -1682,7 +1682,15 @@ function summary(rows) {
 }
 
 function recentRecord(rows, n) {
-  const recent = rows.slice().sort(comparePickOrder).slice(-n);
+  // Only resulted picks count - a pending pick previously still filled a
+  // slot in "last N" (pushing an actually-resulted pick out of the
+  // window) and, having no win/loss yet, was silently counted as a LOSS
+  // by the "losses: recent.length - wins" line below, dragging the rate
+  // down for something that hasn't even happened yet. Same bug class
+  // already fixed elsewhere (patternCandidatePool, recencyPattern) but
+  // missed here - "Last N" now means the last N RESULTED picks, not the
+  // last N picks chronologically regardless of whether they've resolved.
+  const recent = rows.filter(r => r.win || r.loss).slice().sort(comparePickOrder).slice(-n);
   const wins = recent.filter(r => r.win).length;
   return {
     picks: recent.length,
