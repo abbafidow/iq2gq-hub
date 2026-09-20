@@ -367,15 +367,18 @@ tr:last-child td { border-bottom: 0; }
 
 /* ---------- Member Intelligence Centre ---------- */
 
-.profile-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+.profile-hero { display: flex; justify-content: flex-start; align-items: flex-start; gap: 24px; }
 .profile-hero h2 { font-size: 32px; margin: 4px 0; }
-/* Left = who/what they are (name, badges); right = the balanced 4-part
-   narrative snapshot. Left badges now left-aligned (was flex-end,
-   right-aligned against the old single-column layout) since they sit in
-   their own column now rather than needing to push toward the far edge. */
-.profile-hero-left { flex: 1 1 320px; }
+/* Left column is now just the name and the "Not you?" link (the old
+   "Member Intelligence Centre" eyebrow and the four pill badges were
+   both removed - they added length without adding information, and
+   were the main cause of the awkward empty space between the name and
+   the narrative panel). Narrower and no longer flex-growing, since
+   there's little content left to justify matching the narrative
+   column's width; the narrative panel takes the freed-up space instead. */
+.profile-hero-left { flex: 0 1 200px; }
 .profile-hero-narrative {
-  flex: 1 1 320px;
+  flex: 1 1 auto;
   background: var(--panel2);
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -396,8 +399,6 @@ tr:last-child td { border-bottom: 0; }
    originally - one less font/spacing combination competing for
    attention on the same page. */
 .member-kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
-.profile-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-top: 10px; }
-.profile-badges span { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 7px 12px; color: var(--muted); font-size: 12px; }
 
 /* KPI row - shield outline (no fill), matching the Records Honour tile
    shape but transparent, so it reads as a distinct shape for personal
@@ -405,25 +406,80 @@ tr:last-child td { border-bottom: 0; }
    plain tiles (win %, longest streak, career winnings) plus three flip
    tiles (front = best, back = worst) using the same .flip-tile/
    .flip-face machinery as the rest of the Hub, so the corner-fold flip
-   signal applies automatically with no extra CSS needed. */
-.member-kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+   signal applies automatically with no extra CSS needed.
+   Border rendered via a wrapping element (.member-kpi-shield-border),
+   NOT the `border` property directly on the clipped shield itself - a
+   border on an element that also has clip-path only draws along that
+   element's original rectangular edges, then gets clipped away wherever
+   the polygon cuts a corner off. On this shield shape, that silently
+   deleted the border along the whole diagonal notch at the bottom,
+   which is exactly the "bottom borders are hidden" bug. The fix: an
+   outer element, clipped to the same shield shape, filled with the
+   border colour; a 1px padding gap reveals it as a thin ring around an
+   inner element (also clipped to the shield) whose own background
+   matches the page, so the visible result is identical to a shield with
+   a real border - just built as two stacked shapes instead of one
+   shape's own now-broken border property. */
+.member-kpi-shield-border {
+  clip-path: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
+  background: var(--line);
+  padding: 1px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.member-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
 .member-kpi-shield {
-  background: transparent;
-  border: 1px solid var(--line);
+  background: var(--bg);
   clip-path: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
   padding: 16px 12px 22px;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 118px;
+  min-height: 116px;
+  height: 100%;
   box-sizing: border-box;
+  position: relative;
 }
+/* Hover tooltip via the native title attribute rather than the
+   click-to-expand .info-toggle/.info-detail pattern used on Records -
+   there's no spare room in a fixed-height shield tile for an expanding
+   text block. Native title tooltips don't reliably appear on a tap on
+   mobile (a real limitation, not just a desktop-only nicety) - worth
+   keeping in mind if this needs to work reliably on touch devices later. */
+.member-kpi-info { position: absolute; top: 6px; left: 8px; color: var(--muted); font-size: 12px; cursor: help; }
 .member-kpi-value { color: var(--text); font-size: 20px; font-weight: 700; margin: 0; }
 .member-kpi-hint { color: var(--muted); font-size: 11px; margin: 6px 0 0; min-height: 14px; }
 .member-kpi-flip { position: relative; }
 .member-kpi-flip .flip-inner { height: 100%; }
-.member-kpi-flip .member-kpi-shield { height: 100%; }
+.member-kpi-flip .flip-face { height: 100%; }
+.member-kpi-flip .member-kpi-shield-border { height: 100%; }
+
+/* Member profile's consolidated "Performance breakdown" panel - see
+   bindMemberTableToggle in app.js. Visually matches .stats-subnav/
+   .stats-tab (the top-level Stats page tabs) but kept as its own class
+   deliberately: .stats-tab already has a sitewide click handler bound
+   for top-level Stats navigation, and reusing that exact class would
+   have wired these buttons into that handler too. */
+.member-table-subnav {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+.member-table-tab {
+  border: none;
+  background: #142044;
+  color: var(--muted);
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.member-table-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
+.member-table-tab + .member-table-tab { border-left: 1px solid var(--line); }
 
 @media (max-width: 900px) {
   .member-kpi-row { grid-template-columns: repeat(3, 1fr); }
@@ -431,7 +487,8 @@ tr:last-child td { border-bottom: 0; }
 @media (max-width: 640px) {
   .member-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .member-kpi-value { font-size: 18px; }
-  .profile-badges { justify-content: flex-start; }
+  .profile-hero { flex-direction: column; }
+  .profile-hero-left { flex-basis: auto; }
 }
 
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
