@@ -4362,10 +4362,69 @@ function selectDiverseByBetType(candidates, count) {
   return selected;
 }
 
+// Season windows for each real-world data source, used to stop Worth
+// Watching from surfacing a sport's patterns once its season has
+// genuinely finished for the year. Deliberately a real calendar rather
+// than inferring "no game in N days" from the game-history files
+// themselves - that approach can't tell a bye week or international
+// break apart from a season actually being over, and would keep a
+// finished season's patterns showing for however long the gap threshold
+// was set to rather than switching off the moment the season ends.
+// Manually maintained from each competition's own published dates -
+// same upkeep rhythm as PRESIDENTS_DIAL_DATA elsewhere in this file,
+// updated whenever a new season's calendar is announced. A sport can
+// have more than one window listed (e.g. NRL's current 2026 finals
+// stretch and its already-announced 2027 opener); it's "in season" if
+// today falls inside ANY of them. If a sport has no entry here at all,
+// isSportInSeason() fails OPEN (treats it as in-season) rather than
+// silently hiding a sport nobody's gotten around to adding yet.
+//
+// Confirmed as of Sept 2026, with known gaps flagged inline:
+const SPORT_SEASON_WINDOWS = {
+  // 2026 season is still live - Grand Final is Sat 26/09/2026 (Fremantle
+  // v Brisbane Lions), corrected after initially assuming the season had
+  // already finished. Start date here is an ESTIMATE (AFL typically
+  // opens mid-March) since only the Grand Final date was actually
+  // confirmed - the exact 2026 Round 1 date wasn't given. 2027 window
+  // covers Round 1 through the Grand Final, though the detailed
+  // round-by-round fixture wasn't published yet at the time these dates
+  // were given - only the headline start/end/Grand Final dates.
+  AFL: [['12/03/2026', '26/09/2026'], ['17/03/2027', '02/10/2027']],
+  // 2026: confirmed through the 4/10/2026 Grand Final. 2027: start date
+  // confirmed (28/02/2027 Las Vegas opener), but NO end date has been
+  // announced yet - 15/10/2027 here is an ESTIMATE mirroring 2026's
+  // regular-season-into-Sept-plus-finals-into-Oct pattern, not a real
+  // published date. Replace with the actual 2027 Grand Final date once
+  // it's announced.
+  NRL: [['01/03/2026', '04/10/2026'], ['28/02/2027', '15/10/2027']],
+  // 2026 only - confirmed through the 25/10/2026 Grand Final weekend.
+  // 2027 dates have not been announced at all yet; NPC will show as
+  // off-season for the whole of 2027 until this gets a real window.
+  NPC: [['31/07/2026', '25/10/2026']],
+  EPL: [['22/08/2026', '30/05/2027']],
+  // Covers regular season through the Super Bowl, not just the regular
+  // season alone - the playoffs and Super Bowl are still real games
+  // worth pattern-matching on.
+  NFL: [['09/09/2026', '14/02/2027']],
+  'Super Rugby': [['12/02/2027', '26/06/2027']],
+};
+
+function isSportInSeason(sport, now = new Date()) {
+  const windows = SPORT_SEASON_WINDOWS[sport];
+  if (!windows) return true;
+  return windows.some(([startStr, endStr]) => {
+    const start = parseDMY(startStr);
+    const end = parseDMY(endStr);
+    if (!start || !end) return false;
+    return now >= start && now <= end;
+  });
+}
+
 function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivityBonus = 2, activityScaleDays = 60) {
   const activityBySport = computeActivityBySport();
   const allPatterns = [];
   Object.entries(REAL_WORLD_SOURCES).forEach(([sport]) => {
+    if (!isSportInSeason(sport)) return;
     const games = state.realWorldGames[sport] || [];
     if (!games.length) return;
     const scoringThreshold = dynamicScoringThreshold(games);
