@@ -1692,20 +1692,12 @@ function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason
     risk = `Comfortable taking on longer odds when the value looks right, averaging ${oddsFmt(careerAll.avgOdds)}${oddsComparison}.`;
   }
 
-  // Most successful specific pick+bet-type combo, reusing the exact same
-  // matching logic Pick Assistant already uses (comboCandidates) rather
-  // than a separate calculation, so this never disagrees with what
-  // Worth Watching/Rate Your Pick would say about the same combo. A
-  // minimum of 5 picks keeps this from crowning a 1-from-1 fluke as
-  // someone's "most successful pick" - if nothing clears that bar yet,
-  // this sentence is simply left out rather than forcing a weak claim.
-  const qualifyingCombos = comboCandidates(allMemberRows).filter(c => c.picks >= 5);
-  let bestPick = null;
-  if (qualifyingCombos.length) {
-    const top = qualifyingCombos.slice().sort(byBestStory)[0];
-    const betType = extractBetOption(top.label, top.team);
-    bestPick = `Your most successful pick is ${top.team} with a ${betType}, which you've dropped ${top.picks} time${top.picks === 1 ? '' : 's'} for ${top.wins} win${top.wins === 1 ? '' : 's'}.`;
-  }
+  // Most successful specific pick+bet-type combo (comboCandidates, the
+  // same matching logic Pick Assistant uses) was dropped from here on
+  // trimming this back to 5 sentences - it overlapped conceptually with
+  // the best-sport/bet-type/odds sentence below (a specific instance of
+  // the same "what you're good at" idea), which was the more natural of
+  // the two to keep since it was explicitly asked for.
 
   let aptitude;
   if (!careerAll.picks) {
@@ -1725,6 +1717,60 @@ function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason
     }
   }
 
+  // Best sport, best bet type, and best odds band - same underlying
+  // logic and thresholds Smart Insights used to show as three separate
+  // cards on this page (now removed entirely) - combined into ONE
+  // sentence rather than two/three separate ones, to keep the whole
+  // narrative to 5 sentences total. Resulted picks only (r.win ||
+  // r.loss) - aggregate() itself counts every row toward the denominator
+  // regardless of whether it's resulted yet, which would otherwise
+  // understate the success rate exactly the way recentRecord() used to
+  // before that was fixed; filtered out here so this specific
+  // calculation doesn't repeat that mistake, even though aggregate()'s
+  // other callers elsewhere on Stats still have it. Each of the three
+  // clauses is only included if it actually clears its own minimum
+  // sample size, so a member with too little data for one or more of
+  // them still gets a shorter, honest sentence rather than a forced claim.
+  const resultedMemberRows = allMemberRows.filter(r => r.win || r.loss);
+  const sportRowsHC = aggregate(resultedMemberRows, 'group').filter(x => x.picks >= 50).sort((a, b) => b.success - a.success || b.picks - a.picks);
+  const betTypeRowsHC = aggregate(resultedMemberRows, 'betTypeGroup').filter(x => x.picks >= 50).sort((a, b) => b.success - a.success || b.picks - a.picks);
+  const bestSportHC = sportRowsHC[0];
+  const bestBetTypeHC = betTypeRowsHC[0];
+
+  const oddsBands = [];
+  for (let start = 1.01; start < 2.00; start += 0.10) {
+    const lower = Number(start.toFixed(2));
+    const upper = Number(Math.min(2.00, start + 0.09).toFixed(2));
+    const bandPicks = resultedMemberRows.filter(r => r.odds >= lower && r.odds <= upper);
+    if (bandPicks.length >= 10) {
+      const success = bandPicks.filter(r => r.win).length / bandPicks.length;
+      const implied = bandPicks.reduce((sum, r) => sum + (1 / r.odds), 0) / bandPicks.length;
+      oddsBands.push({ label: `${lower.toFixed(2)}-${upper.toFixed(2)}`, picks: bandPicks.length, success, implied, difference: success - implied });
+    }
+  }
+  const twoPlusRows = resultedMemberRows.filter(r => r.odds >= 2);
+  if (twoPlusRows.length >= 10) {
+    const success = twoPlusRows.filter(r => r.win).length / twoPlusRows.length;
+    const implied = twoPlusRows.reduce((sum, r) => sum + (1 / r.odds), 0) / twoPlusRows.length;
+    oddsBands.push({ label: '2.00+', picks: twoPlusRows.length, success, implied, difference: success - implied });
+  }
+  const topOddsBand = oddsBands.sort((a, b) => b.difference - a.difference || b.picks - a.picks)[0];
+
+  const strengthParts = [];
+  if (bestSportHC) strengthParts.push(`your best sport is ${bestSportHC.name} (${pct(bestSportHC.success)} from ${bestSportHC.picks.toLocaleString()} picks)`);
+  if (bestBetTypeHC) strengthParts.push(`your best bet type is ${bestBetTypeHC.name} (${pct(bestBetTypeHC.success)} from ${bestBetTypeHC.picks.toLocaleString()} picks)`);
+  if (topOddsBand) {
+    const points = (topOddsBand.difference * 100).toFixed(1);
+    strengthParts.push(`your strongest odds band is ${topOddsBand.label} (${points >= 0 ? '+' : ''}${points} points above the market across ${topOddsBand.picks} picks)`);
+  }
+  let strengths = null;
+  if (strengthParts.length) {
+    const joined = strengthParts.length > 1
+      ? `${strengthParts.slice(0, -1).join(', ')}, and ${strengthParts[strengthParts.length - 1]}`
+      : strengthParts[0];
+    strengths = `${joined.charAt(0).toUpperCase()}${joined.slice(1)}.`;
+  }
+
   const team = teamOf(member);
   const currentTermInfo = PRESIDENTS_DIAL_DATA.find(d => d.term === currentSeason);
   const isCurrentPresident = Boolean(currentTermInfo && currentTermInfo.president === fullName(member));
@@ -1742,7 +1788,11 @@ function memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason
     contribution = `Not currently attached to an active team.`;
   }
 
-  return [longevity, risk, bestPick, aptitude, contribution].filter(Boolean);
+  // Exactly 5 sentences when every dimension has enough data - longevity,
+  // risk, strengths, aptitude, contribution - fewer when a dimension
+  // genuinely doesn't qualify yet (never padded back up to 5 with a weak
+  // claim).
+  return [longevity, risk, strengths, aptitude, contribution].filter(Boolean);
 }
 
 function memberIntelligence(member, data) {
@@ -1794,7 +1844,14 @@ function memberIntelligence(member, data) {
   const careerWinningsRank = allMembersCareerWinnings.findIndex(r => r.member === member) + 1;
   const mmKillBest = memberMMKillYearRecord(state.raw, member, true);
   const mmKillWorst = memberMMKillYearRecord(state.raw, member, false);
-  const finishRegular = FINISH_ORDER_REGULAR[member] || null;
+  // Regular-season and Post Season finish tiles were combined into one
+  // "Your best/worst season finish" tile - two near-identical flip tiles
+  // side by side read as redundant, and Post Season (after the Finals
+  // Series) is the more meaningful of the two since it's the actual
+  // final placing that counts. FINISH_ORDER_REGULAR is kept defined
+  // (just unused here) in case a regular-season-specific view is wanted
+  // again later - the data took real effort to transcribe and there's
+  // no reason to throw it away along with the tile.
   const finishPost = FINISH_ORDER_POST_SEASON[member] || null;
   const narrative = memberNarrativeSnapshot(member, allMemberRows, careerAll, currentSeason, active, state.raw);
 
@@ -1812,19 +1869,13 @@ function memberIntelligence(member, data) {
   // actually respond to a tap - every other flip-tile page on the Hub
   // already calls this, this page just never did.
   setTimeout(bindFlipTiles, 0);
+  setTimeout(bindMemberTableToggle, 0);
 
   return `<section class="member-profile">
     <div class="panel profile-hero">
       <div class="profile-hero-left">
-        <p class="eyebrow">Member Intelligence Centre</p>
         <h2>${escapeHtml(member)}${MEMBER_NICKNAMES[member] ? ` <span class="muted">"${escapeHtml(MEMBER_NICKNAMES[member])}"</span>` : ''}</h2>
         <p class="muted">Full career analysis. <a href="#" class="change-member-link">Not you?</a></p>
-        <div class="profile-badges">
-          <span>${career.picks.toLocaleString()} filtered picks</span>
-          <span>${careerAll.picks.toLocaleString()} career picks</span>
-          <span>${confidence(career.picks)} confidence</span>
-          <span>${highWin ? `Highest win ${oddsFmt(highWin.odds)} \u00b7 ${highWin.name || highWin.sport || 'Unknown'}` : 'No winning odds found'}</span>
-        </div>
       </div>
       <div class="profile-hero-narrative">
         <p class="eyebrow">About You</p>
@@ -1833,66 +1884,52 @@ function memberIntelligence(member, data) {
     </div>
 
     <section class="member-kpi-row">
-      <div class="member-kpi-shield">
-        <p class="member-kpi-label">Your win percentage</p>
+      <div class="member-kpi-shield-border"><div class="member-kpi-shield">
+        <p class="member-kpi-label">Your ${escapeHtml(currentSeason || 'current season')} win percentage</p>
         <p class="member-kpi-value">${season.picks ? pct(season.success) : '-'}</p>
         <p class="member-kpi-hint">All-time: ${pct(careerAll.success)}</p>
-      </div>
-      <div class="member-kpi-shield">
+      </div></div>
+      <div class="member-kpi-shield-border"><div class="member-kpi-shield">
         <p class="member-kpi-label">Your longest winning streak</p>
         <p class="member-kpi-value">${bestWin}</p>
         <p class="member-kpi-hint">Career-best run</p>
-      </div>
-      <div class="member-kpi-shield">
+      </div></div>
+      <div class="member-kpi-shield-border"><div class="member-kpi-shield">
         <p class="member-kpi-label">Your career winnings</p>
         <p class="member-kpi-value">${fmtMoney(careerWinnings)}</p>
         <p class="member-kpi-hint">${careerWinningsSince ? `Since ${escapeHtml(careerWinningsSince)}` : ''} \u00b7 ${ordinal(careerWinningsRank)} of ${allMembersCareerWinnings.length}</p>
-      </div>
+      </div></div>
       <div class="flip-tile member-kpi-flip">
         <div class="flip-inner">
-          <div class="flip-face flip-front member-kpi-shield">
+          <div class="flip-face flip-front"><div class="member-kpi-shield-border"><div class="member-kpi-shield">
             <p class="member-kpi-label">Your best year for MM Killers</p>
             <p class="member-kpi-value">${mmKillBest ? mmKillBest.count : '-'}</p>
             <p class="member-kpi-hint">${mmKillBest ? escapeHtml(mmKillBest.season) : ''}</p>
-          </div>
-          <div class="flip-face flip-back member-kpi-shield">
+          </div></div></div>
+          <div class="flip-face flip-back"><div class="member-kpi-shield-border"><div class="member-kpi-shield">
             <p class="member-kpi-label">Your worst year for MM Killers</p>
             <p class="member-kpi-value">${mmKillWorst ? mmKillWorst.count : '-'}</p>
             <p class="member-kpi-hint">${mmKillWorst ? escapeHtml(mmKillWorst.season) : ''}</p>
-          </div>
+          </div></div></div>
         </div>
       </div>
       <div class="flip-tile member-kpi-flip">
         <div class="flip-inner">
-          <div class="flip-face flip-front member-kpi-shield">
-            <p class="member-kpi-label">Your best regular season finish</p>
-            <p class="member-kpi-value">${finishRegular ? ordinal(finishRegular.best.position) : '-'}</p>
-            <p class="member-kpi-hint">${finishRegular ? escapeHtml(finishRegular.best.season) : ''}</p>
-          </div>
-          <div class="flip-face flip-back member-kpi-shield">
-            <p class="member-kpi-label">Your worst regular season finish</p>
-            <p class="member-kpi-value">${finishRegular ? ordinal(finishRegular.worst.position) : '-'}</p>
-            <p class="member-kpi-hint">${finishRegular ? escapeHtml(finishRegular.worst.season) : ''}</p>
-          </div>
-        </div>
-      </div>
-      <div class="flip-tile member-kpi-flip">
-        <div class="flip-inner">
-          <div class="flip-face flip-front member-kpi-shield">
-            <p class="member-kpi-label">Your best Post Season finish</p>
+          <div class="flip-face flip-front"><div class="member-kpi-shield-border"><div class="member-kpi-shield">
+            <span class="member-kpi-info" title="Calculated using placings after the finals series">&#9432;</span>
+            <p class="member-kpi-label">Your best season finish</p>
             <p class="member-kpi-value">${finishPost ? ordinal(finishPost.best.position) : '-'}</p>
             <p class="member-kpi-hint">${finishPost ? escapeHtml(finishPost.best.season) : ''}</p>
-          </div>
-          <div class="flip-face flip-back member-kpi-shield">
-            <p class="member-kpi-label">Your worst Post Season finish</p>
+          </div></div></div>
+          <div class="flip-face flip-back"><div class="member-kpi-shield-border"><div class="member-kpi-shield">
+            <span class="member-kpi-info" title="Calculated using placings after the finals series">&#9432;</span>
+            <p class="member-kpi-label">Your worst season finish</p>
             <p class="member-kpi-value">${finishPost ? ordinal(finishPost.worst.position) : '-'}</p>
             <p class="member-kpi-hint">${finishPost ? escapeHtml(finishPost.worst.season) : ''}</p>
-          </div>
+          </div></div></div>
         </div>
       </div>
     </section>
-
-    ${insights(profileData)}
 
     <section class="two">
       <div class="panel"><h2>Form guide</h2><div class="form-grid">
@@ -1908,15 +1945,21 @@ function memberIntelligence(member, data) {
       </div></div>
     </section>
 
-    <section class="two">
-      <div class="panel"><h2>Best sports</h2>${table(bestSports, `memberSports-${member}`, sportCols('Sport group'))}</div>
-      <div class="panel"><h2>Watch areas</h2><p class="muted">Lower success areas with at least five picks in the current view.</p>${table(worstSports, `memberWorstSports-${member}`, sportCols('Sport group'))}</div>
-    </section>
-
-    <section class="two">
-      <div class="panel"><h2>Best bet types</h2>${table(betRows, `memberBetTypes-${member}`, sportCols('Bet type group'))}</div>
-      <div class="panel"><h2>Odds bands</h2>${table(oddsRows, `memberOdds-${member}`, sportCols('Odds band'))}</div>
-    </section>
+    <div class="panel">
+      <h2>Performance breakdown</h2>
+      <div class="member-table-toggle-group">
+        <div class="member-table-subnav">
+          <button class="member-table-tab active" data-member-table="sports">Best sports</button>
+          <button class="member-table-tab" data-member-table="bettypes">Best bet types</button>
+          <button class="member-table-tab" data-member-table="odds">Best odds bands</button>
+          <button class="member-table-tab" data-member-table="watch">Areas to watch</button>
+        </div>
+        <div data-member-table-panel="sports">${table(bestSports, `memberSports-${member}`, sportCols('Sport group'))}</div>
+        <div data-member-table-panel="bettypes" style="display:none;">${table(betRows, `memberBetTypes-${member}`, sportCols('Bet type group'))}</div>
+        <div data-member-table-panel="odds" style="display:none;">${table(oddsRows, `memberOdds-${member}`, sportCols('Odds band'))}</div>
+        <div data-member-table-panel="watch" style="display:none;"><p class="muted">Lower success areas with at least five picks in the current view.</p>${table(worstSports, `memberWorstSports-${member}`, sportCols('Sport group'))}</div>
+      </div>
+    </div>
 
     <div class="panel"><h2>Latest picks</h2>${table(latest, `memberLatest-${member}`, [
       { key: 'rank', label: '#', type: 'num' },
@@ -4802,6 +4845,31 @@ function bindFlipTiles() {
     if (tile.dataset.bound) return;
     tile.dataset.bound = '1';
     tile.addEventListener('click', () => tile.classList.toggle('is-flipped'));
+  });
+}
+
+// Member profile's "Performance breakdown" panel - Best sports/Best bet
+// types/Best odds bands/Areas to watch consolidated into one panel with
+// four toggle buttons, rather than four separate always-visible panels.
+// Deliberately a distinct class (.member-table-tab, not .stats-tab) even
+// though it looks the same - .stats-tab already has its own click
+// handler bound sitewide for the top-level Stats page navigation
+// (Members/Sports/Bet types/Odds), and reusing that exact class would
+// have wired this panel's buttons into that handler too.
+function bindMemberTableToggle() {
+  document.querySelectorAll('.member-table-toggle-group').forEach(group => {
+    if (group.dataset.bound) return;
+    group.dataset.bound = '1';
+    group.querySelectorAll('.member-table-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.member-table-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.dataset.memberTable;
+        group.querySelectorAll('[data-member-table-panel]').forEach(panel => {
+          panel.style.display = panel.dataset.memberTablePanel === key ? '' : 'none';
+        });
+      });
+    });
   });
 }
 
