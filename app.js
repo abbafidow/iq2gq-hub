@@ -3432,6 +3432,7 @@ function pickAssistant(data) {
 
   setTimeout(() => {
     bindFlipTiles();
+    bindWorthWatchingRemove();
     const changeLink = document.querySelector('.change-member-link');
     if (changeLink) {
       changeLink.onclick = (e) => {
@@ -3749,31 +3750,27 @@ function byBestStory(a, b) {
   return wilsonLowerBound(b.wins, b.picks) - wilsonLowerBound(a.wins, a.picks);
 }
 
-// ISO week number (Mon-Sun weeks, first week of a year is the one
-// containing that year's first Thursday) - standard, unambiguous, and
-// changes on a fixed schedule regardless of when picks were last entered.
-function isoWeekNumber(date) {
-  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-}
-
-// Combines year + ISO week into one integer so the seed doesn't repeat
-// across years and changes exactly once a week, every Monday.
-function currentWeekSeed() {
-  const now = new Date();
-  return now.getUTCFullYear() * 100 + isoWeekNumber(now);
+// A rotation seed that changes on every page load, not once a week - a
+// tied pattern used to only take its turn once every 7 days (via an ISO
+// week number), which read as stale between refreshes even when there
+// genuinely was something else to show. Date.now() is called once per
+// render, so it's stable for the duration of a single page view but
+// different on every actual refresh. This only ever affects candidates
+// that are GENUINELY tied on rating - a clear leader with nothing else
+// sharing its rating still never rotates, refresh or not, since there's
+// nothing to take turns with.
+function rotationSeed() {
+  return Date.now();
 }
 
 // Takes a list already sorted best-first, groups consecutive entries that
 // share the same rounded rating (ratingFn) into tiers, and rotates the
-// order within each tier using the week seed - so near-equally-rated
-// patterns take turns filling a slot week to week instead of the single
-// highest-rated one permanently crowding out the rest. A clear leader with
-// no other candidate sharing its rating is never displaced, and which
-// candidate fills a given round only ever changes among genuine ties.
+// order within each tier using the rotation seed - so near-equally-rated
+// patterns take turns filling a slot refresh to refresh instead of the
+// single highest-rated one permanently crowding out the rest. A clear
+// leader with no other candidate sharing its rating is never displaced,
+// and which candidate fills a given round only ever changes among genuine
+// ties.
 function applyWeeklyRotation(sortedList, ratingFn, weekSeed) {
   const result = [];
   let i = 0;
@@ -3959,6 +3956,83 @@ function isRealWorldTeamCurrent(log) {
 function wilsonRating(successes, total) {
   const wilson = wilsonLowerBound(successes, total);
   return Math.max(1, Math.min(10, Math.round(1 + wilson * 9)));
+}
+
+// Mirrors wilsonLowerBound's logic in reverse - the conservative UPPER
+// estimate of a win rate, used to flag a red-flag pattern only when even
+// the most generous realistic reading of the data still comes out poor.
+// Equivalent to 1 - wilsonLowerBound(losses, picks), since the upper
+// bound on wins is the mathematical complement of the lower bound on
+// losses for the same sample.
+function wilsonUpperBound(wins, picks, z = 1.96) {
+  if (!picks) return 1;
+  return 1 - wilsonLowerBound(picks - wins, picks, z);
+}
+
+// A pattern only qualifies as "red flag" if even its Wilson UPPER bound -
+// the most generous realistic reading of a small sample - is still a
+// poor win rate. This is the deliberate inverse of how good patterns are
+// scored (their conservative LOWER bound still has to clear a bar);
+// here the conservative bound runs the other way, so a red flag means
+// "confidently bad", not just an unlucky short run that could easily
+// turn around with one or two results.
+const MAX_REDFLAG_UPPER_BOUND = 0.40;
+const MIN_REDFLAG_PICKS = 12;
+function redFlagCandidatePool(rows) {
+  rows = rows.filter(isRealPick).filter(r => r.win || r.loss);
+  const cutoffDate = recencyCutoffDate();
+  return comboCandidates(rows)
+    .filter(c => isPatternRecentEnough(c.lastDate, cutoffDate))
+    .filter(c => c.picks >= MIN_REDFLAG_PICKS)
+    .map(c => ({ ...c, upperBound: wilsonUpperBound(c.wins, c.picks) }))
+    .filter(c => c.upperBound <= MAX_REDFLAG_UPPER_BOUND)
+    .sort((a, b) => a.upperBound - b.upperBound);
+}
+
+// Worth Watching per-member tile dismissal - browser-only (localStorage),
+// deliberately not written back to the Sheet (a real backend addition
+// that was considered and set aside for now). Scoped to whichever member
+// is currently selected, so one member dismissing a tile doesn't hide it
+// for everyone else. Known, accepted limitations: this doesn't follow a
+// member across devices/browsers; iOS Safari in particular can clear
+// storage for a site nobody's opened in about a week, which happens to
+// land close to the same week a dismissal would have expired anyway
+// (mostly harmless); and a link opened inside a group-chat app's built-in
+// browser (rather than the device's normal browser) often doesn't share
+// storage with - or aggressively clears - the regular browser, so a
+// dismissal may not persist at all in that case.
+const DISMISS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+function dismissStorageKey(member) {
+  return `iq2gq_dismissed_${member || 'anon'}`;
+}
+function readDismissedTiles(member) {
+  try {
+    const raw = localStorage.getItem(dismissStorageKey(member));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    const now = Date.now();
+    const pruned = {};
+    Object.entries(parsed).forEach(([key, expiry]) => {
+      if (typeof expiry === 'number' && expiry > now) pruned[key] = expiry;
+    });
+    return pruned;
+  } catch (err) {
+    return {};
+  }
+}
+function isTileDismissed(dismissedMap, dismissKey) {
+  return Object.prototype.hasOwnProperty.call(dismissedMap, dismissKey);
+}
+function dismissTile(member, dismissKey) {
+  try {
+    const current = readDismissedTiles(member);
+    current[dismissKey] = Date.now() + DISMISS_WINDOW_MS;
+    localStorage.setItem(dismissStorageKey(member), JSON.stringify(current));
+  } catch (err) {
+    // localStorage unavailable (private browsing, storage quota, etc.) -
+    // fail silently rather than breaking the page; worst case, the tile
+    // just doesn't stay hidden after a refresh.
+  }
 }
 
 // The break-even price for a pattern, using the same conservative Wilson
@@ -4518,7 +4592,7 @@ function patternCandidatePool(rows) {
 // a proxy for "currently in season" since there's no real fixture calendar
 // to check against yet.
 function selectDiversePatterns(candidates, count) {
-  const weekSeed = currentWeekSeed();
+  const weekSeed = rotationSeed();
   const bySport = new Map();
   candidates.forEach(c => {
     const sport = c.group || 'Other';
@@ -4724,6 +4798,10 @@ function realWorldPatternToOption(item) {
 // don't produce separate tiles. This is what actually fixes duplicate
 // tiles like "Seattle Seahawks H2H" and "Seattle Seahawks H2H (away)"
 // showing up separately - both become one Seahawks tile with two options.
+// dismissKey (= the same consolidation key) is what the Remove button
+// persists to localStorage - stable across re-renders, so a dismissed
+// team/pattern is recognised again the next time its tile would
+// otherwise be built, not just for the one render it was clicked on.
 function consolidationKey(option) {
   if (option.team) return `team:${option.team}`;
   if (/point start/i.test(option.betOption)) return `pointstart:${option.sportLabel}`;
@@ -4747,6 +4825,7 @@ function consolidateOptions(options) {
         title: opt.team || fallbackTitle,
         sportLabel: opt.sportLabel,
         colorClass: opt.colorClass,
+        dismissKey: key,
         options: [],
       });
     }
@@ -4826,11 +4905,22 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
     else if (REAL_WORLD_TO_SPORT_GROUP.NFL === opt.sportLabel && pools.NFL) pools.NFL.push(opt);
   });
 
-  const weekSeed = currentWeekSeed();
+  // Dismissed tiles are filtered out of each sport's pool BEFORE the
+  // round-robin selection runs below - not swapped out afterward. This is
+  // what makes "Remove" naturally pull in the next-best option from the
+  // SAME sport (whatever the round-robin would have picked next from that
+  // pool anyway), and naturally show one fewer tile for that slot if
+  // nothing else in that sport currently qualifies, rather than reaching
+  // into an unrelated sport just to keep the count at 6.
+  const dismissedMap = readDismissedTiles(state.selectedMember);
+  const weekSeed = rotationSeed();
   const consolidatedPools = Object.fromEntries(
-    Object.entries(pools).map(([sport, opts]) =>
-      [sport, applyWeeklyRotation(consolidateOptions(opts).sort((a, b) => b.rating - a.rating), t => t.rating, weekSeed)]
-    )
+    Object.entries(pools).map(([sport, opts]) => {
+      const consolidated = consolidateOptions(opts)
+        .filter(t => !isTileDismissed(dismissedMap, t.dismissKey))
+        .sort((a, b) => b.rating - a.rating);
+      return [sport, applyWeeklyRotation(consolidated, t => t.rating, weekSeed)];
+    })
   );
 
   const focusOrder = ['EPL', 'NFL', 'NRL', 'NZ Domestic Rugby', 'AFL'];
@@ -4855,6 +4945,7 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
   const alreadyHasYourPattern = selected.some(t => t.hasYourPattern);
   if (!alreadyHasYourPattern) {
     const yourPatternTiles = consolidateOptions(yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern', 'your')))
+      .filter(t => !isTileDismissed(dismissedMap, t.dismissKey))
       .sort((a, b) => b.rating - a.rating);
     if (yourPatternTiles.length) {
       if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
@@ -4863,6 +4954,37 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
         selected.splice(lowestIdx, 1);
       }
       selected.push(yourPatternTiles[0]);
+    }
+  }
+
+  // Red-flag tile: at most one, mixed into the same six slots rather than
+  // a separate section - a couple were considered and this was the
+  // preferred one. Same guarantee mechanism as "Your pattern" above
+  // (swap out the current lowest-rated tile if one qualifies and none is
+  // already present); never fabricated if nothing clears the bar.
+  const alreadyHasRedFlag = selected.some(t => t.isRedFlag);
+  if (!alreadyHasRedFlag) {
+    const redFlagRows = state.raw.filter(isRealPick).filter(r => r.win || r.loss);
+    const redFlagCandidates = redFlagCandidatePool(redFlagRows);
+    if (redFlagCandidates.length) {
+      const top = redFlagCandidates[0];
+      const redFlagOption = syndicatePatternToOption({ ...top, group: top.group }, 'Track record', 'red-flag');
+      // Rating reflects how poor the record is (upper bound, scaled 0-10),
+      // not the same "how good" scale the rest of the tiles use - this is
+      // deliberately a low number, and it's fine for it to sort toward
+      // the bottom of the visible list.
+      redFlagOption.rating = Math.max(1, Math.round(top.upperBound * 10));
+      const redFlagTiles = consolidateOptions([redFlagOption])
+        .filter(t => !isTileDismissed(dismissedMap, t.dismissKey));
+      if (redFlagTiles.length) {
+        redFlagTiles[0].isRedFlag = true;
+        if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
+          let lowestIdx = 0;
+          selected.forEach((t, i) => { if (t.rating < selected[lowestIdx].rating) lowestIdx = i; });
+          selected.splice(lowestIdx, 1);
+        }
+        selected.push(redFlagTiles[0]);
+      }
     }
   }
 
@@ -4883,12 +5005,19 @@ function flipTileHtml(tile) {
       <p class="flip-rationale">${escapeHtml(opt.rationale)}${valueLine}</p>
     </div>`;
   }).join('');
-  return `<div class="flip-tile" id="${id}">
+  const dismissKeyAttr = escapeHtml(tile.dismissKey || tile.title || '');
+  // Sport label moved from the bottom row (alongside the rating) to sit
+  // directly under the team/bet-type title instead - the bottom row's
+  // left slot is now the Remove button, which needs the space the sport
+  // label used to occupy there.
+  return `<div class="flip-tile${tile.isRedFlag ? ' flip-tile-redflag' : ''}" id="${id}">
     <div class="flip-inner">
       <div class="flip-face flip-front ${tile.colorClass}">
+        ${tile.isRedFlag ? `<span class="flip-redflag-icon" title="Confidently poor track record - not just an unlucky run">&#9888;</span>` : ''}
         <p class="flip-pick">${escapeHtml(tile.title)}</p>
+        <p class="flip-sport">${escapeHtml(tile.sportLabel)}</p>
         <div class="flip-front-bottom">
-          <span class="flip-sport">${escapeHtml(tile.sportLabel)}</span>
+          <button type="button" class="flip-remove-btn" data-dismiss-key="${dismissKeyAttr}" title="Hide this tile for a week">Remove</button>
           <span class="flip-rating">${tile.rating}/10</span>
         </div>
       </div>
@@ -4904,6 +5033,25 @@ function bindFlipTiles() {
     if (tile.dataset.bound) return;
     tile.dataset.bound = '1';
     tile.addEventListener('click', () => tile.classList.toggle('is-flipped'));
+  });
+}
+
+// The Remove button sits inside a .flip-tile, which already has its own
+// click listener (bindFlipTiles, above) toggling the flip - without
+// stopPropagation here, tapping Remove would also flip the tile it just
+// removed. Re-renders the whole page after dismissing, same as every
+// other state-changing action on the Hub, so the tile actually
+// disappears (and whatever's next in that sport's pool takes its place,
+// or the row just shows one fewer tile if nothing else qualifies).
+function bindWorthWatchingRemove() {
+  document.querySelectorAll('.flip-remove-btn').forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissTile(state.selectedMember, btn.dataset.dismissKey);
+      render();
+    });
   });
 }
 
