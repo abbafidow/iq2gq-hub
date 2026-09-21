@@ -654,10 +654,19 @@ async function init() {
     bind();
     render();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
+    hideLoadingScreen();
   } catch (error) {
     $('status').textContent = 'Could not load Google Sheet data';
     console.error(error);
+    hideLoadingScreen();
   }
+}
+
+function hideLoadingScreen() {
+  const el = document.getElementById('loading-screen');
+  if (!el) return;
+  el.classList.add('hidden');
+  setTimeout(() => el.remove(), 400);
 }
 
 async function loadRealWorldGames() {
