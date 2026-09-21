@@ -185,7 +185,7 @@ const PRESIDENTS_DIAL_DATA = [
   { term: '2020/21', president: 'Mano Mau Vili', honorific: 'Ace', benson: 'Stanley Bradbrook', venue: 'Taupo', activity: 'Hole in One Challenge', winner: 'Tuaopepe Abba Fidow' },
   { term: '2021/22', president: 'Mano Mau Vili', honorific: 'Ace', benson: "Fa'aolatane Lemi Siitia", venue: 'Queenstown (Rebel AGM)', activity: '', winner: '' },
   { term: '2022/23', president: 'Aiono Matthew Aileone', honorific: 'Chief', benson: 'Tuaopepe Abba Fidow', venue: 'Mt Maunganui', activity: 'Spin the Wheel', winner: 'Shane Fenika' },
-  { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Misa Malaesilia Tupu Fidow' },
+  { term: '2023/24', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Shane Fenika', venue: 'Rotorua', activity: 'Corporate Casino', winner: 'Tuaopepe Abba Fidow' },
   { term: '2024/25', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Tuaopepe Abba Fidow', venue: 'Christchurch', activity: 'Clay Shooting', winner: 'Stanley Bradbrook' },
   { term: '2025/26', president: 'Stanley Bradbrook', honorific: 'Maverick', benson: 'Aiono Matthew Aileone', venue: 'Wellington', activity: 'Pistol Shooting', winner: "Fa'aolatane Lemi Siitia" },
   { term: '2026/27', president: "Andrew Amituana'i", honorific: 'TBC', benson: 'TBC', venue: 'Gold Coast', activity: 'Top Golf', winner: 'Aiono Matthew Aileone' },
@@ -3063,7 +3063,7 @@ function records(data) {
   const teamTallyRows = teamWinningsTally(seasonData);
   const teamTable = sortableMiniTable('teamWinnings', teamTallyRows, [
     { key: 'team', label: 'Team', render: t => `<td>${escapeHtml(t.team)}</td>` },
-    { key: 'payout', label: 'YTD Winnings', numeric: true, render: t => `<td class="${t.payout > 0 ? 'good' : ''}">${fmtMoney(t.payout)}</td>` },
+    { key: 'payout', label: 'YTD Winnings', numeric: true, render: t => `<td class="num ${t.payout > 0 ? 'good' : ''}">${fmtMoney(t.payout)}</td>` },
     { key: 'amount', label: 'Net', numeric: true, render: t => amountCellHtml(t) },
   ]);
   const teamRoiSection = `<div class="panel standings-panel">
@@ -3075,7 +3075,7 @@ function records(data) {
 
   setTimeout(bindPresidentDial, 0);
 
-  return `<div class="page-header"><h1>Records of Glory and Shame</h1></div>${officialRecords}${presidentDialHtml()}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
+  return `<div class="page-header"><h1>Records of Honour and Shame</h1></div>${officialRecords}${presidentDialHtml()}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
 }
 
 function monthYearLabel(date) {
