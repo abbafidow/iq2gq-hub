@@ -113,6 +113,12 @@ h1, h2, h3 { margin: 0; }
 .stats-tab.active { background: var(--accent); color: #061022; font-weight: 700; }
 .stats-tab + .stats-tab { border-left: 1px solid var(--line); }
 
+/* Stats > Reference tab - plain explanatory text, no data-driven styling
+   needed since nothing here is computed. */
+.stats-reference-label { color: var(--accent); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 6px; }
+.stats-reference-label:first-child { margin-top: 0; }
+.stats-reference-body { color: var(--text); font-size: 14px; line-height: 1.6; margin: 0; }
+
 .scope-toggle {
   display: flex;
   border: 1px solid var(--line);
@@ -1414,49 +1420,3 @@ border: 1px solid rgba(255,255,255,0.10);
   border-top: 1px solid var(--line);
 }
 .mini-table-team-header:first-child td { border-top: none; padding-top: 6px; }
-
-#loading-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  transition: opacity 0.4s ease;
-}
-.loading-logo {
-  width: 90px;
-  height: auto;
-  border-radius: 12px;
-}
-.loading-text {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0;
-}
-.loading-bar {
-  width: 200px;
-  height: 5px;
-  border-radius: 3px;
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
-.loading-bar-fill {
-  width: 40%;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--accent);
-  animation: loading-slide 1.2s ease-in-out infinite;
-}
-@keyframes loading-slide {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
-}
-#loading-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
