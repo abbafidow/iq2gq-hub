@@ -1594,6 +1594,7 @@ function statsPage(data) {
     { key: 'sports', label: 'Sports' },
     { key: 'bettypes', label: 'Bet types' },
     { key: 'odds', label: 'Odds' },
+    { key: 'reference', label: 'Reference' },
   ];
   if (!state.statsTab) {
     setTimeout(() => {
@@ -1613,7 +1614,8 @@ function statsPage(data) {
   const content = active === 'members' ? members(data)
     : active === 'sports' ? sports(data)
     : active === 'bettypes' ? betTypes(data)
-    : odds(data);
+    : active === 'odds' ? odds(data)
+    : statsReference();
   setTimeout(() => {
     document.querySelectorAll('.stats-tab').forEach(btn => {
       btn.onclick = () => {
@@ -1623,6 +1625,39 @@ function statsPage(data) {
     });
   }, 0);
   return `<div class="page-header"><h1>Stats</h1></div><div class="stats-subnav">${nav}</div>${content}`;
+}
+
+// Reference tab - a plain "how to read this page" explanation for things
+// that are otherwise invisible logic: sport groupings (Super Rugby/Rugby
+// Union split, Rugby League folding in NRL/Super League), the confidence
+// tiers, that every percentage on Stats only counts resulted picks, and
+// what "season" vs "career" figures actually mean. Nothing here is
+// computed from data - it's static explanatory text, kept as its own
+// function purely so statsPage's tab-routing ternary stays readable.
+function statsReference() {
+  const entries = [
+    {
+      label: 'Sport groupings',
+      body: 'Some competitions are grouped together for display purposes on this page - the underlying pick data is never changed, only how it\u2019s summarised here. Super Rugby covers every historical format (the original name, Aotearoa, Australia, South Africa, Transtasman, and the current Pacific competition), shown separately from the broader Rugby Union group, which still includes NPC and Six Nations. Rugby League similarly folds in NRL and Super League.',
+    },
+    {
+      label: 'Confidence',
+      body: 'Every stat carries a confidence label based on how many picks it\u2019s built from: High (50+ picks), Moderate (20+), or Low (fewer than 20). A small sample can look impressive or poor purely by chance - treat Low-confidence figures as early signal, not a settled trend.',
+    },
+    {
+      label: 'Resulted picks only',
+      body: 'Every percentage and win/loss count here only includes picks that have actually resulted (won or lost). A pending pick doesn\u2019t count toward or against anyone until it\u2019s settled.',
+    },
+    {
+      label: 'Season vs. career',
+      body: 'Figures labelled with a specific season (e.g. "2026/27") cover just that season\u2019s picks. "Career" or "all-time" figures span a member\u2019s full history with the syndicate.',
+    },
+  ];
+  const rows = entries.map(e => `
+    <p class="stats-reference-label">${escapeHtml(e.label)}</p>
+    <p class="stats-reference-body">${escapeHtml(e.body)}</p>
+  `).join('');
+  return `<div class="panel">${rows}</div>`;
 }
 
 function members(data) {
