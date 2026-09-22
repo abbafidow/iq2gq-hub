@@ -591,7 +591,23 @@ function competitionFamily(sport, teamName) {
 function sportGroup(sport) {
   const x = lower(sport);
   if (x.includes('rugby league') || x.includes('nrl') || x.includes('super league')) return 'Rugby League';
-  if (x.includes('rugby union') || x.includes('super rugby') || x.includes('six nations') || x.includes('npc')) return 'Rugby Union';
+  // Super Rugby (men's) collapsed into one collective display group -
+  // every men's-era variant actually seen in the Sheet ("Super Rugby"
+  // plain, the 2020/21 COVID-split conferences "Aotearoa"/"Australia"/
+  // "South Africa", 2021's one-off "Transtasman" format, and the
+  // current "Pacific" competition) all read as one "Super Rugby"
+  // category in the Hub. Super Rugby Aupiki - the separate women's
+  // competition - is deliberately excluded here and falls through to
+  // the generic Rugby Union group below instead, since it's a genuinely
+  // different competition, not another men's-era name for the same
+  // thing (a distinct "Super Rugby Aupiki"/women's group can be carved
+  // out the same way later if wanted - not done here since only men's
+  // was asked for). Purely a display-layer collapse - the raw Sport tag
+  // on every row is completely untouched, so the exact competition a
+  // pick was recorded under is still there for anyone who needs to
+  // trace it back.
+  if (x.includes('super rugby') && !x.includes('aupiki')) return 'Super Rugby';
+  if (x.includes('rugby union') || x.includes('six nations') || x.includes('npc')) return 'Rugby Union';
   if (x.includes('american football') || x.includes('nfl') || x.includes('ncaaf')) return 'American Football';
   if (x.includes('football') || x.includes('epl') || x.includes('premier league') || x.includes('soccer')) return 'Football';
   if (x.includes('basketball') || x.includes('nba') || x.includes('anbl') || x.includes('wnbl')) return 'Basketball';
@@ -654,19 +670,10 @@ async function init() {
     bind();
     render();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
-    hideLoadingScreen();
   } catch (error) {
     $('status').textContent = 'Could not load Google Sheet data';
     console.error(error);
-    hideLoadingScreen();
   }
-}
-
-function hideLoadingScreen() {
-  const el = document.getElementById('loading-screen');
-  if (!el) return;
-  el.classList.add('hidden');
-  setTimeout(() => el.remove(), 400);
 }
 
 async function loadRealWorldGames() {
