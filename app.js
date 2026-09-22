@@ -642,6 +642,23 @@ function qualifies(row) {
   return true;
 }
 
+// index.html's #loading-screen overlay (the bowtie logo, "Loading
+// syndicate data..." text, and progress bar) has no code anywhere that
+// hides it again once loading actually finishes - index.html itself has
+// no real application logic (just a one-line cache-busting stylesheet
+// tag), so it was stuck on screen permanently from the moment it was
+// added, overlapping the real content rendering underneath it. Hidden
+// here rather than in index.html, since this is where the rest of the
+// "loading is done" sequence (bind, render, updating the status text)
+// already runs. Called from BOTH the success path and the catch block
+// below, so a genuine load failure doesn't leave the loading screen
+// stuck forever either - the error text in $('status') is still visible
+// underneath it either way.
+function hideLoadingScreen() {
+  const el = document.getElementById('loading-screen');
+  if (el) el.style.display = 'none';
+}
+
 async function init() {
   try {
     const res = await fetch(`${API_URL}?v=${Date.now()}`, { cache: 'no-store' });
@@ -669,9 +686,11 @@ async function init() {
     history.replaceState({ page: state.page }, '');
     bind();
     render();
+    hideLoadingScreen();
     $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
   } catch (error) {
     $('status').textContent = 'Could not load Google Sheet data';
+    hideLoadingScreen();
     console.error(error);
   }
 }
