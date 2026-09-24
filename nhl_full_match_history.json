@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "sport": "NHL",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "NHL ice hockey (TheSportsDB league 4380). Scores are TheSportsDB final scores, which include overtime/shootout results. No manually-curated history behind this file - it started empty on 2026-09-24 and is built entirely from TheSportsDB, backfilled on its first run.",
+    "row_count": 0,
+    "last_auto_update": null
+  },
+  "games": []
+}

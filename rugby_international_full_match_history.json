@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "sport": "Rugby International",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "Men's rugby union test matches between two full national sides only (TheSportsDB league 5479, which also carries Rugby Championship fixtures). Tour games against clubs, invitational and \"A\"/XV sides are filtered out. Team names are stored as the country only (TheSportsDB's \" Rugby\" suffix removed). No manually-curated history behind this file - it started empty on 2026-09-24 and is built entirely from TheSportsDB, backfilled on its first run.",
+    "row_count": 0,
+    "last_auto_update": null
+  },
+  "games": []
+}

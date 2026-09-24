@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "sport": "Top 14",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "French Top 14 rugby (TheSportsDB league 4430). No manually-curated history behind this file - it started empty on 2026-09-24 and is built entirely from TheSportsDB, backfilled on its first run.",
+    "row_count": 0,
+    "last_auto_update": null
+  },
+  "games": []
+}
