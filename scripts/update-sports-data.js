@@ -578,6 +578,13 @@ const RANKED_SPORTS = [
     // log. For a season with no round-by-round events at all, those plain
     // entries are used instead.
     isFallbackResultEvent: (name) => !/round|practice|qualifying/i.test(name || '') && !/presidents cup|ryder cup|q school|q-school/i.test(name || ''),
+    // TheSportsDB lists only players who FINISHED (checked 24 Sep 2026 -
+    // no missed cuts or withdrawals in any result). So the final round
+    // alone can't show who missed the cut. The Round 1 entry, where one
+    // exists (2025 onwards), should list everyone who teed off; it's kept
+    // as the tournament's "entrants" so a missed cut counts as a miss.
+    entrantsEvent: (name) => /round 1$/i.test(name || ''),
+    entrantsLabel: (name) => (name || '').replace(/\s+round 1$/i, ''),
   },
 ];
 
@@ -678,8 +685,13 @@ async function updateRankedSport(sport) {
   const today = new Date().toISOString().slice(0, 10);
 
   const candidates = [];
+  const entrantEvents = []; // Round 1 listings, golf only
   for (const season of sport.seasonFormats(currentYear)) {
     const events = await fetchSeason(sport.leagueId, season);
+    if (sport.entrantsEvent) {
+      events.filter((e) => sport.entrantsEvent(e.strEvent) && e.dateEvent <= today)
+        .forEach((e) => entrantEvents.push(e));
+    }
     let relevant = events.filter((e) => sport.isResultEvent(e.strEvent));
     let usedFallback = false;
     if (!relevant.length && sport.isFallbackResultEvent) {
@@ -729,6 +741,30 @@ async function updateRankedSport(sport) {
     savedIds.add(String(e.idEvent));
     added += 1;
   }
+  let entrantsAdded = 0;
+  if (sport.entrantsEvent) {
+    let loggedEntrants = false;
+    for (const ev of data.events) {
+      if (Array.isArray(ev.entrants)) continue;
+      // The Round 1 listing for the same tournament: same name, 0-7 days
+      // before the final round.
+      const r1 = entrantEvents.find((e) => sport.entrantsLabel(e.strEvent) === ev.event
+        && (Date.parse(ev.date) - Date.parse(e.dateEvent)) / 86400000 >= 0
+        && (Date.parse(ev.date) - Date.parse(e.dateEvent)) / 86400000 <= 7);
+      if (!r1) continue; // older single-entry seasons have no round listings
+      const r1Results = await fetchEventResults(r1.idEvent);
+      if (r1Results === null) continue; // failed - retry next run
+      ev.entrants = [...new Set(r1Results.map((r) => r.strPlayer).filter(Boolean))];
+      entrantsAdded += 1;
+      if (!loggedEntrants) {
+        loggedEntrants = true;
+        const finishers = ev.results.length;
+        console.log(`  (check) entrants: ${ev.event} Round 1 lists ${ev.entrants.length} players vs ${finishers} in the final result${ev.entrants.length > finishers ? ' - missed cuts ARE visible' : ' - Round 1 does NOT show missed cuts'}`);
+      }
+    }
+    if (entrantsAdded) console.log(`  added entrant lists to ${entrantsAdded} tournament(s)`);
+  }
+
   data.meta.no_results_event_ids = [...noResultIds];
   const statusCounts = {};
   data.events.forEach((ev) => ev.results.forEach((r) => { if (r.status) statusCounts[r.status] = (statusCounts[r.status] || 0) + 1; }));
@@ -750,7 +786,7 @@ async function updateRankedSport(sport) {
     if (!added && unknown.length) added = -1; // names changed - still save
   }
 
-  if (!added && !refreshed && !newlyDead && !hadOldList) {
+  if (!added && !refreshed && !newlyDead && !hadOldList && !entrantsAdded) {
     console.log('  no new events to add');
     return;
   }
