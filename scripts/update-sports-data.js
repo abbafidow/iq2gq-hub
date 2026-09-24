@@ -618,14 +618,21 @@ async function fetchEventResults(eventId) {
   return null;
 }
 
+// Schema 2 (24 Sep 2026): also keeps competitors who didn't finish (F1
+// retirements, golfers who missed the cut or withdrew) with position null
+// and the reason in status. Without them, a golfer who misses the cut
+// half the time would look like a top-10 regular, because only the weeks
+// he made the cut would be counted.
+const RANKED_SCHEMA_VERSION = 2;
 function toResultRow(r) {
+  if (!r.strPlayer) return null;
   const raw = r.intPosition ?? r.strPosition ?? null;
   const match = raw === null ? null : String(raw).match(/\d+/);
-  if (!match) return null; // DNF/DSQ/withdrawn etc - no finishing position
   return {
-    position: Number(match[0]),
-    tied: /^t/i.test(String(raw).trim()),
-    name: r.strPlayer || null,
+    position: match ? Number(match[0]) : null,
+    tied: match ? /^t/i.test(String(raw).trim()) : false,
+    status: match ? null : (raw === null || raw === '' ? 'DNF' : String(raw)),
+    name: r.strPlayer,
     team_id: r.idTeam || null,
     // Race time for F1, total strokes for golf - kept for future patterns.
     detail: r.strDetail || null,
@@ -646,10 +653,15 @@ async function updateRankedSport(sport) {
   // Events saved by the first version of this pipeline (24 Sep 2026) lack
   // team_id/detail. Dropping them here means they're fetched again once,
   // with the fuller fields, then never again.
+  // Events saved under an older schema are dropped and fetched again once
+  // with the fuller fields, then never again.
   const beforeCount = data.events.length;
-  data.events = data.events.filter((e) => e.results.every((r) => 'team_id' in r));
+  if (data.meta.schema_version !== RANKED_SCHEMA_VERSION) {
+    data.events = [];
+    data.meta.schema_version = RANKED_SCHEMA_VERSION;
+  }
   const refreshed = beforeCount - data.events.length;
-  if (refreshed) console.log(`  re-fetching ${refreshed} event(s) saved before team/detail fields were kept`);
+  if (refreshed) console.log(`  re-fetching ${refreshed} event(s) saved under an older format (one-off, adds non-finishers)`);
   const savedIds = new Set(data.events.map((e) => String(e.id)));
   // Events more than 60 days old that still had no results are remembered
   // and skipped, so each run doesn't keep re-asking for results that
@@ -704,18 +716,24 @@ async function updateRankedSport(sport) {
       console.log(`  (check) result fields seen: ${Object.keys(results[0]).join(', ')}`);
       console.log(`  (check) first result row: ${JSON.stringify(results[0]).slice(0, 300)}`);
     }
-    const rows = results.map(toResultRow).filter(Boolean).sort((a, b) => a.position - b.position);
-    if (!rows.length) {
+    const rows = results.map(toResultRow).filter(Boolean)
+      .sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity));
+    if (!rows.some((r) => r.position !== null)) {
       empty += 1;
       const ageDays = (Date.parse(today) - Date.parse(e.dateEvent)) / 86400000;
       if (ageDays > 60) noResultIds.add(String(e.idEvent));
       continue;
     }
-    data.events.push({ id: String(e.idEvent), date: e.dateEvent, event: sport.eventLabel(e.strEvent), season: e.season, results: rows });
+    const finishers = rows.filter((r) => r.position !== null).length;
+    data.events.push({ id: String(e.idEvent), date: e.dateEvent, event: sport.eventLabel(e.strEvent), season: e.season, finishers, results: rows });
     savedIds.add(String(e.idEvent));
     added += 1;
   }
   data.meta.no_results_event_ids = [...noResultIds];
+  const statusCounts = {};
+  data.events.forEach((ev) => ev.results.forEach((r) => { if (r.status) statusCounts[r.status] = (statusCounts[r.status] || 0) + 1; }));
+  if (Object.keys(statusCounts).length) console.log(`  (check) non-finisher statuses kept: ${JSON.stringify(statusCounts).slice(0, 200)}`);
+  else if (data.events.length) console.log('  (check) no non-finisher rows in the data - TheSportsDB only lists finishers for this sport');
   if (failed) console.log(`  ${failed} event(s) couldn't be fetched this run (request failed) - will retry next run`);
   const newlyDead = noResultIds.size - noResultsBefore;
   if (empty) console.log(`  ${empty} event(s) had no usable results (${empty - newlyDead} recent - will retry; ${newlyDead} over 60 days old - won't be asked for again)`);
