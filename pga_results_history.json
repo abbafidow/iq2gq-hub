@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "sport": "PGA Tour",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "PGA Tour final finishing positions (TheSportsDB league 4425), taken from each tournament's final round. Team events (Presidents Cup, Ryder Cup) are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
+    "row_count": 0,
+    "last_auto_update": null
+  },
+  "events": []
+}

@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "sport": "Formula 1",
+    "source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "description": "Formula 1 Grand Prix finishing orders (TheSportsDB league 4370). Main race only - practice, qualifying and sprint sessions are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
+    "row_count": 0,
+    "last_auto_update": null
+  },
+  "events": []
+}
