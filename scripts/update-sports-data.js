@@ -79,6 +79,37 @@ function stripRugbySuffix(name) {
   return (name || '').replace(/ Rugby$/, '');
 }
 
+// NHL and NBA: TheSportsDB files their preseason exhibitions under the same
+// league as the real games (checked 2026-09-24: roughly 65-110 preseason
+// games per season, including exhibitions against non-NBA clubs like Ulm
+// and the NZ Breakers). Starters are rested in these, so they'd distort
+// streaks and home/away records. Any game dated before that season's
+// opening night is dropped. Add each new season's opening night here once
+// it's announced - a season with NO entry keeps none of its games (and
+// says so in the run log), rather than silently letting preseason through.
+// Nothing is lost by that: the games are fetched again on every run, so
+// they fill in as soon as the date is added.
+function splitSeasonForDate(date) {
+  const y = Number(date.slice(0, 4));
+  const m = Number(date.slice(5, 7));
+  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+const warnedMissingSeason = new Set();
+function isBeforeRegularSeason(date, sport) {
+  if (!sport.regularSeasonStarts) return false;
+  const season = splitSeasonForDate(date);
+  const start = sport.regularSeasonStarts[season];
+  if (!start) {
+    const key = `${sport.name}|${season}`;
+    if (!warnedMissingSeason.has(key)) {
+      warnedMissingSeason.add(key);
+      console.log(`  WARNING: no opening-night date listed for ${sport.name} ${season} - skipping that season's games until one is added to regularSeasonStarts`);
+    }
+    return true;
+  }
+  return date < start;
+}
+
 const SPORTS = [
   {
     name: 'EPL',
@@ -218,7 +249,20 @@ const SPORTS = [
     leagueId: 4335,
     file: path.join(__dirname, '..', 'laliga_full_match_history.json'),
     seasonFormats: splitYears(6),
-    teamAliases: {},
+    // TheSportsDB used short/older club names for seasons up to 2023-24,
+    // then switched - found 2026-09-24 when the first backfill split the
+    // same club across two or three names. Mapped to the names TheSportsDB
+    // uses now, so new games need no mapping at all.
+    teamAliases: {
+      'Alaves': 'Deportivo Alavés',
+      'Ath Bilbao': 'Athletic Bilbao',
+      'Ath Madrid': 'Atlético Madrid',
+      'Atletico Madrid': 'Atlético Madrid',
+      'Betis': 'Real Betis',
+      'Espanol': 'Espanyol',
+      'Sociedad': 'Real Sociedad',
+      'Vallecano': 'Rayo Vallecano',
+    },
     oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
@@ -236,7 +280,8 @@ const SPORTS = [
     leagueId: 4415,
     file: path.join(__dirname, '..', 'super_league_full_match_history.json'),
     seasonFormats: plainYears(6),
-    teamAliases: {},
+    // Leigh renamed from Centurions to Leopards for 2023 - same club.
+    teamAliases: { 'Leigh Centurions': 'Leigh Leopards' },
     oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
@@ -249,7 +294,19 @@ const SPORTS = [
     leagueId: 4380,
     file: path.join(__dirname, '..', 'nhl_full_match_history.json'),
     seasonFormats: splitYears(3),
-    teamAliases: {},
+    // Utah Hockey Club renamed to Utah Mammoth for 2025-26 - same club.
+    // Arizona Coyotes (2023-24) deliberately kept separate: the franchise
+    // relocated, so its home record is a different city's.
+    teamAliases: { 'Utah Hockey Club': 'Utah Mammoth' },
+    // Opening nights (NHL). 2024-25 is the North American opener - the two
+    // regular-season games played in Prague on 4-5 Oct 2024 are dropped
+    // with the preseason, a deliberate trade-off for a simple rule.
+    regularSeasonStarts: {
+      '2023-2024': '2023-10-10',
+      '2024-2025': '2024-10-08',
+      '2025-2026': '2025-10-07',
+      '2026-2027': '2026-09-29',
+    },
     oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
@@ -259,6 +316,13 @@ const SPORTS = [
     file: path.join(__dirname, '..', 'nba_full_match_history.json'),
     seasonFormats: splitYears(3),
     teamAliases: {},
+    // Opening nights (NBA).
+    regularSeasonStarts: {
+      '2023-2024': '2023-10-24',
+      '2024-2025': '2024-10-22',
+      '2025-2026': '2025-10-21',
+      '2026-2027': '2026-10-20',
+    },
     oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
@@ -306,6 +370,7 @@ function toGameRow(event, sport) {
   // Skip anything not actually finished yet - postponed, or no score recorded.
   if (event.strPostponed === 'yes') return null;
   if (sport.includeEvent && !sport.includeEvent(event)) return null;
+  if (isBeforeRegularSeason(event.dateEvent, sport)) return null;
   if (homeScore === null || homeScore === undefined || awayScore === null || awayScore === undefined) return null;
 
   const row = {
@@ -335,8 +400,34 @@ function toGameRow(event, sport) {
   return row;
 }
 
-function gameKey(g) {
-  return `${g.date}|${g.home_team}|${g.away_team}`;
+function dayNumber(date) {
+  return Math.round(Date.parse(`${date}T00:00:00Z`) / 86400000);
+}
+function isSameGame(a, b) {
+  return a.home_team === b.home_team
+    && a.away_team === b.away_team
+    && a.home_score === b.home_score
+    && a.away_score === b.away_score
+    && Math.abs(dayNumber(a.date) - dayNumber(b.date)) <= 1;
+}
+// Quick lookup so "is this game already here?" doesn't scan the whole
+// file each time (EPL alone is several thousand rows).
+function fixtureKey(g) {
+  return `${g.home_team}|${g.away_team}|${g.home_score}|${g.away_score}`;
+}
+class GameIndex {
+  constructor() { this.map = new Map(); }
+  find(row) {
+    return (this.map.get(fixtureKey(row)) || []).find((g) => isSameGame(g.row, row));
+  }
+  add(row, slot) {
+    const key = fixtureKey(row);
+    if (!this.map.has(key)) this.map.set(key, []);
+    this.map.get(key).push({ row, slot });
+  }
+}
+function filledFieldCount(row) {
+  return Object.values(row).filter((v) => v !== null && v !== undefined && v !== '').length;
 }
 
 async function updateSport(sport) {
@@ -344,7 +435,47 @@ async function updateSport(sport) {
   const raw = fs.readFileSync(sport.file, 'utf8');
   const data = JSON.parse(raw);
 
-  const existingKeys = new Set(data.games.map(gameKey));
+  // Tidy what's already in the file with the CURRENT rules on every run -
+  // team aliases and the preseason cut-off. This is what applies a newly
+  // added alias or opening-night date to games saved before it existed.
+  //
+  // It also merges duplicate copies of the same game. Checked 2026-09-24:
+  // the NRL and Super Rugby files each held ~75-80 games twice - once from
+  // the original manually-sourced history, and again from an early
+  // automatic run before the team-name aliases existed (e.g. "ACT
+  // Brumbies" alongside "Brumbies"), plus a couple of NRL games dated a
+  // day apart (TheSportsDB's UTC date vs the local date). A duplicate
+  // counts the same result twice in streaks and home/away records.
+  // "Same game" = same two teams, same score, dated within a day. Where
+  // two copies exist, the one with more filled-in fields (i.e. with
+  // odds) is kept.
+  const beforeCount = data.games.length;
+  const beforeNames = data.games.map((g) => `${g.home_team}|${g.away_team}`);
+  const kept = [];
+  const index = new GameIndex();
+  data.games.forEach((g) => {
+    const row = {
+      ...g,
+      home_team: normalizeTeamName(g.home_team, sport.teamAliases),
+      away_team: normalizeTeamName(g.away_team, sport.teamAliases),
+    };
+    if (isBeforeRegularSeason(row.date, sport)) return;
+    const twin = index.find(row);
+    if (!twin) {
+      index.add(row, kept.length);
+      kept.push(row);
+    } else if (filledFieldCount(row) > filledFieldCount(kept[twin.slot])) {
+      kept[twin.slot] = row;
+      twin.row = row;
+    }
+  });
+  const tidiedChanged = kept.length !== beforeCount
+    || kept.some((g, i) => `${g.home_team}|${g.away_team}` !== beforeNames[i]);
+  if (tidiedChanged) {
+    console.log(`  tidied existing rows: ${beforeCount} -> ${kept.length} (renamed teams and/or removed preseason/duplicate games)`);
+  }
+  data.games = kept;
+
   const currentYear = new Date().getUTCFullYear();
 
   let fetched = [];
@@ -362,12 +493,12 @@ async function updateSport(sport) {
   fetched.forEach((event) => {
     const row = toGameRow(event, sport);
     if (!row) return;
-    if (existingKeys.has(gameKey(row))) return;
-    existingKeys.add(gameKey(row));
+    if (index.find(row)) return;
+    index.add(row, -1);
     newGames.push(row);
   });
 
-  if (!newGames.length) {
+  if (!newGames.length && !tidiedChanged) {
     console.log('  no new games to add');
     return;
   }
