@@ -551,6 +551,9 @@ const RANKED_SPORTS = [
     // anyone bets on.
     isResultEvent: (name) => /grand prix$/i.test(name || '') && !/practice|qualifying|sprint|shootout/i.test(name || ''),
     eventLabel: (name) => name,
+    // F1 results only carry the constructor's ID (no name) - looked up once
+    // per new ID via lookupteam.php and kept in the file's meta.
+    resolveTeamNames: true,
   },
   {
     name: 'PGA Tour',
@@ -596,13 +599,30 @@ function toResultRow(r) {
     position: Number(match[0]),
     tied: /^t/i.test(String(raw).trim()),
     name: r.strPlayer || null,
-    team: r.strTeam || null,
+    team_id: r.idTeam || null,
+    // Race time for F1, total strokes for golf - kept for future patterns.
+    detail: r.strDetail || null,
   };
+}
+
+async function lookupTeamName(teamId) {
+  await sleep(600);
+  const res = await fetch(`${BASE_URL}/lookupteam.php?id=${teamId}`);
+  if (!res.ok) return null;
+  const json = await res.json();
+  return (json.teams && json.teams[0] && json.teams[0].strTeam) || null;
 }
 
 async function updateRankedSport(sport) {
   console.log(`\n=== ${sport.name} ===`);
   const data = JSON.parse(fs.readFileSync(sport.file, 'utf8'));
+  // Events saved by the first version of this pipeline (24 Sep 2026) lack
+  // team_id/detail. Dropping them here means they're fetched again once,
+  // with the fuller fields, then never again.
+  const beforeCount = data.events.length;
+  data.events = data.events.filter((e) => e.results.every((r) => 'team_id' in r));
+  const refreshed = beforeCount - data.events.length;
+  if (refreshed) console.log(`  re-fetching ${refreshed} event(s) saved before team/detail fields were kept`);
   const savedIds = new Set(data.events.map((e) => String(e.id)));
   const currentYear = new Date().getUTCFullYear();
   const today = new Date().toISOString().slice(0, 10);
@@ -613,6 +633,12 @@ async function updateRankedSport(sport) {
     const relevant = events.filter((e) => sport.isResultEvent(e.strEvent));
     if (events.length) {
       console.log(`  season "${season}" returned ${events.length} events, ${relevant.length} of them result events`);
+      if (!relevant.length) {
+        // Different naming in older seasons - show a few names so the
+        // filter can be widened to match them.
+        const sample = [...new Set(events.map((e) => e.strEvent))].slice(0, 6).join(' | ');
+        console.log(`    (check) sample event names: ${sample}`);
+      }
     }
     relevant.forEach((e) => {
       if (e.dateEvent && e.dateEvent <= today && !savedIds.has(String(e.idEvent))) {
@@ -625,7 +651,8 @@ async function updateRankedSport(sport) {
   let added = 0;
   let empty = 0;
   let loggedResultFields = false;
-  for (const e of candidates) {
+  for (const [i, e] of candidates.entries()) {
+    if (i && i % 25 === 0) console.log(`  ...${i} of ${candidates.length} fetched`);
     const results = await fetchEventResults(e.idEvent);
     if (results.length && !loggedResultFields) {
       loggedResultFields = true;
@@ -640,7 +667,19 @@ async function updateRankedSport(sport) {
   }
   if (empty) console.log(`  ${empty} event(s) had no usable results yet (will retry next run)`);
 
-  if (!added) {
+  if (sport.resolveTeamNames) {
+    data.meta.team_names = data.meta.team_names || {};
+    const unknown = [...new Set(data.events.flatMap((e) => e.results.map((r) => r.team_id)))]
+      .filter((id) => id && !data.meta.team_names[id]);
+    for (const id of unknown) {
+      const name = await lookupTeamName(id);
+      if (name) data.meta.team_names[id] = name;
+    }
+    if (unknown.length) console.log(`  looked up ${unknown.length} team name(s)`);
+    if (!added && unknown.length) added = -1; // names changed - still save
+  }
+
+  if (!added && !refreshed) {
     console.log('  no new events to add');
     return;
   }
@@ -649,7 +688,7 @@ async function updateRankedSport(sport) {
   data.meta.last_auto_update = today;
   data.meta.last_auto_update_source = 'TheSportsDB API, via scripts/update-sports-data.js';
   fs.writeFileSync(sport.file, JSON.stringify(data, null, 2) + '\n');
-  console.log(`  added ${added} event(s), file now has ${data.events.length} total`);
+  console.log(`  added ${Math.max(added, 0)} event(s), file now has ${data.events.length} total`);
 }
 
 async function main() {
