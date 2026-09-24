@@ -18,7 +18,8 @@
           "position": 1,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": " 258 "
         }
       ]
     },
@@ -32,61 +33,71 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "196"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Min Woo Lee",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -100,67 +111,78 @@
           "position": 1,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Michael Brennan",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Sungjae Im",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         }
       ]
     },
@@ -174,67 +196,78 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Sungjae Im",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         }
       ]
     },
@@ -248,67 +281,78 @@
           "position": 1,
           "tied": false,
           "name": "Michael Brennan",
-          "team": null
+          "team_id": "135283",
+          "detail": "258"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Beau Hossler",
-          "team": null
+          "team_id": "135283",
+          "detail": "261"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben James",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Kevin Yu",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Tom Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Matt Wallace",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         }
       ]
     },
@@ -322,85 +366,99 @@
           "position": 1,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Davis Riley",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Rasmus Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "266"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Matt Wallace",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Kristoffer Ventura",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Davis Thompson",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Michael Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Chris Kirk",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -414,73 +472,85 @@
           "position": 1,
           "tied": false,
           "name": "Jackson Koivun",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Brian Harman",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Chandler Phillips",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Denny McCarthy",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Davis Thompson",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Emiliano Grillo",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Ben Kohles",
-          "team": null
+          "team_id": "150754",
+          "detail": "266"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Seamus Power",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Michael Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         }
       ]
     },
@@ -494,49 +564,57 @@
           "position": 1,
           "tied": false,
           "name": "Stefano Mazzoli",
-          "team": null
+          "team_id": "135283",
+          "detail": " 268 "
         },
         {
           "position": 1,
           "tied": false,
           "name": "Stefano Mazzoli",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Todd Clements",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Will Gordon",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Marcel Schneider",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Jacob Skov Olesen",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Joe Highsmith",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Zach Bauchou",
-          "team": null
+          "team_id": "150754",
+          "detail": "272"
         }
       ]
     },
@@ -550,7 +628,8 @@
           "position": 1,
           "tied": false,
           "name": "Ryan Fox",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         }
       ]
     },
@@ -564,67 +643,78 @@
           "position": 1,
           "tied": false,
           "name": "Steven Fisk",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Taylor Pendrith",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben Silverman",
-          "team": null
+          "team_id": "135358",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Aaron Wise",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Kristoffer Ventura",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Lucas Glover",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Manuel Elvira",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Zac Blair",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Mackenzie Hughes",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "William Mouw",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Tom Hoge",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -638,49 +728,57 @@
           "position": 1,
           "tied": false,
           "name": "Tom Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Keita Nakajima",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Johnny Keefer",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Victor Perez",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -694,67 +792,78 @@
           "position": 1,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Max Homa",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben Kohles",
-          "team": null
+          "team_id": "150754",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Lucas Glover",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Mac Meissner",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Doug Ghim",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Jackson Suber",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Zach Johnson",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Zac Blair",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -768,67 +877,78 @@
           "position": 1,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "260"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "261"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 7,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": "263"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "264"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         }
       ]
     },
@@ -842,97 +962,113 @@
           "position": 1,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Tom Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 4,
           "tied": false,
           "name": "J. T. Poston",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Joaquin Niemann",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tyrrell Hatton",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 11,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 11,
           "tied": false,
           "name": "John Parry",
-          "team": null
+          "team_id": "135291",
+          "detail": "282"
         },
         {
           "position": 11,
           "tied": false,
           "name": "Aaron Rai",
-          "team": null
+          "team_id": "135291",
+          "detail": "282"
         },
         {
           "position": 11,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 11,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 11,
           "tied": false,
           "name": "Sahith Theegala",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         }
       ]
     },
@@ -946,61 +1082,71 @@
           "position": 1,
           "tied": false,
           "name": "Bud Cauley",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Brice Garnett",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jesper Svensson",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jackson Suber",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jimmy Stanger",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Aldrich Potgieter",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Sudarshan Yellamaraju",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ryan Fox",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         }
       ]
     },
@@ -1014,67 +1160,78 @@
           "position": 1,
           "tied": false,
           "name": "J. T. Poston",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Kristoffer Reitan",
-          "team": null
+          "team_id": "135291",
+          "detail": "280"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         }
       ]
     },
@@ -1088,73 +1245,85 @@
           "position": 1,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Mac Meissner",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Michael Brennan",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Steven Fisk",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Mackenzie Hughes",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         }
       ]
     },
@@ -1168,79 +1337,92 @@
           "position": 1,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "254"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "257"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jackson Suber",
-          "team": null
+          "team_id": "135283",
+          "detail": "261"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Tony Finau",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Zach Bauchou",
-          "team": null
+          "team_id": "150754",
+          "detail": "264"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Tom Hoge",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Johnny Keefer",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Jesper Svensson",
-          "team": null
+          "team_id": "135291",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Sungjae Im",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Max Greyserman",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         }
       ]
     },
@@ -1254,79 +1436,92 @@
           "position": 1,
           "tied": false,
           "name": "Aaron Rai",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Jon Rahm",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "206"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Cameron Smith",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "277"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Patrick Reed",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         }
       ]
     },
@@ -1340,73 +1535,85 @@
           "position": 1,
           "tied": false,
           "name": "Kristoffer Reitan",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Sungjae Im",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 5,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         }
       ]
     },
@@ -1420,79 +1627,92 @@
           "position": 1,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Adam Scott",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "279"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": "279"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Nick Taylor",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         }
       ]
     },
@@ -1506,13 +1726,15 @@
           "position": 1,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": " 257 "
         },
         {
           "position": 1,
           "tied": false,
           "name": "Alex Fitzpatrick",
-          "team": null
+          "team_id": "135291",
+          "detail": " 257 "
         }
       ]
     },
@@ -1526,67 +1748,78 @@
           "position": 1,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Bud Cauley",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         }
       ]
     },
@@ -1600,61 +1833,71 @@
           "position": 1,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Tyrrell Hatton",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Max Homa",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         }
       ]
     },
@@ -1668,73 +1911,85 @@
           "position": 1,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Matt Wallace",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Michael Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Andrew Putnam",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Kevin Yu",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "275"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Chandler Phillips",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Austin Eckroat",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         }
       ]
     },
@@ -1748,67 +2003,78 @@
           "position": 1,
           "tied": false,
           "name": "Gary Woodland",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Min Woo Lee",
-          "team": null
+          "team_id": "135291",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Johnny Keefer",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Sudarshan Yellamaraju",
-          "team": null
+          "team_id": "150754",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Jason Day",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Bronson Burgoon",
-          "team": null
+          "team_id": "135358",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Sahith Theegala",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -1822,61 +2088,71 @@
           "position": 1,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 2,
           "tied": false,
           "name": "David Lipsky",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Jordan Smith",
-          "team": null
+          "team_id": "135291",
+          "detail": "275"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Marco Penge",
-          "team": null
+          "team_id": "135291",
+          "detail": "276"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Sungjae Im",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Emiliano Grillo",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Kim Seong-hyeon",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         }
       ]
     },
@@ -1890,61 +2166,71 @@
           "position": 1,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Matt Fitzpatrick",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "278"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Sudarshan Yellamaraju",
-          "team": null
+          "team_id": "150754",
+          "detail": "279"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         }
       ]
     },
@@ -1958,61 +2244,71 @@
           "position": 1,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Daniel Berger",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Sahith Theegala",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Min Woo Lee",
-          "team": null
+          "team_id": "135291",
+          "detail": "278"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         }
       ]
     },
@@ -2026,67 +2322,78 @@
           "position": 1,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Taylor Moore",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Shane Lowry",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Austin Smotherman",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "William Mouw",
-          "team": null
+          "team_id": "135358",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Brooks Koepka",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Rasmus Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Joel Dahmen",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         }
       ]
     },
@@ -2100,67 +2407,78 @@
           "position": 1,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Adam Scott",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Aldrich Potgieter",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Ryan Fox",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         }
       ]
     },
@@ -2174,79 +2492,92 @@
           "position": 1,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Min Woo Lee",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Shane Lowry",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         }
       ]
     },
@@ -2260,67 +2591,78 @@
           "position": 1,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Pierceson Coody",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         }
       ]
     },
@@ -2334,61 +2676,71 @@
           "position": 1,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Pierceson Coody",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Kim Si-woo",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sahith Theegala",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Joel Dahmen",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         }
       ]
     },
@@ -2402,73 +2754,85 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "261"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Jason Day",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Andrew Putnam",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Kim Si-woo",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Sahith Theegala",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Haotong Li",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Austin Smotherman",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Tom Hoge",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         }
       ]
     },
@@ -2482,61 +2846,71 @@
           "position": 1,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Patrick Rodgers",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Taylor Pendrith",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Daniel Berger",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Davis Riley",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -2550,61 +2924,71 @@
           "position": 1,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         }
       ]
     },
@@ -2618,73 +3002,85 @@
           "position": 1,
           "tied": false,
           "name": "Sami Välimäki",
-          "team": null
+          "team_id": "135291",
+          "detail": "259"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Max McGreevy",
-          "team": null
+          "team_id": "135283",
+          "detail": "260"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 4,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Doug Ghim",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Seamus Power",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Zac Blair",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Patrick Rodgers",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         }
       ]
     },
@@ -2698,49 +3094,57 @@
           "position": 1,
           "tied": false,
           "name": "Adam Schenk",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Vince Whaley",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Takumi Kanaya",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Max McGreevy",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Rikuya Hoshino",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Camilo Villegas",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Zac Blair",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         }
       ]
     },
@@ -2754,49 +3158,57 @@
           "position": 1,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "259"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Sami Välimäki",
-          "team": null
+          "team_id": "135291",
+          "detail": "261"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Chad Ramey",
-          "team": null
+          "team_id": "135283",
+          "detail": "261"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Garrick Higgo",
-          "team": null
+          "team_id": "135291",
+          "detail": "262"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Patrick Rodgers",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Nick Dunlap",
-          "team": null
+          "team_id": "135358",
+          "detail": "264"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "264"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         }
       ]
     },
@@ -2810,49 +3222,57 @@
           "position": 1,
           "tied": false,
           "name": "Michael Brennan",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Ben Silverman",
-          "team": null
+          "team_id": "135358",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Justin Lower",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Thorbjørn Olesen",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Pierceson Coody",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Brandt Snedeker",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Max Homa",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -2866,55 +3286,64 @@
           "position": 1,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Garrick Higgo",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Christiaan Bezuidenhout",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Matt Wallace",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Min Woo Lee",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         }
       ]
     },
@@ -2928,49 +3357,57 @@
           "position": 1,
           "tied": false,
           "name": "Steven Fisk",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Garrick Higgo",
-          "team": null
+          "team_id": "135291",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Rasmus Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Vince Whaley",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Christiaan Bezuidenhout",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Taylor Montgomery",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Doc Redman",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         }
       ]
     },
@@ -2984,49 +3421,57 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Lanto Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Emiliano Grillo",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 6,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Mackenzie Hughes",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Garrick Higgo",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         }
       ]
     },
@@ -3040,67 +3485,78 @@
           "position": 1,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Keegan Bradley",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -3114,61 +3570,71 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Michael Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         }
       ]
     },
@@ -3182,79 +3648,92 @@
           "position": 1,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Chris Kirk",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         }
       ]
     },
@@ -3268,37 +3747,43 @@
           "position": 1,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "258"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Mark Hubbard",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Alex Noren",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Chris Kirk",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Aaron Rai",
-          "team": null
+          "team_id": "135291",
+          "detail": "266"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         }
       ]
     },
@@ -3312,73 +3797,85 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Wyndham Clark",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Haotong Li",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Bryson DeChambeau",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Brian Harman",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         }
       ]
     },
@@ -3392,61 +3889,71 @@
           "position": 1,
           "tied": false,
           "name": "William Mouw",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Paul Peterson",
-          "team": null
+          "team_id": "135291",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "David Skinns",
-          "team": null
+          "team_id": "135358",
+          "detail": "274"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Vince Whaley",
-          "team": null
+          "team_id": "135283",
+          "detail": "274"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Chad Ramey",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ben Kohles",
-          "team": null
+          "team_id": "135358",
+          "detail": "276"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Taylor Montgomery",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Nick Hardy",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Kevin Kisner",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Luke List",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         }
       ]
     },
@@ -3460,55 +3967,64 @@
           "position": 1,
           "tied": false,
           "name": "Chris Gotterup",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Marco Penge",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         }
       ]
     },
@@ -3522,49 +4038,57 @@
           "position": 1,
           "tied": false,
           "name": "Brian Campbell",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Emiliano Grillo",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "David Lipsky",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Lucas Glover",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Matt Kuchar",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Max Homa",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -3578,49 +4102,57 @@
           "position": 1,
           "tied": false,
           "name": "Aldrich Potgieter",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Chris Kirk",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jake Knapp",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Thriston Lawrence",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Andrew Putnam",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -3634,67 +4166,78 @@
           "position": 1,
           "tied": false,
           "name": "Keegan Bradley",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jason Day",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Brian Harman",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Lucas Glover",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         }
       ]
     },
@@ -3708,67 +4251,78 @@
           "position": 1,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "281"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Viktor Hovland",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tyrrell Hatton",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Carlos Ortiz",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Jon Rahm",
-          "team": null
+          "team_id": "135283",
+          "detail": "284"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "284"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "284"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "285"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "285"
         }
       ]
     },
@@ -3782,67 +4336,78 @@
           "position": 1,
           "tied": false,
           "name": "Ryan Fox",
-          "team": null
+          "team_id": "135291",
+          "detail": "262"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "262"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Kevin Yu",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Matt McCarty",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Andrew Putnam",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Matteo Manassero",
-          "team": null
+          "team_id": "135291",
+          "detail": "265"
         },
         {
           "position": 9,
           "tied": false,
           "name": "David Skinns",
-          "team": null
+          "team_id": "135358",
+          "detail": "266"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Victor Perez",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Cameron Champ",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 9,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         }
       ]
     },
@@ -3856,67 +4421,78 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Nick Taylor",
-          "team": null
+          "team_id": "135283",
+          "detail": "284"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Brandt Snedeker",
-          "team": null
+          "team_id": "135283",
+          "detail": "287"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tom Hoge",
-          "team": null
+          "team_id": "135283",
+          "detail": "287"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rickie Fowler",
-          "team": null
+          "team_id": "135283",
+          "detail": "287"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Keegan Bradley",
-          "team": null
+          "team_id": "135283",
+          "detail": "287"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Jordan Spieth",
-          "team": null
+          "team_id": "135283",
+          "detail": "287"
         }
       ]
     },
@@ -3930,61 +4506,71 @@
           "position": 1,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Bud Cauley",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Aldrich Potgieter",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "273"
         }
       ]
     },
@@ -3998,85 +4584,99 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Bryson DeChambeau",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Davis Riley",
-          "team": null
+          "team_id": "135283",
+          "detail": "278"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Taylor Pendrith",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Jhonattan Vegas",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Joaquin Niemann",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Denny McCarthy",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Ryan Gerard",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Joe Highsmith",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Keegan Bradley",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Jon Rahm",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         }
       ]
     },
@@ -4090,61 +4690,71 @@
           "position": 1,
           "tied": false,
           "name": "Ryan Fox",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Mackenzie Hughes",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Harry Higgs",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Kevin Yu",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Hayden Buckley",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Mark Hubbard",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sami Välimäki",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Thorbjørn Olesen",
-          "team": null
+          "team_id": "135291",
+          "detail": "272"
         }
       ]
     },
@@ -4158,61 +4768,71 @@
           "position": 1,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Shane Lowry",
-          "team": null
+          "team_id": "135291",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jacob Bridgeman",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         }
       ]
     },
@@ -4226,67 +4846,78 @@
           "position": 1,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "253"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Erik van Rooyen",
-          "team": null
+          "team_id": "135291",
+          "detail": "261"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jordan Spieth",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Mark Hubbard",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Takumi Kanaya",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Will Gordon",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Kurt Kitayama",
-          "team": null
+          "team_id": "135291",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Adam Schenk",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         }
       ]
     },
@@ -4300,61 +4931,71 @@
           "position": 1,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Daniel Berger",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Mackenzie Hughes",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Brian Harman",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Si Woo Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         }
       ]
     },
@@ -4368,61 +5009,71 @@
           "position": 1,
           "tied": false,
           "name": "Garrick Higgo",
-          "team": null
+          "team_id": "135291",
+          "detail": "274"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Alejandro Tosti",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Keith Mitchell",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Michael Thorbjornsen",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Joel Dahmen",
-          "team": null
+          "team_id": "135283",
+          "detail": "275"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Vince Whaley",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Chan Kim",
-          "team": null
+          "team_id": "135358",
+          "detail": "276"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Matti Schmid",
-          "team": null
+          "team_id": "135291",
+          "detail": "277"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Charley Hoffman",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Ben Martin",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         }
       ]
     },
@@ -4436,61 +5087,71 @@
           "position": 1,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Patrick Reed",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Bryson DeChambeau",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Zach Johnson",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Xander Schauffele",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Jason Day",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "283"
         }
       ]
     },
@@ -4504,67 +5165,78 @@
           "position": 1,
           "tied": false,
           "name": "Brian Campbell",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Aldrich Potgieter",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Aaron Rai",
-          "team": null
+          "team_id": "135291",
+          "detail": "266"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Joel Dahmen",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Nicolai Højgaard",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Ryo Hisatsune",
-          "team": null
+          "team_id": "135291",
+          "detail": "270"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Alejandro Tosti",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Alex Smalley",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         }
       ]
     },
@@ -4578,67 +5250,78 @@
           "position": 1,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "276"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "277"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Patrick Rodgers",
-          "team": null
+          "team_id": "135283",
+          "detail": "279"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Tony Finau",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Tommy Fleetwood",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Denny McCarthy",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Akshay Bhatia",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Nick Taylor",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         }
       ]
     },
@@ -4652,61 +5335,71 @@
           "position": 1,
           "tied": false,
           "name": "Thomas Detry",
-          "team": null
+          "team_id": "135291",
+          "detail": "260"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Daniel Berger",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Michael Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Christiaan Bezuidenhout",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jordan Spieth",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Robert MacIntyre",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Adam Hadwin",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Taylor Moore",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         }
       ]
     },
@@ -4720,67 +5413,78 @@
           "position": 1,
           "tied": false,
           "name": "Rory McIlroy",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Shane Lowry",
-          "team": null
+          "team_id": "135291",
+          "detail": "269"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Lucas Glover",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Justin Rose",
-          "team": null
+          "team_id": "135283",
+          "detail": "270"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "271"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Cam Davis",
-          "team": null
+          "team_id": "135358",
+          "detail": "271"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Tom Kim",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "272"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Billy Horschel",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Scottie Scheffler",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Taylor Pendrith",
-          "team": null
+          "team_id": "135283",
+          "detail": "273"
         }
       ]
     },
@@ -4794,67 +5498,78 @@
           "position": 1,
           "tied": false,
           "name": "Harris English",
-          "team": null
+          "team_id": "135283",
+          "detail": "280"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Sam Stevens",
-          "team": null
+          "team_id": "135283",
+          "detail": "281"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Andrew Novak",
-          "team": null
+          "team_id": "135283",
+          "detail": "282"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Kris Ventura",
-          "team": null
+          "team_id": "135358",
+          "detail": "283"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Taylor Pendrith",
-          "team": null
+          "team_id": "135283",
+          "detail": "285"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Will Gordon",
-          "team": null
+          "team_id": "135283",
+          "detail": "285"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Danny Willett",
-          "team": null
+          "team_id": "135291",
+          "detail": "286"
         },
         {
           "position": 9,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Lanto Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Greyson Sigg",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         },
         {
           "position": 9,
           "tied": false,
           "name": "Joel Dahmen",
-          "team": null
+          "team_id": "135283",
+          "detail": "286"
         }
       ]
     },
@@ -4868,55 +5583,64 @@
           "position": 1,
           "tied": false,
           "name": "Sepp Straka",
-          "team": null
+          "team_id": "135283",
+          "detail": "263"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Justin Thomas",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Jason Day",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Justin Lower",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Patrick Cantlay",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Charley Hoffman",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Camilo Villegas",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Ben Griffin",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 7,
           "tied": false,
           "name": "Taylor Moore",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -4930,79 +5654,92 @@
           "position": 1,
           "tied": false,
           "name": "Nick Taylor",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Nico Echavarria",
-          "team": null
+          "team_id": "135283",
+          "detail": "264"
         },
         {
           "position": 3,
           "tied": false,
           "name": "Stephan Jaeger",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 3,
           "tied": false,
           "name": "J.J. Spaun",
-          "team": null
+          "team_id": "135283",
+          "detail": "265"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Eric Cole",
-          "team": null
+          "team_id": "135283",
+          "detail": "266"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Adam Schenk",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 6,
           "tied": false,
           "name": "Keegan Bradley",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Nick Dunlap",
-          "team": null
+          "team_id": "135358",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Jesper Svensson",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Paul Peterson",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Russell Henley",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 10,
           "tied": false,
           "name": "lee hodges",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         }
       ]
     },
@@ -5016,67 +5753,78 @@
           "position": 1,
           "tied": false,
           "name": "Hideki Matsuyama",
-          "team": null
+          "team_id": "135283",
+          "detail": "257"
         },
         {
           "position": 2,
           "tied": false,
           "name": "Collin Morikawa",
-          "team": null
+          "team_id": "135283",
+          "detail": "260"
         },
         {
           "position": 4,
           "tied": false,
           "name": "Jhonattan Vegas",
-          "team": null
+          "team_id": "135283",
+          "detail": "267"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Ludvig Åberg",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Corey Conners",
-          "team": null
+          "team_id": "135283",
+          "detail": "268"
         },
         {
           "position": 5,
           "tied": false,
           "name": "Thomas Detry",
-          "team": null
+          "team_id": "135291",
+          "detail": "268"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Sam Burns",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Cameron Young",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Maverick McNealy",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Tom Hoge",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         },
         {
           "position": 8,
           "tied": false,
           "name": "Harry Hall",
-          "team": null
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     }
