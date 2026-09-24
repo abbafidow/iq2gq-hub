@@ -16,12 +16,11 @@
 // NFL 4391, NRL 4416, Super Rugby 4551, AFL 4456, NPC 5278. Added
 // 2026-09-24 (IDs from TheSportsDB's own league pages, not yet run live):
 // La Liga 4335, Top 14 4430, Super League 4415, NHL 4380, NBA 4387,
-// Rugby Union International Friendlies 5479.
+// international rugby 5479 + Six Nations 4714 + Nations Championship 5852.
 //
-// Formula 1 (4370) and PGA Tour (4425) are deliberately NOT here: they
-// aren't two-team games with a home and away score, so every event would
-// be skipped by toGameRow() below. They need a separate finishing-position
-// pipeline of their own - see the Hub's task list.
+// Formula 1 (4370) and PGA Tour (4425) aren't two-team games with a home
+// and away score, so they use a separate finishing-position pipeline -
+// see RANKED_SPORTS near the bottom of this file.
 //
 // IMPORTANT - AFL and NPC are new, unlike the other four which already had
 // years of manually-sourced history behind them: these two started as
@@ -333,7 +332,13 @@ const SPORTS = [
     // tests as well as the July and November windows. TheSportsDB's
     // records here only start in 2021, so 6 seasons is the whole history.
     name: 'Rugby International',
-    leagueId: 5479,
+    // Three TheSportsDB leagues feed this one file (added 2026-09-24):
+    // 5479 friendlies (incl. Rugby Championship), 4714 Six Nations, and
+    // 5852 Nations Championship - World Rugby's new competition that now
+    // holds the July and November test windows (why 2026 looked thin with
+    // friendlies alone). A test listed under more than one league is
+    // merged by the same-game check, not counted twice.
+    leagueIds: [5479, 4714, 5852],
     file: path.join(__dirname, '..', 'rugby_international_full_match_history.json'),
     seasonFormats: plainYears(6),
     includeEvent: isFullTestMatch,
@@ -479,13 +484,17 @@ async function updateSport(sport) {
   const currentYear = new Date().getUTCFullYear();
 
   let fetched = [];
-  for (const season of sport.seasonFormats(currentYear)) {
-    const events = await fetchSeason(sport.leagueId, season);
-    if (events.length) {
-      console.log(`  season "${season}" returned ${events.length} events`);
-      fetched = fetched.concat(events);
-    } else {
-      console.log(`  season "${season}" returned no events (trying next format if any)`);
+  const leagueIds = sport.leagueIds || [sport.leagueId];
+  for (const leagueId of leagueIds) {
+    const prefix = leagueIds.length > 1 ? `league ${leagueId} ` : '';
+    for (const season of sport.seasonFormats(currentYear)) {
+      const events = await fetchSeason(leagueId, season);
+      if (events.length) {
+        console.log(`  ${prefix}season "${season}" returned ${events.length} events`);
+        fetched = fetched.concat(events);
+      } else {
+        console.log(`  ${prefix}season "${season}" returned no events (trying next format if any)`);
+      }
     }
   }
 
@@ -513,12 +522,149 @@ async function updateSport(sport) {
   console.log(`  added ${newGames.length} new game(s), file now has ${data.games.length} total`);
 }
 
+// ============================================================================
+// Finishing-position sports: Formula 1 and PGA Tour golf (added 2026-09-24)
+// ============================================================================
+// These have no home/away score - each event has a field of drivers or
+// golfers and a finishing order. The season list gives the events; each
+// event's finishing order needs its own call (eventresults.php).
+//
+// Stored per event: { id, date, event, season, results: [{ position,
+// tied, name, team }] }. Only events that actually have results are
+// saved, so an event whose results TheSportsDB hasn't posted yet is simply
+// retried on the next run. Events already saved are never re-requested,
+// which keeps daily runs to a handful of calls.
+//
+// UNTESTED AGAINST A LIVE RESPONSE: the result field names (intPosition,
+// strPlayer, strTeam) come from TheSportsDB's documented data model, not a
+// run. The first run logs the fields it actually saw and how many events
+// had results - check that before trusting the files.
+
+const RANKED_SPORTS = [
+  {
+    name: 'Formula 1',
+    leagueId: 4370,
+    file: path.join(__dirname, '..', 'f1_results_history.json'),
+    seasonFormats: plainYears(5),
+    // Each race weekend is listed as separate sessions (Practice 1-3,
+    // Qualifying, Sprint...). Only the Grand Prix itself decides a result
+    // anyone bets on.
+    isResultEvent: (name) => /grand prix$/i.test(name || '') && !/practice|qualifying|sprint|shootout/i.test(name || ''),
+    eventLabel: (name) => name,
+  },
+  {
+    name: 'PGA Tour',
+    leagueId: 4425,
+    file: path.join(__dirname, '..', 'pga_results_history.json'),
+    // TheSportsDB switched this league's season names from "2022-2023" to
+    // plain "2026"/"2025"/"2024" - checked on its league page 2026-09-24.
+    // Both forms are tried for each of the last four years.
+    seasonFormats: (year) => {
+      const out = [];
+      for (let y = year; y > year - 4; y--) out.push(`${y}`, `${y - 1}-${y}`);
+      return out;
+    },
+    // Each tournament is listed round by round ("... Round 1" to "...
+    // Final Round"/"Round 4"). The final round's order is the tournament
+    // result. Team events (Presidents Cup, Ryder Cup) have no individual
+    // finishing order and are skipped.
+    isResultEvent: (name) => /(final round|round 4)$/i.test(name || '') && !/presidents cup|ryder cup/i.test(name || ''),
+    eventLabel: (name) => (name || '').replace(/\s+(final round|round 4)$/i, ''),
+  },
+];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchEventResults(eventId) {
+  // TheSportsDB's hard limit is two calls a second - stay well under it.
+  await sleep(600);
+  const url = `${BASE_URL}/eventresults.php?id=${eventId}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.log(`  HTTP ${res.status} calling eventresults.php?id=${eventId}`);
+    return [];
+  }
+  const json = await res.json();
+  return json.results || [];
+}
+
+function toResultRow(r) {
+  const raw = r.intPosition ?? r.strPosition ?? null;
+  const match = raw === null ? null : String(raw).match(/\d+/);
+  if (!match) return null; // DNF/DSQ/withdrawn etc - no finishing position
+  return {
+    position: Number(match[0]),
+    tied: /^t/i.test(String(raw).trim()),
+    name: r.strPlayer || null,
+    team: r.strTeam || null,
+  };
+}
+
+async function updateRankedSport(sport) {
+  console.log(`\n=== ${sport.name} ===`);
+  const data = JSON.parse(fs.readFileSync(sport.file, 'utf8'));
+  const savedIds = new Set(data.events.map((e) => String(e.id)));
+  const currentYear = new Date().getUTCFullYear();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const candidates = [];
+  for (const season of sport.seasonFormats(currentYear)) {
+    const events = await fetchSeason(sport.leagueId, season);
+    const relevant = events.filter((e) => sport.isResultEvent(e.strEvent));
+    if (events.length) {
+      console.log(`  season "${season}" returned ${events.length} events, ${relevant.length} of them result events`);
+    }
+    relevant.forEach((e) => {
+      if (e.dateEvent && e.dateEvent <= today && !savedIds.has(String(e.idEvent))) {
+        candidates.push({ ...e, season });
+      }
+    });
+  }
+  console.log(`  ${candidates.length} finished event(s) not yet saved - fetching their results`);
+
+  let added = 0;
+  let empty = 0;
+  let loggedResultFields = false;
+  for (const e of candidates) {
+    const results = await fetchEventResults(e.idEvent);
+    if (results.length && !loggedResultFields) {
+      loggedResultFields = true;
+      console.log(`  (check) result fields seen: ${Object.keys(results[0]).join(', ')}`);
+      console.log(`  (check) first result row: ${JSON.stringify(results[0]).slice(0, 300)}`);
+    }
+    const rows = results.map(toResultRow).filter(Boolean).sort((a, b) => a.position - b.position);
+    if (!rows.length) { empty += 1; continue; }
+    data.events.push({ id: String(e.idEvent), date: e.dateEvent, event: sport.eventLabel(e.strEvent), season: e.season, results: rows });
+    savedIds.add(String(e.idEvent));
+    added += 1;
+  }
+  if (empty) console.log(`  ${empty} event(s) had no usable results yet (will retry next run)`);
+
+  if (!added) {
+    console.log('  no new events to add');
+    return;
+  }
+  data.events.sort((a, b) => (a.date < b.date ? 1 : -1));
+  data.meta.row_count = data.events.length;
+  data.meta.last_auto_update = today;
+  data.meta.last_auto_update_source = 'TheSportsDB API, via scripts/update-sports-data.js';
+  fs.writeFileSync(sport.file, JSON.stringify(data, null, 2) + '\n');
+  console.log(`  added ${added} event(s), file now has ${data.events.length} total`);
+}
+
 async function main() {
   for (const sport of SPORTS) {
     try {
       await updateSport(sport);
     } catch (err) {
       // One sport failing shouldn't block the others from updating.
+      console.error(`  ERROR updating ${sport.name}:`, err.message);
+    }
+  }
+  for (const sport of RANKED_SPORTS) {
+    try {
+      await updateRankedSport(sport);
+    } catch (err) {
       console.error(`  ERROR updating ${sport.name}:`, err.message);
     }
   }
