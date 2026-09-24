@@ -3,8 +3,5082 @@
     "sport": "PGA Tour",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "PGA Tour final finishing positions (TheSportsDB league 4425), taken from each tournament's final round. Team events (Presidents Cup, Ryder Cup) are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
-    "row_count": 0,
-    "last_auto_update": null
+    "row_count": 73,
+    "last_auto_update": "2026-09-24",
+    "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js"
   },
-  "events": []
+  "events": [
+    {
+      "id": "2599076",
+      "date": "2026-09-20",
+      "event": "Biltmore Championship Asheville",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482113",
+      "date": "2026-08-30",
+      "event": "TOUR Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Min Woo Lee",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482110",
+      "date": "2026-08-23",
+      "event": "BMW Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Michael Brennan",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Sungjae Im",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482107",
+      "date": "2026-08-16",
+      "event": "FedEx St. Jude Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Sungjae Im",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482104",
+      "date": "2026-08-09",
+      "event": "Wyndham Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Michael Brennan",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Beau Hossler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben James",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Kevin Yu",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Tom Kim",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Matt Wallace",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482100",
+      "date": "2026-08-02",
+      "event": "Rocket Classic",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Davis Riley",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Rasmus Højgaard",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Matt Wallace",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Kristoffer Ventura",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Davis Thompson",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Michael Kim",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Chris Kirk",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482057",
+      "date": "2026-07-26",
+      "event": "3M Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Jackson Koivun",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Brian Harman",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Chandler Phillips",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Denny McCarthy",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Davis Thompson",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Emiliano Grillo",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Ben Kohles",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Seamus Power",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Michael Kim",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482053",
+      "date": "2026-07-19",
+      "event": "Corales Puntacana Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Stefano Mazzoli",
+          "team": null
+        },
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Stefano Mazzoli",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Todd Clements",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Will Gordon",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Marcel Schneider",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Jacob Skov Olesen",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Joe Highsmith",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Zach Bauchou",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2358665",
+      "date": "2026-07-19",
+      "event": "The Open Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482050",
+      "date": "2026-07-12",
+      "event": "ISCO Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Steven Fisk",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Taylor Pendrith",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben Silverman",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Aaron Wise",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Kristoffer Ventura",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Lucas Glover",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Manuel Elvira",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Zac Blair",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "William Mouw",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Tom Hoge",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482047",
+      "date": "2026-07-12",
+      "event": "Genesis Scottish Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Tom Kim",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Keita Nakajima",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Johnny Keefer",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Victor Perez",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482044",
+      "date": "2026-07-05",
+      "event": "John Deere Classic",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Max Homa",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben Kohles",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Lucas Glover",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Mac Meissner",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Doug Ghim",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Jackson Suber",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Zach Johnson",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Zac Blair",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482041",
+      "date": "2026-06-28",
+      "event": "Travelers Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2358662",
+      "date": "2026-06-21",
+      "event": "U.S. Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Tom Kim",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "J. T. Poston",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Joaquin Niemann",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tyrrell Hatton",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "John Parry",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "Aaron Rai",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2482015",
+      "date": "2026-06-14",
+      "event": "RBC Canadian Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Bud Cauley",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Brice Garnett",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jesper Svensson",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jackson Suber",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jimmy Stanger",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Aldrich Potgieter",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Sudarshan Yellamaraju",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2481995",
+      "date": "2026-06-07",
+      "event": "The Memorial Tournament presented by Workday",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "J. T. Poston",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Kristoffer Reitan",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2329219",
+      "date": "2026-05-31",
+      "event": "Charles Schwab Challenge",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Mac Meissner",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Michael Brennan",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Steven Fisk",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2329218",
+      "date": "2026-05-24",
+      "event": "THE CJ CUP Byron Nelson",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jackson Suber",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Tony Finau",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Zach Bauchou",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Tom Hoge",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Johnny Keefer",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Jesper Svensson",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Sungjae Im",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Max Greyserman",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2358659",
+      "date": "2026-05-17",
+      "event": "PGA Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Aaron Rai",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Jon Rahm",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Cameron Smith",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Patrick Reed",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2328895",
+      "date": "2026-05-10",
+      "event": "Truist Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Kristoffer Reitan",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Sungjae Im",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2328894",
+      "date": "2026-05-03",
+      "event": "Cadillac Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Adam Scott",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Nick Taylor",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2328893",
+      "date": "2026-04-26",
+      "event": "Zurich Classic of New Orleans",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Alex Fitzpatrick",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2466389",
+      "date": "2026-04-19",
+      "event": "RBC Heritage",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Bud Cauley",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2358656",
+      "date": "2026-04-12",
+      "event": "Masters Tournament",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Tyrrell Hatton",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Max Homa",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2461751",
+      "date": "2026-04-05",
+      "event": "Valero Texas Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Matt Wallace",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Michael Kim",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Andrew Putnam",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Kevin Yu",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Chandler Phillips",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Austin Eckroat",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2459301",
+      "date": "2026-03-29",
+      "event": "Texas Childrens Houston Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Gary Woodland",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Min Woo Lee",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Johnny Keefer",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Sudarshan Yellamaraju",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Jason Day",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Bronson Burgoon",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2453926",
+      "date": "2026-03-22",
+      "event": "Valspar Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "David Lipsky",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Jordan Smith",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Marco Penge",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Sungjae Im",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Emiliano Grillo",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Kim Seong-hyeon",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2449289",
+      "date": "2026-03-15",
+      "event": "THE PLAYERS Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Sudarshan Yellamaraju",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2445089",
+      "date": "2026-03-08",
+      "event": "Arnold Palmer Invitational presented by Mastercard",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Daniel Berger",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Min Woo Lee",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2440791",
+      "date": "2026-03-01",
+      "event": "Cognizant Classic",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Taylor Moore",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Shane Lowry",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Austin Smotherman",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "William Mouw",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Brooks Koepka",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Rasmus Højgaard",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Joel Dahmen",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2436064",
+      "date": "2026-02-22",
+      "event": "The Genesis Invitational",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Adam Scott",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Aldrich Potgieter",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2433206",
+      "date": "2026-02-15",
+      "event": "AT&T Pebble Beach Pro Am",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Min Woo Lee",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Shane Lowry",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2428966",
+      "date": "2026-02-08",
+      "event": "WM Phoenix Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Pierceson Coody",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2408882",
+      "date": "2026-02-01",
+      "event": "Farmers Insurance Open",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Pierceson Coody",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Kim Si-woo",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Joel Dahmen",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2408877",
+      "date": "2026-01-25",
+      "event": "The American Express",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Jason Day",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Andrew Putnam",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Kim Si-woo",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Haotong Li",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Austin Smotherman",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Tom Hoge",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2408868",
+      "date": "2026-01-18",
+      "event": "Sony Open in Hawaii",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Patrick Rodgers",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Taylor Pendrith",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Daniel Berger",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Davis Riley",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318490",
+      "date": "2025-12-07",
+      "event": "Hero World Challenge",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318487",
+      "date": "2025-11-23",
+      "event": "The RSM Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Sami Välimäki",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Max McGreevy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Doug Ghim",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Seamus Power",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Zac Blair",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Patrick Rodgers",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318484",
+      "date": "2025-11-16",
+      "event": "Butterfield Bermuda Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Adam Schenk",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Vince Whaley",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Takumi Kanaya",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Max McGreevy",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Rikuya Hoshino",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Camilo Villegas",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Zac Blair",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318481",
+      "date": "2025-11-09",
+      "event": "World Wide Technology Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Sami Välimäki",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Chad Ramey",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Garrick Higgo",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Patrick Rodgers",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Nick Dunlap",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318478",
+      "date": "2025-10-26",
+      "event": "Bank of Utah Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Michael Brennan",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Ben Silverman",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Justin Lower",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Thorbjørn Olesen",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Pierceson Coody",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Brandt Snedeker",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Max Homa",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318475",
+      "date": "2025-10-12",
+      "event": "Baycurrent Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Garrick Higgo",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Christiaan Bezuidenhout",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Matt Wallace",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Min Woo Lee",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318472",
+      "date": "2025-10-05",
+      "event": "Sanderson Farms Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Steven Fisk",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Garrick Higgo",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Rasmus Højgaard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Vince Whaley",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Christiaan Bezuidenhout",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Taylor Montgomery",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Doc Redman",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2302800",
+      "date": "2025-09-14",
+      "event": "Procore Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Lanto Griffin",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Emiliano Grillo",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Garrick Higgo",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2318366",
+      "date": "2025-08-24",
+      "event": "TOUR Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Keegan Bradley",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179644",
+      "date": "2025-08-17",
+      "event": "BMW Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Michael Kim",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179643",
+      "date": "2025-08-10",
+      "event": "FedEx St. Jude Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Chris Kirk",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179642",
+      "date": "2025-08-03",
+      "event": "Wyndham Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Mark Hubbard",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Alex Noren",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Chris Kirk",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Aaron Rai",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179639",
+      "date": "2025-07-20",
+      "event": "The Open Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Haotong Li",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Bryson DeChambeau",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Brian Harman",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179638",
+      "date": "2025-07-13",
+      "event": "ISCO Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "William Mouw",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Paul Peterson",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "David Skinns",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Vince Whaley",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Chad Ramey",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ben Kohles",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Taylor Montgomery",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Nick Hardy",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Kevin Kisner",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Luke List",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179637",
+      "date": "2025-07-13",
+      "event": "Genesis Scottish Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Marco Penge",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2279822",
+      "date": "2025-07-06",
+      "event": "John Deere Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Brian Campbell",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Emiliano Grillo",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "David Lipsky",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Lucas Glover",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Matt Kuchar",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Max Homa",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179635",
+      "date": "2025-06-29",
+      "event": "Rocket Mortgage Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Aldrich Potgieter",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Chris Kirk",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jake Knapp",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Thriston Lawrence",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Andrew Putnam",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179634",
+      "date": "2025-06-22",
+      "event": "Travelers Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Keegan Bradley",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jason Day",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Brian Harman",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Lucas Glover",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2264398",
+      "date": "2025-06-15",
+      "event": "U.S. Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Viktor Hovland",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tyrrell Hatton",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Carlos Ortiz",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Jon Rahm",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2262643",
+      "date": "2025-06-08",
+      "event": "RBC Canadian Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Kevin Yu",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Matt McCarty",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Andrew Putnam",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Matteo Manassero",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "David Skinns",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Victor Perez",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Cameron Champ",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2261083",
+      "date": "2025-06-01",
+      "event": "the Memorial Tournament presented by Workday",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Nick Taylor",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Brandt Snedeker",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tom Hoge",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rickie Fowler",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Keegan Bradley",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Jordan Spieth",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2259657",
+      "date": "2025-05-25",
+      "event": "Charles Schwab Challenge",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Bud Cauley",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Aldrich Potgieter",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2258314",
+      "date": "2025-05-18",
+      "event": "PGA Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Bryson DeChambeau",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Davis Riley",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Taylor Pendrith",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Jhonattan Vegas",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Joaquin Niemann",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Denny McCarthy",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ryan Gerard",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Joe Highsmith",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Keegan Bradley",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Jon Rahm",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2257264",
+      "date": "2025-05-11",
+      "event": "Myrtle Beach Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Harry Higgs",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Kevin Yu",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Hayden Buckley",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Mark Hubbard",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sami Välimäki",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Thorbjørn Olesen",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2257261",
+      "date": "2025-05-11",
+      "event": "Truist Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Shane Lowry",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jacob Bridgeman",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2252132",
+      "date": "2025-05-04",
+      "event": "THE CJ CUP Byron Nelson",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Erik van Rooyen",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jordan Spieth",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Mark Hubbard",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Takumi Kanaya",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Will Gordon",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Kurt Kitayama",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Adam Schenk",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2249039",
+      "date": "2025-04-20",
+      "event": "RBC Heritage",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Daniel Berger",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Brian Harman",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2249036",
+      "date": "2025-04-20",
+      "event": "Corales Puntacana Championship",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Garrick Higgo",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Alejandro Tosti",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Keith Mitchell",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Joel Dahmen",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Vince Whaley",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Chan Kim",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Charley Hoffman",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Ben Martin",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179621",
+      "date": "2025-04-13",
+      "event": "Masters Tournament",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Patrick Reed",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Bryson DeChambeau",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Zach Johnson",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Jason Day",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179611",
+      "date": "2025-02-23",
+      "event": "Mexico Open at Vidanta",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Brian Campbell",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Aldrich Potgieter",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Aaron Rai",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Joel Dahmen",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Ryo Hisatsune",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Alejandro Tosti",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179610",
+      "date": "2025-02-16",
+      "event": "The Genesis Invitational",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Patrick Rodgers",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Tony Finau",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Denny McCarthy",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Akshay Bhatia",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Nick Taylor",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179609",
+      "date": "2025-02-09",
+      "event": "WM Phoenix Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Thomas Detry",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Daniel Berger",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Michael Kim",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Christiaan Bezuidenhout",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jordan Spieth",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Adam Hadwin",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Taylor Moore",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179608",
+      "date": "2025-02-02",
+      "event": "AT&T Pebble Beach Pro Am",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Shane Lowry",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Lucas Glover",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Justin Rose",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Cam Davis",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tom Kim",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Billy Horschel",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Taylor Pendrith",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179607",
+      "date": "2025-01-25",
+      "event": "Farmers Insurance Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Harris English",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Sam Stevens",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Kris Ventura",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Taylor Pendrith",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Will Gordon",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Danny Willett",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Lanto Griffin",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Greyson Sigg",
+          "team": null
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Joel Dahmen",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179606",
+      "date": "2025-01-19",
+      "event": "The American Express",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Jason Day",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Justin Lower",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Patrick Cantlay",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Charley Hoffman",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Camilo Villegas",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Ben Griffin",
+          "team": null
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Taylor Moore",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179605",
+      "date": "2025-01-12",
+      "event": "Sony Open in Hawaii",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Nick Taylor",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Nico Echavarria",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Stephan Jaeger",
+          "team": null
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "J.J. Spaun",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Eric Cole",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Adam Schenk",
+          "team": null
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Keegan Bradley",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Nick Dunlap",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Jesper Svensson",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Paul Peterson",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Russell Henley",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "name": "lee hodges",
+          "team": null
+        }
+      ]
+    },
+    {
+      "id": "2179603",
+      "date": "2025-01-05",
+      "event": "The Sentry",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team": null
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team": null
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Jhonattan Vegas",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Corey Conners",
+          "team": null
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Thomas Detry",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Sam Burns",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Cameron Young",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Tom Hoge",
+          "team": null
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Harry Hall",
+          "team": null
+        }
+      ]
+    }
+  ]
 }
