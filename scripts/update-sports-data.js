@@ -588,11 +588,10 @@ const RANKED_SPORTS = [
     // finishing order and are skipped.
     isResultEvent: (name) => /(final round|round 4)$/i.test(name || '') && !/presidents cup|ryder cup/i.test(name || ''),
     eventLabel: (name) => (name || '').replace(/\s+(final round|round 4)$/i, ''),
-    // A made-cut field is normally 65-80 players. The 20 Sep 2026 Biltmore
-    // Championship was saved with ONE player - an incomplete result that
-    // would make everyone else's top-20 look like a miss. Anything under
-    // this is treated as not posted yet.
-    minFinishers: 30,
+    // No minimum for golf: the 24 Sep 2026 run showed TheSportsDB lists far
+    // fewer golfers per tournament than a full made-cut field (a 30-player
+    // minimum rejected every one of the 178 tournaments). How deep each
+    // listing goes is logged below and decides how golf can be used.
     // Seasons before 2025 list each tournament once, under its plain name
     // ("The Sentry", "WM Phoenix Open") - checked in the 24 Sep 2026 run
     // log. For a season with no round-by-round events at all, those plain
@@ -706,8 +705,11 @@ async function updateRankedSport(sport) {
   // are fetched properly.
   const hadOldList = 'no_results_ids' in data.meta;
   delete data.meta.no_results_ids;
-  data.meta.no_results_event_ids = data.meta.no_results_event_ids || [];
-  const noResultIds = new Set(data.meta.no_results_event_ids);
+  // v2 of this list (24 Sep 2026) was filled by a too-strict minimum
+  // (golf) - discarded so those events are fetched properly.
+  if (data.meta.no_results_event_ids) { delete data.meta.no_results_event_ids; }
+  data.meta.no_results_ids_v3 = data.meta.no_results_ids_v3 || [];
+  const noResultIds = new Set(data.meta.no_results_ids_v3);
   const noResultsBefore = noResultIds.size;
   const currentYear = new Date().getUTCFullYear();
   const today = new Date().toISOString().slice(0, 10);
@@ -795,9 +797,14 @@ async function updateRankedSport(sport) {
 
   if (data.events.length) {
     const counts = data.events.map((ev) => ev.results.length).sort((a, b) => a - b);
-    console.log(`  (check) finishers per event: fewest ${counts[0]}, typical ${counts[Math.floor(counts.length / 2)]}, most ${counts[counts.length - 1]}`);
+    const deepest = data.events.map((ev) => Math.max(0, ...ev.results.map((r) => r.position || 0))).sort((a, b) => a - b);
+    console.log(`  (check) players listed per event: fewest ${counts[0]}, typical ${counts[Math.floor(counts.length / 2)]}, most ${counts[counts.length - 1]}`);
+    console.log(`  (check) lowest position listed per event: fewest ${deepest[0]}, typical ${deepest[Math.floor(deepest.length / 2)]}, most ${deepest[deepest.length - 1]}`);
+    const byCount = {};
+    counts.forEach((c) => { const band = c >= 60 ? '60+' : c >= 30 ? '30-59' : c >= 20 ? '20-29' : c >= 10 ? '10-19' : c >= 5 ? '5-9' : '1-4'; byCount[band] = (byCount[band] || 0) + 1; });
+    console.log(`  (check) events by number of players listed: ${JSON.stringify(byCount)}`);
   }
-  data.meta.no_results_event_ids = [...noResultIds];
+  data.meta.no_results_ids_v3 = [...noResultIds];
   const statusCounts = {};
   data.events.forEach((ev) => ev.results.forEach((r) => { if (r.status) statusCounts[r.status] = (statusCounts[r.status] || 0) + 1; }));
   if (Object.keys(statusCounts).length) console.log(`  (check) non-finisher statuses kept: ${JSON.stringify(statusCounts).slice(0, 200)}`);
