@@ -3,7 +3,7 @@
     "sport": "Formula 1",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "Formula 1 Grand Prix finishing orders (TheSportsDB league 4370). Main race only - practice, qualifying and sprint sessions are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
-    "row_count": 77,
+    "row_count": 96,
     "last_auto_update": "2026-09-24",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js",
     "team_names": {
@@ -2220,6 +2220,457 @@
       ]
     },
     {
+      "id": "2200781",
+      "date": "2025-12-07",
+      "event": "Abu Dhabi Grand Prix",
+      "season": "2025",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:26:07.469"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+12.594s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+16.572s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+23.279s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+48.563s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+67.562s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+69.876s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+72.670s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+79.014s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+79.523s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+81.043s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+81.166s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+82.158s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+83.794s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+84.399s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+90.327s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200780",
+      "date": "2025-11-30",
+      "event": "Qatar Grand Prix",
+      "season": "2025",
+      "finishers": 18,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:24:38.241"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+7.995s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+22.665s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+23.315s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+28.317s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+48.599s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+54.045s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+56.785s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+60.073s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+61.770s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+66.931s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+77.730s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+84.812s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "DNF"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "2200779",
+      "date": "2025-11-23",
+      "event": "Las Vegas Grand Prix",
+      "season": "2025",
+      "finishers": 15,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:21:08.429"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+23.546s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+30.488s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+30.678s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+34.924s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+45.257s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+51.134s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+59.369s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+60.635s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+70.549s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+85.308s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+86.974s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+91.702s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
       "id": "2200778",
       "date": "2025-11-09",
       "event": "São Paulo Grand Prix",
@@ -2506,6 +2957,167 @@
           "name": "Carlos Sainz Jr",
           "team_id": "134816",
           "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "2200776",
+      "date": "2025-10-19",
+      "event": "United States Grand Prix",
+      "season": "2025",
+      "finishers": 19,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": " 1:34:00.161"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+7.959"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+15.373"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+28.536s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+29.678s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+33.456s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+52.714s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+57.249s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+64.722s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+70.001s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+73.209s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+74.778s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+75.746s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+80.000s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+83.043s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+92.807s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
         }
       ]
     },
@@ -2836,6 +3448,1375 @@
           "name": "Franco Colapinto",
           "team_id": "135706",
           "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200773",
+      "date": "2025-09-07",
+      "event": "Italian Grand Prix",
+      "season": "2025",
+      "finishers": 18,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:13:24.325"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+19.207s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+21.351s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+25.624s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+32.881s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+37.449s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+50.537s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+58.484s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+59.762s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+63.891s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+64.469s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+79.288s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+80.701s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+82.351s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200772",
+      "date": "2025-08-31",
+      "event": "Dutch Grand Prix",
+      "season": "2025",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "1:35:21.231"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+0.698s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+21.916s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+42.560s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+59.040s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+66.169s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+68.174s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+69.451s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+72.645s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+1 Lap"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+1 Lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "2200771",
+      "date": "2025-08-03",
+      "event": "Hungarian Grand Prix",
+      "season": "2025",
+      "finishers": 19,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "1:35:21.231"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+0.698s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+21.916s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+42.560s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+59.040s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+66.169s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+68.174s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+69.451s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+72.645s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200770",
+      "date": "2025-07-27",
+      "event": "Belgian Grand Prix",
+      "season": "2025",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "1:25:22.601"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+3.415s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+20.185s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+21.731s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+34.863s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+39.926s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+40.679s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+52.033s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+56.434s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+72.714s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+73.145s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+73.628s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+75.395s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+79.831s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+86.063s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+86.721s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+87.924s"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+92.024s"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+95.250s"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200769",
+      "date": "2025-07-06",
+      "event": "British Grand Prix",
+      "season": "2025",
+      "finishers": 15,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "1:37:15.735"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+6.812s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+34.742s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+39.812s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+56.781s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+59.857s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+60.603s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+64.135s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+65.858s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+70.674s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+72.095s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+76.592s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+77.301s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+84.477s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+1 lap"
+        }
+      ]
+    },
+    {
+      "id": "2200768",
+      "date": "2025-06-29",
+      "event": "Austrian Grand Prix",
+      "season": "2025",
+      "finishers": 16,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "1:23:47.693"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+2.695s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+19.820s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+29.020s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+62.396s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+67.754s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+2 laps"
+        }
+      ]
+    },
+    {
+      "id": "2200767",
+      "date": "2025-06-15",
+      "event": "Canadian Grand Prix",
+      "season": "2025",
+      "finishers": 18,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "1:31:52.688"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+0.228s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+1.014s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+2.109s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+3.442s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+10.713s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+10.972s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+15.364s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "2200766",
+      "date": "2025-06-01",
+      "event": "Spanish Grand Prix",
+      "season": "2025",
+      "finishers": 17,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "1:32:57.375"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+2.471s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+10.455s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+11.359s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+13.648s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+15.508s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+16.022s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+17.882s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+21.564s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+21.826s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+25.532s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+25.996s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+28.822s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+29.309s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+31.381s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+32.197s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+37.065s"
+        }
+      ]
+    },
+    {
+      "id": "2200765",
+      "date": "2025-05-25",
+      "event": "Monaco Grand Prix",
+      "season": "2025",
+      "finishers": 18,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "1:40:33.843"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+3.131s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+3.658s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+20.572s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+51.387s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "134813",
+          "detail": "+2 laps"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+3 laps"
         }
       ]
     },
@@ -7552,6 +9533,682 @@
           "status": null,
           "name": "Max Verstappen",
           "team_id": "134813",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "1963747",
+      "date": "2024-03-09",
+      "event": "Saudi Arabian Grand Prix",
+      "season": "2024",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:20:43.273"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+13.643s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+18.639s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+32.007s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+35.759s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+39.936s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "134806",
+          "detail": "+42.679s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+45.708s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+47.391s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "135705",
+          "detail": "+76.996s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+88.354s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "135705",
+          "detail": "+105.737s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Logan Sargeant",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "DNF"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "137625",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "1963742",
+      "date": "2024-03-02",
+      "event": "Bahrain Grand Prix",
+      "season": "2024",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:31:44.742"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+22.457s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134806",
+          "detail": "+25.110s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+39.669s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+46.788s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+48.458s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+50.324s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+56.082s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+74.887s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+93.216s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "137569",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Logan Sargeant",
+          "team_id": "134816",
+          "detail": "+2 laps"
+        }
+      ]
+    },
+    {
+      "id": "1671872",
+      "date": "2023-11-26",
+      "event": "Abu Dhabi Grand Prix",
+      "season": "2023",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:27:02.624"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+0:17.993"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+0:20.328"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+0:21.453"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+0:24.284"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+0:31.487"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+0:39.512"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "135519",
+          "detail": "+0:43.088"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+0:44.424"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+0:55.632"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "134815",
+          "detail": "+0:56.229"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "137625",
+          "detail": "+1:06.373"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "137625",
+          "detail": "+1:10.360"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+1:13.184"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "151107",
+          "detail": "+1:23.696"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Logan Sargeant",
+          "team_id": "134816",
+          "detail": "+1:27.791"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "151852",
+          "detail": "+1:29.422"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134806",
+          "detail": "DNF"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "151852",
+          "detail": "+1 Lap"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "151107",
+          "detail": "+1 Lap"
+        }
+      ]
+    },
+    {
+      "id": "1671871",
+      "date": "2023-11-19",
+      "event": "Las Vegas Grand Prix",
+      "season": "2023",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:29:08.289"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+2.070s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+2.241s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135706",
+          "detail": "+18.665s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+20.067s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134806",
+          "detail": "+20.834s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+21.755s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "+23.091s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+25.964s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+29.496s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+34.270s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon",
+          "team_id": "134816",
+          "detail": "+43.398s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "135705",
+          "detail": "+44.825s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "139631",
+          "detail": "+48.525s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "137569",
+          "detail": "+50.162s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Logan Sargeant",
+          "team_id": "134816",
+          "detail": "+50.882s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "137569",
+          "detail": "+85.350s"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "139631",
+          "detail": "DNF"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "135705",
+          "detail": "DNF"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
           "detail": "DNF"
         }
       ]
@@ -12429,6 +15086,344 @@
           "status": null,
           "name": "Guanyu Zhou",
           "team_id": "151852",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "1448312",
+      "date": "2022-04-10",
+      "event": "Australian Grand Prix",
+      "season": "2022",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "1:27:46.548 \t"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+20.524s \t"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "George Russell ",
+          "team_id": "134812",
+          "detail": "+25.593s \t"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+28.543s \t"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris ",
+          "team_id": "134811",
+          "detail": "+53.303s \t"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "134811",
+          "detail": "+53.737s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135706",
+          "detail": "+61.683s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "137569",
+          "detail": "+68.439s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "139631",
+          "detail": "+76.221s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon ",
+          "team_id": "134816",
+          "detail": "+79.382s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "137569",
+          "detail": "+81.695s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+88.598s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Mick Schumacher",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "135705",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "139631",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Nicholas Latifi ",
+          "team_id": "134816",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135706",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "DNF"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Sebastian Vettel",
+          "team_id": "135126",
+          "detail": "DNF"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134806",
+          "detail": "DNF"
+        }
+      ]
+    },
+    {
+      "id": "1448311",
+      "date": "2022-03-27",
+      "event": "Saudi Arabian Grand Prix",
+      "season": "2022",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:24:19.293"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+0.549s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134806",
+          "detail": "+8.097s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "134813",
+          "detail": "+10.800s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "George Russell ",
+          "team_id": "134812",
+          "detail": "+32.732s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135706",
+          "detail": "+56.017s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris ",
+          "team_id": "134811",
+          "detail": "+56.124s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "139631",
+          "detail": "+62.946s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Kevin Magnussen",
+          "team_id": "135705",
+          "detail": "+64.308s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134812",
+          "detail": "+73.948s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Guanyu Zhou",
+          "team_id": "137569",
+          "detail": "+82.215s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "135126",
+          "detail": "+91.742s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+1 lap"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Alexander Albon ",
+          "team_id": "134816",
+          "detail": "DNF"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "151852",
+          "detail": "DNF"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "137625",
+          "detail": "DNF"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Daniel Ricciardo",
+          "team_id": "134811",
+          "detail": "DNF"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Nicholas Latifi",
+          "team_id": "134816",
+          "detail": "DNF"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Yuki Tsunoda",
+          "team_id": "135519",
+          "detail": "DNF"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "Mick Schumacher",
+          "team_id": "151107",
           "detail": "DNF"
         }
       ]
