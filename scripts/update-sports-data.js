@@ -1,4 +1,5 @@
-// Fetches recent results for EPL, NFL, NRL, Super Rugby, AFL and NPC from
+// Fetches recent results for EPL, NFL, NRL, Super Rugby, AFL, NPC, La Liga,
+// French Top 14, Super League, NHL, NBA and international rugby from
 // TheSportsDB and merges any games not already present into the existing
 // *_full_match_history.json files.
 //
@@ -12,7 +13,15 @@
 // key (stored as the SPORTSDB_API_KEY repo secret, never hardcoded here)
 // so every sport gets the full season each run rather than the free
 // tier's ~5-events-a-day cap. Confirmed working league IDs: EPL 4328,
-// NFL 4391, NRL 4416, Super Rugby 4551, AFL 4456, NPC 5278.
+// NFL 4391, NRL 4416, Super Rugby 4551, AFL 4456, NPC 5278. Added
+// 2026-09-24 (IDs from TheSportsDB's own league pages, not yet run live):
+// La Liga 4335, Top 14 4430, Super League 4415, NHL 4380, NBA 4387,
+// Rugby Union International Friendlies 5479.
+//
+// Formula 1 (4370) and PGA Tour (4425) are deliberately NOT here: they
+// aren't two-team games with a home and away score, so every event would
+// be skipped by toGameRow() below. They need a separate finishing-position
+// pipeline of their own - see the Hub's task list.
 //
 // IMPORTANT - AFL and NPC are new, unlike the other four which already had
 // years of manually-sourced history behind them: these two started as
@@ -31,6 +40,43 @@ if (API_KEY === '123') {
   console.log('Using the free "123" test key - SPORTSDB_API_KEY secret was not set (or was empty).');
 } else {
   console.log(`Using a key from SPORTSDB_API_KEY (length ${API_KEY.length}, not shown).`);
+}
+
+// Season-name helpers for the sports added 2026-09-24. Each returns every
+// season to request on a run - the current one plus enough past seasons to
+// backfill a new, empty file (dedup makes re-requesting old seasons harmless).
+// plainYears: competitions inside one calendar year, named "2026".
+// splitYears: competitions spanning two years (Aug-May etc), named "2026-2027".
+function plainYears(count) {
+  return (year) => {
+    const out = [];
+    for (let y = year; y > year - count; y--) out.push(`${y}`);
+    return out;
+  };
+}
+function splitYears(count) {
+  return (year) => {
+    const out = [];
+    for (let y = year; y > year - count - 1; y--) out.push(`${y}-${y + 1}`);
+    return out;
+  };
+}
+
+// International rugby: TheSportsDB's "friendlies" league also holds tour
+// games against clubs and invitational sides (e.g. "Bulls", "Barbarians",
+// "Maori All Blacks", "England A Rugby"). Those aren't test matches and
+// would distort a national side's streaks and home/away record, so only
+// games between two full national teams are kept - TheSportsDB names every
+// full national side "<Country> Rugby", and the second-string sides "A"/"XV".
+function isFullTestMatch(event) {
+  const national = (name) => /^[A-Za-z .'-]+ Rugby$/.test(name || '') && !/ A Rugby$/.test(name) && !/XV/.test(name);
+  return national(event.strHomeTeam) && national(event.strAwayTeam);
+}
+
+// Every national side is "<Country> Rugby" on TheSportsDB - stored as just
+// the country, which is also how the Hub displays other sports' teams.
+function stripRugbySuffix(name) {
+  return (name || '').replace(/ Rugby$/, '');
 }
 
 const SPORTS = [
@@ -160,10 +206,83 @@ const SPORTS = [
     oddsFieldStyle: 'plain',
     hasPlayoffField: false,
   },
+  // ---- Added 2026-09-24. All six start from an EMPTY file and backfill on
+  // their first run, same as AFL/NPC did. Season formats are taken from
+  // each league's own TheSportsDB page ("Current Season" field), checked
+  // 2026-09-24: La Liga "2026-2027", international rugby "2026", F1 "2026".
+  // Top 14, NHL and NBA assumed "YYYY-YYYY" and Super League "YYYY" by the
+  // same logic (cross-year vs calendar-year seasons) - check the first
+  // run's log for "returned no events" on any of them before trusting it.
+  {
+    name: 'La Liga',
+    leagueId: 4335,
+    file: path.join(__dirname, '..', 'laliga_full_match_history.json'),
+    seasonFormats: splitYears(6),
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    name: 'Top 14',
+    leagueId: 4430,
+    file: path.join(__dirname, '..', 'top14_full_match_history.json'),
+    seasonFormats: splitYears(6),
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    name: 'Super League',
+    leagueId: 4415,
+    file: path.join(__dirname, '..', 'super_league_full_match_history.json'),
+    seasonFormats: plainYears(6),
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    // NHL and NBA play ~1,300 games a season each (roughly 4x an NRL
+    // season), so they backfill 3 seasons rather than 6 - plenty of depth
+    // for streaks and home/away patterns, without making every phone
+    // download a much larger file on each Hub visit.
+    name: 'NHL',
+    leagueId: 4380,
+    file: path.join(__dirname, '..', 'nhl_full_match_history.json'),
+    seasonFormats: splitYears(3),
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    name: 'NBA',
+    leagueId: 4387,
+    file: path.join(__dirname, '..', 'nba_full_match_history.json'),
+    seasonFormats: splitYears(3),
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
+  {
+    // Test matches only (see isFullTestMatch above). This league also
+    // carries Rugby Championship fixtures (e.g. South Africa v New Zealand,
+    // Aug-Sep 2026), so it covers the All Blacks' southern-hemisphere
+    // tests as well as the July and November windows. TheSportsDB's
+    // records here only start in 2021, so 6 seasons is the whole history.
+    name: 'Rugby International',
+    leagueId: 5479,
+    file: path.join(__dirname, '..', 'rugby_international_full_match_history.json'),
+    seasonFormats: plainYears(6),
+    includeEvent: isFullTestMatch,
+    teamNameTransform: stripRugbySuffix,
+    teamAliases: {},
+    oddsFieldStyle: 'plain',
+    hasPlayoffField: false,
+  },
 ];
 
-function normalizeTeamName(name, aliases) {
-  return aliases[name] || name;
+function normalizeTeamName(name, aliases, transform) {
+  const base = transform ? transform(name) : name;
+  return aliases[base] || base;
 }
 
 async function fetchSeason(leagueId, season) {
@@ -186,12 +305,13 @@ function toGameRow(event, sport) {
   const awayScore = event.intAwayScore;
   // Skip anything not actually finished yet - postponed, or no score recorded.
   if (event.strPostponed === 'yes') return null;
+  if (sport.includeEvent && !sport.includeEvent(event)) return null;
   if (homeScore === null || homeScore === undefined || awayScore === null || awayScore === undefined) return null;
 
   const row = {
     date: event.dateEvent,
-    home_team: normalizeTeamName(event.strHomeTeam, sport.teamAliases),
-    away_team: normalizeTeamName(event.strAwayTeam, sport.teamAliases),
+    home_team: normalizeTeamName(event.strHomeTeam, sport.teamAliases, sport.teamNameTransform),
+    away_team: normalizeTeamName(event.strAwayTeam, sport.teamAliases, sport.teamNameTransform),
     home_score: Number(homeScore),
     away_score: Number(awayScore),
   };
@@ -267,7 +387,7 @@ async function main() {
     try {
       await updateSport(sport);
     } catch (err) {
-      // One sport failing shouldn't block the other from updating.
+      // One sport failing shouldn't block the others from updating.
       console.error(`  ERROR updating ${sport.name}:`, err.message);
     }
   }
