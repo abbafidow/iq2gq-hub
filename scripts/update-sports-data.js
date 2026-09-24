@@ -573,6 +573,11 @@ const RANKED_SPORTS = [
     // finishing order and are skipped.
     isResultEvent: (name) => /(final round|round 4)$/i.test(name || '') && !/presidents cup|ryder cup/i.test(name || ''),
     eventLabel: (name) => (name || '').replace(/\s+(final round|round 4)$/i, ''),
+    // Seasons before 2025 list each tournament once, under its plain name
+    // ("The Sentry", "WM Phoenix Open") - checked in the 24 Sep 2026 run
+    // log. For a season with no round-by-round events at all, those plain
+    // entries are used instead.
+    isFallbackResultEvent: (name) => !/round|practice|qualifying/i.test(name || '') && !/presidents cup|ryder cup|q school|q-school/i.test(name || ''),
   },
 ];
 
@@ -624,15 +629,26 @@ async function updateRankedSport(sport) {
   const refreshed = beforeCount - data.events.length;
   if (refreshed) console.log(`  re-fetching ${refreshed} event(s) saved before team/detail fields were kept`);
   const savedIds = new Set(data.events.map((e) => String(e.id)));
+  // Events more than 60 days old that still had no results are remembered
+  // and skipped, so each run doesn't keep re-asking for results that
+  // TheSportsDB is never going to post. Clear meta.no_results_ids to retry.
+  data.meta.no_results_ids = data.meta.no_results_ids || [];
+  const noResultIds = new Set(data.meta.no_results_ids);
+  const noResultsBefore = noResultIds.size;
   const currentYear = new Date().getUTCFullYear();
   const today = new Date().toISOString().slice(0, 10);
 
   const candidates = [];
   for (const season of sport.seasonFormats(currentYear)) {
     const events = await fetchSeason(sport.leagueId, season);
-    const relevant = events.filter((e) => sport.isResultEvent(e.strEvent));
+    let relevant = events.filter((e) => sport.isResultEvent(e.strEvent));
+    let usedFallback = false;
+    if (!relevant.length && sport.isFallbackResultEvent) {
+      relevant = events.filter((e) => sport.isFallbackResultEvent(e.strEvent));
+      usedFallback = relevant.length > 0;
+    }
     if (events.length) {
-      console.log(`  season "${season}" returned ${events.length} events, ${relevant.length} of them result events`);
+      console.log(`  season "${season}" returned ${events.length} events, ${relevant.length} of them result events${usedFallback ? ' (older single-entry format)' : ''}`);
       if (!relevant.length) {
         // Different naming in older seasons - show a few names so the
         // filter can be widened to match them.
@@ -641,7 +657,7 @@ async function updateRankedSport(sport) {
       }
     }
     relevant.forEach((e) => {
-      if (e.dateEvent && e.dateEvent <= today && !savedIds.has(String(e.idEvent))) {
+      if (e.dateEvent && e.dateEvent <= today && !savedIds.has(String(e.idEvent)) && !noResultIds.has(String(e.idEvent))) {
         candidates.push({ ...e, season });
       }
     });
@@ -660,12 +676,19 @@ async function updateRankedSport(sport) {
       console.log(`  (check) first result row: ${JSON.stringify(results[0]).slice(0, 300)}`);
     }
     const rows = results.map(toResultRow).filter(Boolean).sort((a, b) => a.position - b.position);
-    if (!rows.length) { empty += 1; continue; }
+    if (!rows.length) {
+      empty += 1;
+      const ageDays = (Date.parse(today) - Date.parse(e.dateEvent)) / 86400000;
+      if (ageDays > 60) noResultIds.add(String(e.idEvent));
+      continue;
+    }
     data.events.push({ id: String(e.idEvent), date: e.dateEvent, event: sport.eventLabel(e.strEvent), season: e.season, results: rows });
     savedIds.add(String(e.idEvent));
     added += 1;
   }
-  if (empty) console.log(`  ${empty} event(s) had no usable results yet (will retry next run)`);
+  data.meta.no_results_ids = [...noResultIds];
+  const newlyDead = noResultIds.size - noResultsBefore;
+  if (empty) console.log(`  ${empty} event(s) had no usable results (${empty - newlyDead} recent - will retry; ${newlyDead} over 60 days old - won't be asked for again)`);
 
   if (sport.resolveTeamNames) {
     data.meta.team_names = data.meta.team_names || {};
@@ -679,7 +702,7 @@ async function updateRankedSport(sport) {
     if (!added && unknown.length) added = -1; // names changed - still save
   }
 
-  if (!added && !refreshed) {
+  if (!added && !refreshed && !newlyDead) {
     console.log('  no new events to add');
     return;
   }
