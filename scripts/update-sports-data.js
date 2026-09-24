@@ -354,9 +354,21 @@ function normalizeTeamName(name, aliases, transform) {
   return aliases[base] || base;
 }
 
+// Every call to TheSportsDB counts toward its limit of 100 a minute - the
+// season lookups too, not just the result lookups. With 14 sports the
+// season lookups alone are ~115 calls, which tripped the limit on 24 Sep
+// 2026 when they ran back to back. Paced at ~85 a minute, with the same
+// wait-and-retry as result lookups if the limit is hit anyway.
 async function fetchSeason(leagueId, season) {
   const url = `${BASE_URL}/eventsseason.php?id=${leagueId}&s=${season}`;
-  const res = await fetch(url);
+  let res;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await new Promise((r) => setTimeout(r, 700));
+    res = await fetch(url);
+    if (res.status !== 429 || attempt === 3) break;
+    console.log(`  rate limited (HTTP 429) on a season lookup - waiting 60s before retrying (attempt ${attempt} of 3)`);
+    await new Promise((r) => setTimeout(r, 60000));
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '(could not read response body)');
     console.log(`  HTTP ${res.status} calling eventsseason.php?id=${leagueId}&s=${season}: ${body.slice(0, 300)}`);
@@ -551,6 +563,9 @@ const RANKED_SPORTS = [
     // anyone bets on.
     isResultEvent: (name) => /grand prix$/i.test(name || '') && !/practice|qualifying|sprint|shootout/i.test(name || ''),
     eventLabel: (name) => name,
+    // Fewer finishers than this means TheSportsDB hasn't posted the full
+    // result yet (a normal race has 15-20 classified finishers).
+    minFinishers: 10,
     // F1 results only carry the constructor's ID (no name) - looked up once
     // per new ID via lookupteam.php and kept in the file's meta.
     resolveTeamNames: true,
@@ -573,6 +588,11 @@ const RANKED_SPORTS = [
     // finishing order and are skipped.
     isResultEvent: (name) => /(final round|round 4)$/i.test(name || '') && !/presidents cup|ryder cup/i.test(name || ''),
     eventLabel: (name) => (name || '').replace(/\s+(final round|round 4)$/i, ''),
+    // A made-cut field is normally 65-80 players. The 20 Sep 2026 Biltmore
+    // Championship was saved with ONE player - an incomplete result that
+    // would make everyone else's top-20 look like a miss. Anything under
+    // this is treated as not posted yet.
+    minFinishers: 30,
     // Seasons before 2025 list each tournament once, under its plain name
     // ("The Sentry", "WM Phoenix Open") - checked in the 24 Sep 2026 run
     // log. For a season with no round-by-round events at all, those plain
@@ -664,11 +684,19 @@ async function updateRankedSport(sport) {
   // with the fuller fields, then never again.
   const beforeCount = data.events.length;
   if (data.meta.schema_version !== RANKED_SCHEMA_VERSION) {
+    if (data.events.length) console.log(`  re-fetching ${data.events.length} event(s) saved under an older format (one-off, adds non-finishers)`);
     data.events = [];
     data.meta.schema_version = RANKED_SCHEMA_VERSION;
   }
+  if (sport.minFinishers) {
+    const incomplete = data.events.filter((ev) => ev.results.filter((r) => r.position !== null).length < sport.minFinishers);
+    if (incomplete.length) {
+      console.log(`  dropping ${incomplete.length} saved event(s) with incomplete results, to fetch again: ${incomplete.map((ev) => ev.event).slice(0, 5).join(', ')}`);
+      const drop = new Set(incomplete.map((ev) => ev.id));
+      data.events = data.events.filter((ev) => !drop.has(ev.id));
+    }
+  }
   const refreshed = beforeCount - data.events.length;
-  if (refreshed) console.log(`  re-fetching ${refreshed} event(s) saved under an older format (one-off, adds non-finishers)`);
   const savedIds = new Set(data.events.map((e) => String(e.id)));
   // Events more than 60 days old that still had no results are remembered
   // and skipped, so each run doesn't keep re-asking for results that
@@ -730,7 +758,7 @@ async function updateRankedSport(sport) {
     }
     const rows = results.map(toResultRow).filter(Boolean)
       .sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity));
-    if (!rows.some((r) => r.position !== null)) {
+    if (rows.filter((r) => r.position !== null).length < (sport.minFinishers || 1)) {
       empty += 1;
       const ageDays = (Date.parse(today) - Date.parse(e.dateEvent)) / 86400000;
       if (ageDays > 60) noResultIds.add(String(e.idEvent));
@@ -765,6 +793,10 @@ async function updateRankedSport(sport) {
     if (entrantsAdded) console.log(`  added entrant lists to ${entrantsAdded} tournament(s)`);
   }
 
+  if (data.events.length) {
+    const counts = data.events.map((ev) => ev.results.length).sort((a, b) => a - b);
+    console.log(`  (check) finishers per event: fewest ${counts[0]}, typical ${counts[Math.floor(counts.length / 2)]}, most ${counts[counts.length - 1]}`);
+  }
   data.meta.no_results_event_ids = [...noResultIds];
   const statusCounts = {};
   data.events.forEach((ev) => ev.results.forEach((r) => { if (r.status) statusCounts[r.status] = (statusCounts[r.status] || 0) + 1; }));
