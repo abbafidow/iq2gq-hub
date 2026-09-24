@@ -799,6 +799,12 @@ tr:last-child td { border-bottom: 0; }
 .sport-mma .flip-rating { color: rgb(216, 74, 74); }
 .sport-olympics { background: rgba(74, 190, 216, 0.10); border-color: rgba(74, 190, 216, 0.35); }
 .sport-olympics .flip-rating { color: rgb(74, 190, 216); }
+.sport-hockey { background: rgba(120, 170, 230, 0.10); border-color: rgba(120, 170, 230, 0.35); }
+.sport-hockey .flip-rating { color: rgb(120, 170, 230); }
+.sport-motor { background: rgba(230, 90, 60, 0.10); border-color: rgba(230, 90, 60, 0.35); }
+.sport-motor .flip-rating { color: rgb(230, 90, 60); }
+.sport-golf { background: rgba(110, 190, 90, 0.10); border-color: rgba(110, 190, 90, 0.35); }
+.sport-golf .flip-rating { color: rgb(110, 190, 90); }
 .sport-other { background: rgba(140, 140, 140, 0.10); border-color: rgba(140, 140, 140, 0.35); }
 .sport-other .flip-rating { color: rgb(140, 140, 140); }
 
