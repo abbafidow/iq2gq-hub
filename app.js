@@ -4683,8 +4683,8 @@ function realWorldPatternsForSport(sport, maxPerSport = 20) {
 //   count. A race where a driver has no finishing position (retired, or
 //   not listed at all) is a miss, not skipped.
 // - Golf: players choose their events, so it's the last N events they
-//   actually PLAYED. Missed cuts and withdrawals count as misses, where
-//   TheSportsDB lists them (see the results file's non-finisher rows).
+//   actually teed off in (from each tournament's Round 1 list). A missed
+//   cut or withdrawal counts as a miss.
 const RANKED_MARKETS = {
   'Formula 1': [
     { top: 1, label: 'Race winner', phrase: 'won' },
@@ -4714,10 +4714,18 @@ function findRankedPatterns(events, sport) {
   events.forEach(e => { if (recentIds.has(e.id)) e.results.forEach(r => r.name && competitors.add(r.name)); });
   const patterns = [];
   const rowFor = (e, name) => e.results.find(r => r.name === name);
+  // Golf: TheSportsDB only lists players who finished, so a missed cut is
+  // invisible in the final result. Only tournaments with an entrant list
+  // (from Round 1 - see the data script) are used, so a player's window is
+  // the events they actually teed off in and a missed cut counts as a
+  // miss. With no entrant lists yet, golf produces no tiles rather than
+  // flattering form that skips every missed cut.
+  const golfEvents = isF1 ? null : events.filter(e => Array.isArray(e.entrants) && e.entrants.length);
+  if (!isF1 && golfEvents.length < n) return [];
   competitors.forEach(name => {
     const window = isF1
       ? events.slice(-n)
-      : events.filter(e => rowFor(e, name)).slice(-n);
+      : golfEvents.filter(e => e.entrants.includes(name)).slice(-n);
     if (window.length < n) return;
     const positions = window.map(e => { const r = rowFor(e, name); return r ? r.position : null; });
     markets.forEach(m => {
