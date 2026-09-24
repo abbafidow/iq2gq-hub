@@ -583,17 +583,39 @@ const RANKED_SPORTS = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Returns the results array (possibly empty = TheSportsDB genuinely has no
+// results for this event), or null if the request itself FAILED (rate
+// limit, server error). A failure must never be treated as "no results" -
+// on 24 Sep 2026 a run hit TheSportsDB's rate limit (HTTP 429) and the
+// first version of this code wrongly recorded 107 golf events as having
+// no results at all.
+let rateLimitedUntilNextRun = false;
 async function fetchEventResults(eventId) {
-  // TheSportsDB's hard limit is two calls a second - stay well under it.
-  await sleep(600);
+  if (rateLimitedUntilNextRun) return null;
   const url = `${BASE_URL}/eventresults.php?id=${eventId}`;
-  const res = await fetch(url);
-  if (!res.ok) {
+  // Paced at ~50 calls a minute - the 24 Sep run showed ~100 a minute
+  // (0.6s apart) is enough to trip the limit once the season lookups
+  // earlier in the run are counted too.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await sleep(1200);
+    const res = await fetch(url);
+    if (res.ok) {
+      const json = await res.json();
+      return json.results || [];
+    }
+    if (res.status === 429 && attempt < 3) {
+      console.log(`  rate limited (HTTP 429) - waiting 60s before retrying (attempt ${attempt} of 3)`);
+      await sleep(60000);
+      continue;
+    }
     console.log(`  HTTP ${res.status} calling eventresults.php?id=${eventId}`);
-    return [];
+    if (res.status === 429) {
+      rateLimitedUntilNextRun = true;
+      console.log('  still rate limited after retries - stopping result fetches for this run; the rest will be picked up tomorrow');
+    }
+    return null;
   }
-  const json = await res.json();
-  return json.results || [];
+  return null;
 }
 
 function toResultRow(r) {
@@ -632,8 +654,13 @@ async function updateRankedSport(sport) {
   // Events more than 60 days old that still had no results are remembered
   // and skipped, so each run doesn't keep re-asking for results that
   // TheSportsDB is never going to post. Clear meta.no_results_ids to retry.
-  data.meta.no_results_ids = data.meta.no_results_ids || [];
-  const noResultIds = new Set(data.meta.no_results_ids);
+  // The original no_results_ids list (24 Sep 2026) was filled by rate-limit
+  // failures, not real "no results" answers - discarded so those events
+  // are fetched properly.
+  const hadOldList = 'no_results_ids' in data.meta;
+  delete data.meta.no_results_ids;
+  data.meta.no_results_event_ids = data.meta.no_results_event_ids || [];
+  const noResultIds = new Set(data.meta.no_results_event_ids);
   const noResultsBefore = noResultIds.size;
   const currentYear = new Date().getUTCFullYear();
   const today = new Date().toISOString().slice(0, 10);
@@ -666,10 +693,12 @@ async function updateRankedSport(sport) {
 
   let added = 0;
   let empty = 0;
+  let failed = 0;
   let loggedResultFields = false;
   for (const [i, e] of candidates.entries()) {
     if (i && i % 25 === 0) console.log(`  ...${i} of ${candidates.length} fetched`);
     const results = await fetchEventResults(e.idEvent);
+    if (results === null) { failed += 1; continue; } // request failed - retry next run, never mark as empty
     if (results.length && !loggedResultFields) {
       loggedResultFields = true;
       console.log(`  (check) result fields seen: ${Object.keys(results[0]).join(', ')}`);
@@ -686,7 +715,8 @@ async function updateRankedSport(sport) {
     savedIds.add(String(e.idEvent));
     added += 1;
   }
-  data.meta.no_results_ids = [...noResultIds];
+  data.meta.no_results_event_ids = [...noResultIds];
+  if (failed) console.log(`  ${failed} event(s) couldn't be fetched this run (request failed) - will retry next run`);
   const newlyDead = noResultIds.size - noResultsBefore;
   if (empty) console.log(`  ${empty} event(s) had no usable results (${empty - newlyDead} recent - will retry; ${newlyDead} over 60 days old - won't be asked for again)`);
 
@@ -702,7 +732,7 @@ async function updateRankedSport(sport) {
     if (!added && unknown.length) added = -1; // names changed - still save
   }
 
-  if (!added && !refreshed && !newlyDead) {
+  if (!added && !refreshed && !newlyDead && !hadOldList) {
     console.log('  no new events to add');
     return;
   }
