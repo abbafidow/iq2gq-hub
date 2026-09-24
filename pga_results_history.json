@@ -3,9 +3,118 @@
     "sport": "PGA Tour",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "PGA Tour final finishing positions (TheSportsDB league 4425), taken from each tournament's final round. Team events (Presidents Cup, Ryder Cup) are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
-    "row_count": 73,
+    "row_count": 88,
     "last_auto_update": "2026-09-24",
-    "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js"
+    "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js",
+    "no_results_ids": [
+      "2445094",
+      "2328896",
+      "2179612",
+      "2251025",
+      "2179640",
+      "2179641",
+      "2318493",
+      "1889765",
+      "1905612",
+      "1905613",
+      "1905614",
+      "1905615",
+      "1905616",
+      "1905617",
+      "1905618",
+      "1905619",
+      "1905620",
+      "1905621",
+      "1905622",
+      "1905623",
+      "1905624",
+      "1905625",
+      "1905626",
+      "1905627",
+      "1905628",
+      "1905629",
+      "1905630",
+      "1905631",
+      "1905632",
+      "1905633",
+      "1905634",
+      "1905635",
+      "1905636",
+      "1905637",
+      "1905638",
+      "1905639",
+      "1905640",
+      "1905641",
+      "1905642",
+      "1905643",
+      "2148879",
+      "2148881",
+      "2148882",
+      "2148883",
+      "2148884",
+      "2148885",
+      "2148886",
+      "2148887",
+      "2148888",
+      "2148889",
+      "1633733",
+      "1633735",
+      "1633736",
+      "1633737",
+      "1633738",
+      "1633739",
+      "1633740",
+      "1633741",
+      "1633742",
+      "1633743",
+      "1633744",
+      "1633745",
+      "1633746",
+      "1633747",
+      "1633748",
+      "1633749",
+      "1633750",
+      "1633751",
+      "1633752",
+      "1633753",
+      "1633754",
+      "1633755",
+      "1633756",
+      "1633757",
+      "1633758",
+      "1633759",
+      "1633763",
+      "1633764",
+      "1633765",
+      "1633766",
+      "1633767",
+      "1633768",
+      "1633769",
+      "1633770",
+      "1633771",
+      "1633772",
+      "1633773",
+      "1633774",
+      "1633775",
+      "1633776",
+      "1633777",
+      "1633778",
+      "1633779",
+      "1633780",
+      "1633781",
+      "1633782",
+      "1633783",
+      "1633785",
+      "1633786",
+      "1633787",
+      "1633788",
+      "1633789",
+      "1633790",
+      "1633791",
+      "1633792",
+      "1633793",
+      "1633794"
+    ]
   },
   "events": [
     {
@@ -555,6 +664,21 @@
       ]
     },
     {
+      "id": "2358665",
+      "date": "2026-07-19",
+      "event": "The Open Championship",
+      "season": "2026",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team_id": "135291",
+          "detail": "270"
+        }
+      ]
+    },
+    {
       "id": "2482053",
       "date": "2026-07-19",
       "event": "Corales Puntacana Championship",
@@ -619,17 +743,66 @@
       ]
     },
     {
-      "id": "2358665",
-      "date": "2026-07-19",
-      "event": "The Open Championship",
+      "id": "2482047",
+      "date": "2026-07-12",
+      "event": "Genesis Scottish Open",
       "season": "2026",
       "results": [
         {
           "position": 1,
           "tied": false,
-          "name": "Ryan Fox",
+          "name": "Tom Kim",
+          "team_id": "135283",
+          "detail": "263"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Keita Nakajima",
           "team_id": "135291",
-          "detail": "270"
+          "detail": "267"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Johnny Keefer",
+          "team_id": "135283",
+          "detail": "267"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Matt Fitzpatrick",
+          "team_id": "135283",
+          "detail": "267"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Robert MacIntyre",
+          "team_id": "135291",
+          "detail": "267"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team_id": "135283",
+          "detail": "268"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Michael Thorbjornsen",
+          "team_id": "135283",
+          "detail": "268"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "name": "Victor Perez",
+          "team_id": "135283",
+          "detail": "269"
         }
       ]
     },
@@ -715,70 +888,6 @@
           "name": "Tom Hoge",
           "team_id": "135283",
           "detail": "268"
-        }
-      ]
-    },
-    {
-      "id": "2482047",
-      "date": "2026-07-12",
-      "event": "Genesis Scottish Open",
-      "season": "2026",
-      "results": [
-        {
-          "position": 1,
-          "tied": false,
-          "name": "Tom Kim",
-          "team_id": "135283",
-          "detail": "263"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Keita Nakajima",
-          "team_id": "135291",
-          "detail": "267"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Johnny Keefer",
-          "team_id": "135283",
-          "detail": "267"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Matt Fitzpatrick",
-          "team_id": "135283",
-          "detail": "267"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Robert MacIntyre",
-          "team_id": "135291",
-          "detail": "267"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Rory McIlroy",
-          "team_id": "135283",
-          "detail": "268"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Michael Thorbjornsen",
-          "team_id": "135283",
-          "detail": "268"
-        },
-        {
-          "position": 9,
-          "tied": false,
-          "name": "Victor Perez",
-          "team_id": "135283",
-          "detail": "269"
         }
       ]
     },
@@ -3880,6 +3989,77 @@
       ]
     },
     {
+      "id": "2179637",
+      "date": "2025-07-13",
+      "event": "Genesis Scottish Open",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Gotterup",
+          "team_id": "135283",
+          "detail": "265"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Marco Penge",
+          "team_id": "135291",
+          "detail": "267"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Rory McIlroy",
+          "team_id": "135283",
+          "detail": "267"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Nicolai Højgaard",
+          "team_id": "135291",
+          "detail": "268"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "name": "Justin Rose",
+          "team_id": "135283",
+          "detail": "269"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sepp Straka",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Xander Schauffele",
+          "team_id": "135283",
+          "detail": "271"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team_id": "135283",
+          "detail": "271"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team_id": "135283",
+          "detail": "271"
+        }
+      ]
+    },
+    {
       "id": "2179638",
       "date": "2025-07-13",
       "event": "ISCO Championship",
@@ -3954,77 +4134,6 @@
           "name": "Luke List",
           "team_id": "135283",
           "detail": "276"
-        }
-      ]
-    },
-    {
-      "id": "2179637",
-      "date": "2025-07-13",
-      "event": "Genesis Scottish Open",
-      "season": "2025",
-      "results": [
-        {
-          "position": 1,
-          "tied": false,
-          "name": "Chris Gotterup",
-          "team_id": "135283",
-          "detail": "265"
-        },
-        {
-          "position": 2,
-          "tied": false,
-          "name": "Marco Penge",
-          "team_id": "135291",
-          "detail": "267"
-        },
-        {
-          "position": 2,
-          "tied": false,
-          "name": "Rory McIlroy",
-          "team_id": "135283",
-          "detail": "267"
-        },
-        {
-          "position": 4,
-          "tied": false,
-          "name": "Nicolai Højgaard",
-          "team_id": "135291",
-          "detail": "268"
-        },
-        {
-          "position": 6,
-          "tied": false,
-          "name": "Justin Rose",
-          "team_id": "135283",
-          "detail": "269"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Sepp Straka",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Xander Schauffele",
-          "team_id": "135283",
-          "detail": "271"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Scottie Scheffler",
-          "team_id": "135283",
-          "detail": "271"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Ludvig Åberg",
-          "team_id": "135283",
-          "detail": "271"
         }
       ]
     },
@@ -4681,84 +4790,6 @@
       ]
     },
     {
-      "id": "2257264",
-      "date": "2025-05-11",
-      "event": "Myrtle Beach Classic",
-      "season": "2025",
-      "results": [
-        {
-          "position": 1,
-          "tied": false,
-          "name": "Ryan Fox",
-          "team_id": "135291",
-          "detail": "269"
-        },
-        {
-          "position": 2,
-          "tied": false,
-          "name": "Mackenzie Hughes",
-          "team_id": "135283",
-          "detail": "269"
-        },
-        {
-          "position": 2,
-          "tied": false,
-          "name": "Harry Higgs",
-          "team_id": "135283",
-          "detail": "269"
-        },
-        {
-          "position": 4,
-          "tied": false,
-          "name": "Kevin Yu",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 5,
-          "tied": false,
-          "name": "Alex Smalley",
-          "team_id": "135283",
-          "detail": "271"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Hayden Buckley",
-          "team_id": "135283",
-          "detail": "272"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Mark Hubbard",
-          "team_id": "135283",
-          "detail": "272"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Sami Välimäki",
-          "team_id": "135291",
-          "detail": "272"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Matti Schmid",
-          "team_id": "135291",
-          "detail": "272"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Thorbjørn Olesen",
-          "team_id": "135291",
-          "detail": "272"
-        }
-      ]
-    },
-    {
       "id": "2257261",
       "date": "2025-05-11",
       "event": "Truist Championship",
@@ -4833,6 +4864,84 @@
           "name": "Keith Mitchell",
           "team_id": "135283",
           "detail": "270"
+        }
+      ]
+    },
+    {
+      "id": "2257264",
+      "date": "2025-05-11",
+      "event": "Myrtle Beach Classic",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ryan Fox",
+          "team_id": "135291",
+          "detail": "269"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team_id": "135283",
+          "detail": "269"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Harry Higgs",
+          "team_id": "135283",
+          "detail": "269"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "name": "Kevin Yu",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "name": "Alex Smalley",
+          "team_id": "135283",
+          "detail": "271"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Hayden Buckley",
+          "team_id": "135283",
+          "detail": "272"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Mark Hubbard",
+          "team_id": "135283",
+          "detail": "272"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Sami Välimäki",
+          "team_id": "135291",
+          "detail": "272"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Matti Schmid",
+          "team_id": "135291",
+          "detail": "272"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Thorbjørn Olesen",
+          "team_id": "135291",
+          "detail": "272"
         }
       ]
     },
@@ -4922,84 +5031,6 @@
       ]
     },
     {
-      "id": "2249039",
-      "date": "2025-04-20",
-      "event": "RBC Heritage",
-      "season": "2025",
-      "results": [
-        {
-          "position": 1,
-          "tied": false,
-          "name": "Justin Thomas",
-          "team_id": "135283",
-          "detail": "267"
-        },
-        {
-          "position": 2,
-          "tied": false,
-          "name": "Andrew Novak",
-          "team_id": "135283",
-          "detail": "267"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Daniel Berger",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Mackenzie Hughes",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Brian Harman",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 3,
-          "tied": false,
-          "name": "Maverick McNealy",
-          "team_id": "135283",
-          "detail": "270"
-        },
-        {
-          "position": 7,
-          "tied": false,
-          "name": "Tommy Fleetwood",
-          "team_id": "135283",
-          "detail": "271"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Scottie Scheffler",
-          "team_id": "135283",
-          "detail": "272"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Russell Henley",
-          "team_id": "135283",
-          "detail": "272"
-        },
-        {
-          "position": 8,
-          "tied": false,
-          "name": "Si Woo Kim",
-          "team_id": "135283",
-          "detail": "272"
-        }
-      ]
-    },
-    {
       "id": "2249036",
       "date": "2025-04-20",
       "event": "Corales Puntacana Championship",
@@ -5074,6 +5105,84 @@
           "name": "Ben Martin",
           "team_id": "135283",
           "detail": "277"
+        }
+      ]
+    },
+    {
+      "id": "2249039",
+      "date": "2025-04-20",
+      "event": "RBC Heritage",
+      "season": "2025",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Justin Thomas",
+          "team_id": "135283",
+          "detail": "267"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "name": "Andrew Novak",
+          "team_id": "135283",
+          "detail": "267"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Daniel Berger",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Mackenzie Hughes",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Brian Harman",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "name": "Maverick McNealy",
+          "team_id": "135283",
+          "detail": "270"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "name": "Tommy Fleetwood",
+          "team_id": "135283",
+          "detail": "271"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team_id": "135283",
+          "detail": "272"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Russell Henley",
+          "team_id": "135283",
+          "detail": "272"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "name": "Si Woo Kim",
+          "team_id": "135283",
+          "detail": "272"
         }
       ]
     },
@@ -5825,6 +5934,238 @@
           "name": "Harry Hall",
           "team_id": "135283",
           "detail": "269"
+        }
+      ]
+    },
+    {
+      "id": "1905611",
+      "date": "2024-02-15",
+      "event": "The Genesis Invitational",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Hideki Matsuyama",
+          "team_id": "135283",
+          "detail": "267"
+        }
+      ]
+    },
+    {
+      "id": "1905610",
+      "date": "2024-02-08",
+      "event": "WM Phoenix Open",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Nick Taylor",
+          "team_id": "135283",
+          "detail": "263"
+        }
+      ]
+    },
+    {
+      "id": "1905609",
+      "date": "2024-02-01",
+      "event": "AT&T Pebble Beach Pro Am",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Wyndham Clark",
+          "team_id": "135283",
+          "detail": "199"
+        }
+      ]
+    },
+    {
+      "id": "1889766",
+      "date": "2024-01-24",
+      "event": "Farmers Insurance Open",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Matthieu Pavon",
+          "team_id": "135291",
+          "detail": "275"
+        }
+      ]
+    },
+    {
+      "id": "1889764",
+      "date": "2024-01-11",
+      "event": "Sony Open in Hawaii",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Grayson Murray",
+          "team_id": "135283",
+          "detail": "263"
+        }
+      ]
+    },
+    {
+      "id": "1889763",
+      "date": "2024-01-04",
+      "event": "The Sentry",
+      "season": "2024",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Chris Kirk",
+          "team_id": "135283",
+          "detail": "263"
+        }
+      ]
+    },
+    {
+      "id": "1884319",
+      "date": "2023-12-08",
+      "event": "Grant Thornton Invitational",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Lydia Ko",
+          "team_id": "136689",
+          "detail": "190"
+        },
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Jason Day",
+          "team_id": "135283",
+          "detail": "190"
+        }
+      ]
+    },
+    {
+      "id": "1884318",
+      "date": "2023-11-30",
+      "event": "Hero World Challenge",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Scottie Scheffler",
+          "team_id": "135283",
+          "detail": "268"
+        }
+      ]
+    },
+    {
+      "id": "1884317",
+      "date": "2023-11-16",
+      "event": "The RSM Classic",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Ludvig Åberg",
+          "team_id": "135283",
+          "detail": "253"
+        }
+      ]
+    },
+    {
+      "id": "1884316",
+      "date": "2023-11-09",
+      "event": "Butterfield Bermuda Championship",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Camilo Villegas",
+          "team_id": "135283",
+          "detail": "260"
+        }
+      ]
+    },
+    {
+      "id": "1884315",
+      "date": "2023-11-02",
+      "event": "World Wide Technology Championship",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Erik van Rooyen",
+          "team_id": "135291",
+          "detail": "261"
+        }
+      ]
+    },
+    {
+      "id": "1884314",
+      "date": "2023-10-19",
+      "event": "ZOZO Championship",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Collin Morikawa",
+          "team_id": "135283",
+          "detail": "266"
+        }
+      ]
+    },
+    {
+      "id": "1884313",
+      "date": "2023-10-12",
+      "event": "Shriners Childrens Open",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Tom Kim",
+          "team_id": "135283",
+          "detail": "264"
+        }
+      ]
+    },
+    {
+      "id": "1884312",
+      "date": "2023-10-05",
+      "event": "Sanderson Farms Championship",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Luke List",
+          "team_id": "135283",
+          "detail": "250"
+        }
+      ]
+    },
+    {
+      "id": "1884308",
+      "date": "2023-09-14",
+      "event": "Fortinet Championship",
+      "season": "2022-2023",
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "name": "Sahith Theegala",
+          "team_id": "135283",
+          "detail": "267"
         }
       ]
     }
