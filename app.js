@@ -12,6 +12,20 @@ const REAL_WORLD_SOURCES = {
   EPL: 'epl_full_match_history.json',
   AFL: 'afl_full_match_history.json',
   NPC: 'npc_full_match_history.json',
+  'La Liga': 'laliga_full_match_history.json',
+  'Top 14': 'top14_full_match_history.json',
+  'Super League': 'super_league_full_match_history.json',
+  NHL: 'nhl_full_match_history.json',
+  NBA: 'nba_full_match_history.json',
+  'Rugby International': 'rugby_international_full_match_history.json',
+};
+
+// Finishing-position sports (no home/away score): each event is a field of
+// drivers or golfers and a finishing order. Built by the same daily
+// TheSportsDB job - see scripts/update-sports-data.js.
+const RANKED_SOURCES = {
+  'Formula 1': 'f1_results_history.json',
+  'PGA Tour': 'pga_results_history.json',
 };
 
 // Maps a syndicate Sport tag to the real-world sport group it belongs to, so
@@ -34,11 +48,36 @@ const REAL_WORLD_SPORT_GROUPS = {
   'Football (EPL)': 'EPL',
   'Football (English Domestic)': 'EPL',
   'Football (English Championship)': 'EPL',
-  // AFL/NPC added once real-world data existed for them - unconfirmed
-  // whether these are the only raw Sheet tag variants in use (see the EPL
-  // comment above this block for why that's worth checking, not assuming).
+  'Football (England Championship)': 'EPL',
   AFL: 'AFL',
+  // Checked against the full Raw_History + Raw_Live Sport list on
+  // 2026-09-24. The NPC tag is "Rugby Union (NPC)" - the old bare "NPC"
+  // key matched nothing, so NPC picks were never counted here. Bunnings
+  // Warehouse Cup is the NPC under its sponsor's name.
+  'Rugby Union (NPC)': 'NPC',
+  'Rugby Union (Bunnings Warehouse Cup)': 'NPC',
   NPC: 'NPC',
+  'Football (La Liga)': 'La Liga',
+  'Rugby Union (French Top 14)': 'Top 14',
+  'Rugby League (Super League)': 'Super League',
+  'Ice Hockey (NHL)': 'NHL',
+  'Basketball (NBA)': 'NBA',
+  'Rugby Union (International)': 'Rugby International',
+  'Rugby Union (Rugby Championship)': 'Rugby International',
+  'Rugby Union (Tri Nations)': 'Rugby International',
+  'Rugby Union (Nations Championship)': 'Rugby International',
+  'Rugby Union (Autumn Nations Cup)': 'Rugby International',
+  'Rugby Union (Six Nations)': 'Rugby International',
+  'Motor Racing (Formula One)': 'Formula 1',
+  'Motor Racing (F1)': 'Formula 1',
+  Golf: 'PGA Tour',
+  'Golf (US Open)': 'PGA Tour',
+  'Golf (Open Championship)': 'PGA Tour',
+  'Golf (The Masters)': 'PGA Tour',
+  'Golf (US Masters)': 'PGA Tour',
+  'Gold (Masters)': 'PGA Tour',
+  'Gold (The Players Championship)': 'PGA Tour',
+  'PGA Golf (Pebble Beach Pro Am)': 'PGA Tour',
 };
 
 const state = {
@@ -63,6 +102,7 @@ const state = {
   },
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
+  rankedEvents: {}, // sport -> array of {date, dateObj, event, results: [{position, status, name, ...}]}, oldest first
   presidentDialIndex: null, // Records page President/Benson dial - null until first touched, then persists across re-renders
 };
 
@@ -697,6 +737,20 @@ async function init() {
 
 async function loadRealWorldGames() {
   const entries = Object.entries(REAL_WORLD_SOURCES);
+  const rankedEntries = Object.entries(RANKED_SOURCES);
+  await Promise.all(rankedEntries.map(async ([sport, filename]) => {
+    try {
+      const res = await fetch(`${filename}?v=${Date.now()}`, { cache: 'no-store' });
+      const json = await res.json();
+      state.rankedEvents[sport] = (json.events || [])
+        .map(e => ({ ...e, dateObj: e.date ? new Date(`${e.date}T00:00:00Z`) : null }))
+        .filter(e => e.dateObj)
+        .sort((a, b) => a.dateObj - b.dateObj);
+    } catch (error) {
+      console.error(`Could not load real-world results for ${sport}:`, error);
+      state.rankedEvents[sport] = [];
+    }
+  }));
   await Promise.all(entries.map(async ([sport, filename]) => {
     try {
       const res = await fetch(`${filename}?v=${Date.now()}`, { cache: 'no-store' });
@@ -4197,7 +4251,7 @@ function dynamicScoringThreshold(games, windowDays = 365, percentile = 75) {
 // league, NRL) from "Total Goals" (football) as the bet-type label for this
 // kind of market - matched here rather than inventing a new label.
 function scoringBetTypeLabel(sport) {
-  return sport === 'EPL' ? 'Total Goals' : 'Total Points';
+  return ['EPL', 'La Liga', 'NHL'].includes(sport) ? 'Total Goals' : 'Total Points';
 }
 
 function findScoringPatterns(games, sport, threshold, n = 12, minHits = 10) {
@@ -4304,7 +4358,15 @@ function realWorldSportForFamily(family) {
   // family value is just whatever the raw Sheet Sport tag is - "AFL" and
   // "NPC" respectively, per the current syndicate sport list.
   if (family === 'AFL') return 'AFL';
-  if (family === 'NPC') return 'NPC';
+  // competitionFamily() passes these tags through unchanged, so the family
+  // is the raw Sheet tag (checked against the full Sport list 2026-09-24).
+  if (family === 'NPC' || family === 'Rugby Union (NPC)' || family === 'Rugby Union (Bunnings Warehouse Cup)') return 'NPC';
+  if (family === 'Spanish La Liga') return 'La Liga';
+  if (family === 'French Top 14') return 'Top 14';
+  if (family === 'Rugby League (Super League)') return 'Super League';
+  if (family === 'Ice Hockey (NHL)') return 'NHL';
+  if (family === 'Basketball (NBA)') return 'NBA';
+  if (family === 'Six Nations' || ['Rugby Union (International)', 'Rugby Union (Rugby Championship)', 'Rugby Union (Tri Nations)', 'Rugby Union (Nations Championship)', 'Rugby Union (Autumn Nations Cup)'].includes(family)) return 'Rugby International';
   if (family.startsWith('Football (England Domestic') || family === 'Football (EPL)' || family.includes('English Championship') || family.startsWith('Football (English Domestic')) return 'EPL';
   return null;
 }
@@ -4551,6 +4613,23 @@ const SPORT_SEASON_WINDOWS = {
   // worth pattern-matching on.
   NFL: [['09/09/2026', '14/02/2027']],
   'Super Rugby': [['12/02/2027', '26/06/2027']],
+  // ---- Added 2026-09-24. Start dates for 2026-27 come from each file's
+  // own first games (La Liga, Top 14) or the leagues' announcements (NHL
+  // opening night 29/09/2026, NBA 20/10/2026). End dates marked ESTIMATE
+  // follow the previous season's pattern - replace once published.
+  'La Liga': [['14/08/2026', '31/05/2027']], // end ESTIMATE
+  'Top 14': [['04/09/2026', '30/06/2027']], // end ESTIMATE (final is late June)
+  // Grand Final ESTIMATE mid-October; 2027 start ESTIMATE mid-February.
+  'Super League': [['12/02/2026', '17/10/2026'], ['11/02/2027', '16/10/2027']],
+  NHL: [['29/09/2026', '30/06/2027']], // playoffs end ESTIMATE
+  NBA: [['20/10/2026', '25/06/2027']], // Finals end ESTIMATE
+  // Tests: Rugby Championship into October, then the Nations Championship
+  // November window (finals weekend end of November), then Six Nations
+  // (Feb-Mar 2027, dates ESTIMATE). Outside these, no tests are played.
+  'Rugby International': [['01/07/2026', '30/11/2026'], ['01/02/2027', '21/03/2027']],
+  'Formula 1': [['06/03/2026', '06/12/2026']], // final race ESTIMATE early December
+  // PGA Tour's fall events run to mid-December; 2027 ESTIMATE full year.
+  'PGA Tour': [['01/01/2026', '13/12/2026'], ['07/01/2027', '13/12/2027']],
 };
 
 function isSportInSeason(sport, now = new Date()) {
@@ -4564,27 +4643,99 @@ function isSportInSeason(sport, now = new Date()) {
   });
 }
 
-function realWorldPatternsForDisplay(maxTotal = 8, baseMinRating = 6, maxActivityBonus = 2, activityScaleDays = 60) {
-  const activityBySport = computeActivityBySport();
-  const allPatterns = [];
-  Object.entries(REAL_WORLD_SOURCES).forEach(([sport]) => {
-    if (!isSportInSeason(sport)) return;
-    const games = state.realWorldGames[sport] || [];
-    if (!games.length) return;
-    const scoringThreshold = dynamicScoringThreshold(games);
-    const marginThreshold = dynamicMarginThreshold(games);
-    allPatterns.push(...findStreakPatterns(games, sport));
-    allPatterns.push(...findHomeAwayPatterns(games, sport));
-    allPatterns.push(...findScoringPatterns(games, sport, scoringThreshold));
-    allPatterns.push(...findMarginPatterns(games, sport, marginThreshold));
-  });
+// Minimum rating for ANY Worth Watching tile (red-flag warnings aside).
+// One number, applied the same way to every source and every sport.
+const WORTH_WATCHING_MIN_RATING = 6;
 
-  const qualifying = allPatterns.filter(p => {
-    const daysSinceLastPick = activityBySport[p.sport] ?? Infinity;
-    const bonus = Math.max(0, maxActivityBonus - daysSinceLastPick / activityScaleDays);
-    return p.rating >= baseMinRating - bonus;
+// All qualifying real-world patterns for ONE sport. Replaces the old
+// all-sports version, which capped the total across every sport at 20 and
+// lowered the bar for sports the syndicate had picked recently - both of
+// which crowded out sports the syndicate doesn't usually follow, the
+// opposite of what Worth Watching is for (decided 2026-09-24).
+function realWorldPatternsForSport(sport, maxPerSport = 20) {
+  if (!isSportInSeason(sport)) return [];
+  let patterns = [];
+  if (RANKED_SOURCES[sport]) {
+    patterns = findRankedPatterns(state.rankedEvents[sport] || [], sport);
+  } else {
+    const games = state.realWorldGames[sport] || [];
+    if (!games.length) return [];
+    patterns = [
+      ...findStreakPatterns(games, sport),
+      ...findHomeAwayPatterns(games, sport),
+      ...findScoringPatterns(games, sport, dynamicScoringThreshold(games)),
+      ...findMarginPatterns(games, sport, dynamicMarginThreshold(games)),
+    ];
+  }
+  return selectDiverseByBetType(patterns.filter(p => p.rating >= WORTH_WATCHING_MIN_RATING), maxPerSport);
+}
+
+// ---------------------------------------------------------------------------
+// Finishing-position patterns: Formula 1 and PGA Tour golf
+// ---------------------------------------------------------------------------
+// "How often has this driver/golfer finished in the top N lately?" - the
+// markets these sports are actually bet on (win, podium/top 5, top 10,
+// top 20). Rated on the same Wilson scale as every other tile, so a "7"
+// means the same thing here as for an NRL home record.
+//
+// What counts as one of their recent events differs by sport:
+// - F1: every driver is entered in every race, so ALL of the last N races
+//   count. A race where a driver has no finishing position (retired, or
+//   not listed at all) is a miss, not skipped.
+// - Golf: players choose their events, so it's the last N events they
+//   actually PLAYED. Missed cuts and withdrawals count as misses, where
+//   TheSportsDB lists them (see the results file's non-finisher rows).
+const RANKED_MARKETS = {
+  'Formula 1': [
+    { top: 1, label: 'Race winner', phrase: 'won' },
+    { top: 3, label: 'Podium finish', phrase: 'finished on the podium in' },
+    { top: 10, label: 'Points finish (top 10)', phrase: 'finished in the points in' },
+  ],
+  'PGA Tour': [
+    { top: 1, label: 'Tournament winner', phrase: 'won' },
+    { top: 5, label: 'Top 5 finish', phrase: 'finished top 5 in' },
+    { top: 10, label: 'Top 10 finish', phrase: 'finished top 10 in' },
+    { top: 20, label: 'Top 20 finish', phrase: 'finished top 20 in' },
+  ],
+};
+const RANKED_WINDOW = { 'Formula 1': 12, 'PGA Tour': 12 };
+// A competitor must have been in at least one of the sport's last few
+// events to count as current - a driver dropped from the grid or a golfer
+// who's stopped playing shouldn't surface on old form.
+const RANKED_RECENT_EVENTS = { 'Formula 1': 3, 'PGA Tour': 8 };
+
+function findRankedPatterns(events, sport) {
+  const markets = RANKED_MARKETS[sport];
+  const n = RANKED_WINDOW[sport] || 12;
+  if (!markets || events.length < n) return [];
+  const recentIds = new Set(events.slice(-(RANKED_RECENT_EVENTS[sport] || 3)).map(e => e.id));
+  const isF1 = sport === 'Formula 1';
+  const competitors = new Set();
+  events.forEach(e => { if (recentIds.has(e.id)) e.results.forEach(r => r.name && competitors.add(r.name)); });
+  const patterns = [];
+  const rowFor = (e, name) => e.results.find(r => r.name === name);
+  competitors.forEach(name => {
+    const window = isF1
+      ? events.slice(-n)
+      : events.filter(e => rowFor(e, name)).slice(-n);
+    if (window.length < n) return;
+    const positions = window.map(e => { const r = rowFor(e, name); return r ? r.position : null; });
+    markets.forEach(m => {
+      const hits = positions.filter(pos => pos != null && pos <= m.top).length;
+      const rating = wilsonRating(hits, n);
+      if (rating < WORTH_WATCHING_MIN_RATING) return;
+      const noun = isF1 ? 'races' : 'events';
+      patterns.push({
+        sport, team: name, type: `top${m.top}`, pick: name, betOption: m.label,
+        rationale: `${name} has ${m.phrase} ${hits} of their last ${n} ${noun}.`,
+        rating, fairOdds: fairOddsFromWinRate(hits, n),
+      });
+    });
   });
-  return selectDiverseByBetType(qualifying, maxTotal);
+  // Several markets can qualify for one driver/golfer - they become one
+  // tile with each market listed on its back (consolidateOptions groups
+  // by name), same as a team with both a home record and a scoring trend.
+  return patterns;
 }
 
 // Full candidate pool for a set of rows: team+bet-type combos, point-start
@@ -4762,6 +4913,9 @@ const SPORT_COLOR_CLASS = {
   'AFL': 'sport-afl',
   'MMA': 'sport-mma',
   'Olympics': 'sport-olympics',
+  'Ice Hockey': 'sport-hockey',
+  'Motor Racing': 'sport-motor',
+  'Golf': 'sport-golf',
 };
 function sportColorClass(group) {
   return SPORT_COLOR_CLASS[group] || 'sport-other';
@@ -4770,7 +4924,11 @@ function sportColorClass(group) {
 // broader sportGroup() category syndicate patterns use, so a real-world
 // Man City pattern and an EPL-tagged syndicate pattern land on the same
 // colour despite coming from different underlying data.
-const REAL_WORLD_TO_SPORT_GROUP = { NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football', AFL: 'AFL', NPC: 'Rugby Union' };
+const REAL_WORLD_TO_SPORT_GROUP = {
+  NRL: 'Rugby League', NFL: 'American Football', 'Super Rugby': 'Rugby Union', EPL: 'Football', AFL: 'AFL', NPC: 'Rugby Union',
+  'La Liga': 'Football', 'Top 14': 'Rugby Union', 'Super League': 'Rugby League', NHL: 'Ice Hockey', NBA: 'Basketball',
+  'Rugby International': 'Rugby Union', 'Formula 1': 'Motor Racing', 'PGA Tour': 'Golf',
+};
 
 // Real-world options get a small, flat rating boost (never the syndicate
 // side) - reflecting that real-world data is generally the larger, more
@@ -4945,93 +5103,106 @@ function focusSyndicateOptions(sportTag, sportLabel) {
   });
 }
 
+// Which sport pools a syndicate-pattern group overlaps, for the "one sport
+// per tile" rule when a Your-pattern or red-flag tile is swapped in (those
+// carry a broad group like "Rugby League", not a specific competition).
+const GROUP_TO_POOLS = {
+  'American Football': ['NFL'],
+  AFL: ['AFL'],
+  'Rugby League': ['NRL', 'Super League'],
+  Football: ['EPL', 'La Liga'],
+  'Rugby Union': ['NPC', 'Super Rugby', 'Top 14', 'Rugby International'],
+  'Super Rugby': ['Super Rugby'],
+  Basketball: ['NBA'],
+};
+function poolsForGroup(group) {
+  return GROUP_TO_POOLS[group] || [group];
+}
+
+// Worth Watching (redesigned 2026-09-24): ONE row, at most six tiles, at
+// most ONE tile per sport, and only tiles rated WORTH_WATCHING_MIN_RATING
+// or higher. Every in-season sport with real-world data competes on equal
+// terms - the best tile from each sport is compared and the six strongest
+// sports win a slot. There's no longer any preference for sports the
+// syndicate already picks: the point is to surface strong trends wherever
+// they are, including sports members don't usually follow (F1, golf...).
 function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
   const memberOptions = [
     ...yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern', 'your')),
     ...syndicatePatterns.map(item => syndicatePatternToOption(item, 'Syndicate pattern', 'syndicate')),
   ];
-  const pools = {
-    EPL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'EPL').map(realWorldPatternToOption)],
-    NFL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NFL').map(realWorldPatternToOption)],
-    NRL: [...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NRL').map(realWorldPatternToOption)],
-    // AFL/NPC previously had syndicate patterns only (no real-world file
-    // existed for either) - now that both do, folded in the same way as
-    // the three sports above.
-    'NZ Domestic Rugby': [
-      ...realWorldPatternsForDisplay(20).filter(p => p.sport === 'NPC').map(realWorldPatternToOption),
-      ...focusSyndicateOptions('Rugby Union (NPC)', 'Rugby Union'),
-    ],
-    AFL: [
-      ...realWorldPatternsForDisplay(20).filter(p => p.sport === 'AFL').map(realWorldPatternToOption),
-      ...focusSyndicateOptions('AFL', 'AFL'),
-    ],
-  };
-  // Member-driven options (your/syndicate patterns not already captured by
-  // the focus-sport syndicate pools above) fold into whichever focus
-  // sport's pool they belong to, so a strong syndicate pattern for, say,
-  // NFL still has a chance to appear alongside the real-world NFL options.
+  const pools = {};
+  [...Object.keys(REAL_WORLD_SOURCES), ...Object.keys(RANKED_SOURCES)].forEach(sport => {
+    pools[sport] = realWorldPatternsForSport(sport).map(realWorldPatternToOption);
+  });
+  // NPC and AFL also draw on the syndicate's own history for that exact tag
+  // (kept from the previous design) - still only shown if in season.
+  if (isSportInSeason('NPC')) pools.NPC.push(...focusSyndicateOptions('Rugby Union (NPC)', 'Rugby Union'));
+  if (isSportInSeason('AFL')) pools.AFL.push(...focusSyndicateOptions('AFL', 'AFL'));
+  // Member-driven options fold into the pool of the sport they belong to,
+  // where that's unambiguous (unchanged from the previous design).
   memberOptions.forEach(opt => {
     if (pools[opt.sportLabel]) pools[opt.sportLabel].push(opt);
     else if (REAL_WORLD_TO_SPORT_GROUP.NFL === opt.sportLabel && pools.NFL) pools.NFL.push(opt);
   });
 
-  // Dismissed tiles are filtered out of each sport's pool BEFORE the
-  // round-robin selection runs below - not swapped out afterward. This is
-  // what makes "Remove" naturally pull in the next-best option from the
-  // SAME sport (whatever the round-robin would have picked next from that
-  // pool anyway), and naturally show one fewer tile for that slot if
-  // nothing else in that sport currently qualifies, rather than reaching
-  // into an unrelated sport just to keep the count at 6.
+  // Dismissed tiles are removed BEFORE choosing, so "Remove" brings in the
+  // next-best tile from the same sport - or, if that sport has nothing else
+  // over the bar, lets the next-strongest sport take the slot.
   const dismissedMap = readDismissedTiles(state.selectedMember);
   const weekSeed = rotationSeed();
-  const consolidatedPools = Object.fromEntries(
-    Object.entries(pools).map(([sport, opts]) => {
-      const consolidated = consolidateOptions(opts)
-        .filter(t => !isTileDismissed(dismissedMap, t.dismissKey))
-        .sort((a, b) => b.rating - a.rating);
-      return [sport, applyWeeklyRotation(consolidated, t => t.rating, weekSeed)];
-    })
-  );
+  const bestPerSport = [];
+  Object.entries(pools).forEach(([sport, opts]) => {
+    const consolidated = consolidateOptions(opts)
+      .filter(t => t.rating >= WORTH_WATCHING_MIN_RATING)
+      .filter(t => !isTileDismissed(dismissedMap, t.dismissKey))
+      .sort((a, b) => b.rating - a.rating);
+    const rotated = applyWeeklyRotation(consolidated, t => t.rating, weekSeed);
+    if (rotated.length) bestPerSport.push({ ...rotated[0], poolKey: sport });
+  });
+  // Strongest sports first. Sports with equal ratings take turns (same
+  // rotation used within each sport), so a tie doesn't hand the same sport
+  // the last slot every time.
+  const selected = applyWeeklyRotation(
+    bestPerSport.sort((a, b) => b.rating - a.rating), t => t.rating, weekSeed,
+  ).slice(0, WORTH_WATCHING_MAX_TOTAL);
 
-  const focusOrder = ['EPL', 'NFL', 'NRL', 'NZ Domestic Rugby', 'AFL'];
-  const selected = [];
-  for (let round = 0; selected.length < WORTH_WATCHING_MAX_TOTAL; round++) {
-    let addedThisRound = false;
-    for (const sport of focusOrder) {
-      if (selected.length >= WORTH_WATCHING_MAX_TOTAL) break;
-      const tile = consolidatedPools[sport] && consolidatedPools[sport][round];
-      if (tile) { selected.push(tile); addedThisRound = true; }
+  // Swaps a guaranteed tile in while keeping one tile per sport: it takes
+  // the place of a tile from an overlapping sport if there is one,
+  // otherwise the lowest-rated tile (only when the row is already full).
+  const swapIn = (tile, oneSportRule = true) => {
+    const overlapping = poolsForGroup(tile.sportLabel);
+    const sameSport = !oneSportRule ? [] : selected
+      .map((t, i) => ({ t, i }))
+      .filter(({ t }) => overlapping.includes(t.poolKey) || t.sportLabel === tile.sportLabel);
+    let idx = -1;
+    if (sameSport.length) {
+      idx = sameSport.sort((a, b) => a.t.rating - b.t.rating)[0].i;
+    } else if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
+      idx = 0;
+      selected.forEach((t, i) => { if (t.rating < selected[idx].rating) idx = i; });
     }
-    if (!addedThisRound) break;
-  }
+    if (idx >= 0) selected.splice(idx, 1);
+    selected.push({ ...tile, poolKey: overlapping[0] });
+  };
 
-  // Real-world data's rating boost and generally larger sample sizes mean
-  // a personal "Your pattern" tile almost never wins a slot on rating
-  // alone - without this guarantee, Worth Watching would show identical
-  // tiles to every member regardless of who's actually logged in, which
-  // defeats the point of it being personalised at all. Only swaps in a
-  // tile if a genuinely qualifying "Your pattern" exists for this member;
-  // never fabricates one just to fill the guarantee.
+  // Personal guarantee: if none of the six is one of this member's own
+  // patterns, their best one is swapped in - provided it clears the same
+  // rating bar as everything else.
   const alreadyHasYourPattern = selected.some(t => t.hasYourPattern);
   if (!alreadyHasYourPattern) {
     const yourPatternTiles = consolidateOptions(yourPatterns.map(item => syndicatePatternToOption(item, 'Your pattern', 'your')))
+      .filter(t => t.rating >= WORTH_WATCHING_MIN_RATING)
       .filter(t => !isTileDismissed(dismissedMap, t.dismissKey))
       .sort((a, b) => b.rating - a.rating);
-    if (yourPatternTiles.length) {
-      if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
-        let lowestIdx = 0;
-        selected.forEach((t, i) => { if (t.rating < selected[lowestIdx].rating) lowestIdx = i; });
-        selected.splice(lowestIdx, 1);
-      }
-      selected.push(yourPatternTiles[0]);
-    }
+    if (yourPatternTiles.length) swapIn(yourPatternTiles[0]);
   }
 
-  // Red-flag tile: at most one, mixed into the same six slots rather than
-  // a separate section - a couple were considered and this was the
-  // preferred one. Same guarantee mechanism as "Your pattern" above
-  // (swap out the current lowest-rated tile if one qualifies and none is
-  // already present); never fabricated if nothing clears the bar.
+  // Red-flag tile: at most one. It's a warning rather than a suggestion, so
+  // it's exempt from the rating bar (its rating is deliberately low) and
+  // from one-tile-per-sport - otherwise a warning about one NRL team would
+  // knock out the week's strongest NRL tile. It replaces the lowest-rated
+  // tile instead, as before.
   const alreadyHasRedFlag = selected.some(t => t.isRedFlag);
   if (!alreadyHasRedFlag) {
     const redFlagRows = state.raw.filter(isRealPick).filter(r => r.win || r.loss);
@@ -5039,21 +5210,12 @@ function worthWatchingFocusList(yourPatterns, syndicatePatterns) {
     if (redFlagCandidates.length) {
       const top = redFlagCandidates[0];
       const redFlagOption = syndicatePatternToOption({ ...top, group: top.group }, 'Track record', 'red-flag');
-      // Rating reflects how poor the record is (upper bound, scaled 0-10),
-      // not the same "how good" scale the rest of the tiles use - this is
-      // deliberately a low number, and it's fine for it to sort toward
-      // the bottom of the visible list.
       redFlagOption.rating = Math.max(1, Math.round(top.upperBound * 10));
       const redFlagTiles = consolidateOptions([redFlagOption])
         .filter(t => !isTileDismissed(dismissedMap, t.dismissKey));
       if (redFlagTiles.length) {
         redFlagTiles[0].isRedFlag = true;
-        if (selected.length >= WORTH_WATCHING_MAX_TOTAL) {
-          let lowestIdx = 0;
-          selected.forEach((t, i) => { if (t.rating < selected[lowestIdx].rating) lowestIdx = i; });
-          selected.splice(lowestIdx, 1);
-        }
-        selected.push(redFlagTiles[0]);
+        swapIn(redFlagTiles[0], false);
       }
     }
   }
