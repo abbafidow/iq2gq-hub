@@ -3,17 +3,35 @@
     "sport": "NPC",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "Unlike NRL/NFL/Super Rugby/EPL, there is no manually-curated historical spreadsheet behind this file - it started empty and is built entirely from TheSportsDB going forward, backfilled a few seasons on its first run. Covers all of the National Provincial Championship's sponsorship-name eras (ITM Cup, Mitre 10 Cup, Bunnings NPC) as one continuous competition, matching how Super Rugby's file already treats its own era/branding variants.",
-    "row_count": 420,
-    "last_auto_update": "2026-09-26",
+    "row_count": 422,
+    "last_auto_update": "2026-09-27",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js"
   },
   "games": [
     {
+      "date": "2026-09-27",
+      "home_team": "Hawkes Bay",
+      "away_team": "Taranaki",
+      "home_score": 14,
+      "away_score": 50,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-09-27",
+      "home_team": "Wellington",
+      "away_team": "Waikato",
+      "home_score": 10,
+      "away_score": 34,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-09-26",
-      "home_team": "North Harbour",
-      "away_team": "Otago",
-      "home_score": 32,
-      "away_score": 21,
+      "home_team": "Northland",
+      "away_team": "Counties Manukau",
+      "home_score": 19,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -28,10 +46,10 @@
     },
     {
       "date": "2026-09-26",
-      "home_team": "Northland",
-      "away_team": "Counties Manukau",
-      "home_score": 19,
-      "away_score": 22,
+      "home_team": "North Harbour",
+      "away_team": "Otago",
+      "home_score": 32,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -55,15 +73,6 @@
     },
     {
       "date": "2026-09-20",
-      "home_team": "Taranaki",
-      "away_team": "Southland",
-      "home_score": 55,
-      "away_score": 19,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-09-20",
       "home_team": "North Harbour",
       "away_team": "Canterbury",
       "home_score": 24,
@@ -72,11 +81,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-09-20",
+      "home_team": "Taranaki",
+      "away_team": "Southland",
+      "home_score": 55,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-09-19",
-      "home_team": "Bay of Plenty",
-      "away_team": "Hawkes Bay",
-      "home_score": 32,
-      "away_score": 17,
+      "home_team": "Wellington",
+      "away_team": "Northland",
+      "home_score": 28,
+      "away_score": 52,
       "home_odds": null,
       "away_odds": null
     },
@@ -91,10 +109,10 @@
     },
     {
       "date": "2026-09-19",
-      "home_team": "Wellington",
-      "away_team": "Northland",
-      "home_score": 28,
-      "away_score": 52,
+      "home_team": "Bay of Plenty",
+      "away_team": "Hawkes Bay",
+      "home_score": 32,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -118,15 +136,6 @@
     },
     {
       "date": "2026-09-13",
-      "home_team": "Southland",
-      "away_team": "Bay of Plenty",
-      "home_score": 43,
-      "away_score": 12,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-09-13",
       "home_team": "Hawkes Bay",
       "away_team": "North Harbour",
       "home_score": 24,
@@ -135,20 +144,20 @@
       "away_odds": null
     },
     {
-      "date": "2026-09-12",
-      "home_team": "Auckland",
-      "away_team": "Counties Manukau",
+      "date": "2026-09-13",
+      "home_team": "Southland",
+      "away_team": "Bay of Plenty",
       "home_score": 43,
-      "away_score": 33,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2026-09-12",
-      "home_team": "Northland",
-      "away_team": "Waikato",
-      "home_score": 34,
-      "away_score": 17,
+      "home_team": "Auckland",
+      "away_team": "Counties Manukau",
+      "home_score": 19,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
@@ -163,10 +172,19 @@
     },
     {
       "date": "2026-09-12",
+      "home_team": "Northland",
+      "away_team": "Waikato",
+      "home_score": 34,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-09-12",
       "home_team": "Auckland",
       "away_team": "Counties Manukau",
-      "home_score": 19,
-      "away_score": 7,
+      "home_score": 43,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -190,15 +208,6 @@
     },
     {
       "date": "2026-09-06",
-      "home_team": "North Harbour",
-      "away_team": "Northland",
-      "home_score": 57,
-      "away_score": 42,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-09-06",
       "home_team": "Counties Manukau",
       "away_team": "Southland",
       "home_score": 47,
@@ -207,11 +216,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-09-06",
+      "home_team": "North Harbour",
+      "away_team": "Northland",
+      "home_score": 57,
+      "away_score": 42,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-09-05",
-      "home_team": "Waikato",
-      "away_team": "Canterbury",
-      "home_score": 14,
-      "away_score": 36,
+      "home_team": "Bay of Plenty",
+      "away_team": "Manawatu",
+      "home_score": 12,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -226,10 +244,10 @@
     },
     {
       "date": "2026-09-05",
-      "home_team": "Bay of Plenty",
-      "away_team": "Manawatu",
-      "home_score": 12,
-      "away_score": 29,
+      "home_team": "Waikato",
+      "away_team": "Canterbury",
+      "home_score": 14,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -253,15 +271,6 @@
     },
     {
       "date": "2026-08-30",
-      "home_team": "Northland",
-      "away_team": "Tasman",
-      "home_score": 20,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-30",
       "home_team": "Wellington",
       "away_team": "Counties Manukau",
       "home_score": 35,
@@ -270,11 +279,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-08-30",
+      "home_team": "Northland",
+      "away_team": "Tasman",
+      "home_score": 20,
+      "away_score": 10,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-08-29",
-      "home_team": "Manawatu",
-      "away_team": "North Harbour",
-      "home_score": 43,
-      "away_score": 40,
+      "home_team": "Taranaki",
+      "away_team": "Canterbury",
+      "home_score": 40,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -289,10 +307,10 @@
     },
     {
       "date": "2026-08-29",
-      "home_team": "Taranaki",
-      "away_team": "Canterbury",
-      "home_score": 40,
-      "away_score": 26,
+      "home_team": "Manawatu",
+      "away_team": "North Harbour",
+      "home_score": 43,
+      "away_score": 40,
       "home_odds": null,
       "away_odds": null
     },
@@ -316,15 +334,6 @@
     },
     {
       "date": "2026-08-23",
-      "home_team": "Otago",
-      "away_team": "Wellington",
-      "home_score": 61,
-      "away_score": 22,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-23",
       "home_team": "Waikato",
       "away_team": "Counties Manukau",
       "home_score": 45,
@@ -333,11 +342,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-08-23",
+      "home_team": "Otago",
+      "away_team": "Wellington",
+      "home_score": 61,
+      "away_score": 22,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-08-22",
-      "home_team": "Bay of Plenty",
-      "away_team": "Taranaki",
-      "home_score": 28,
-      "away_score": 24,
+      "home_team": "Tasman",
+      "away_team": "Southland",
+      "home_score": 46,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -352,10 +370,10 @@
     },
     {
       "date": "2026-08-22",
-      "home_team": "Tasman",
-      "away_team": "Southland",
-      "home_score": 46,
-      "away_score": 17,
+      "home_team": "Bay of Plenty",
+      "away_team": "Taranaki",
+      "home_score": 28,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -379,15 +397,6 @@
     },
     {
       "date": "2026-08-16",
-      "home_team": "Counties Manukau",
-      "away_team": "Tasman",
-      "home_score": 35,
-      "away_score": 50,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-16",
       "home_team": "Southland",
       "away_team": "Waikato",
       "home_score": 32,
@@ -396,11 +405,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-08-16",
+      "home_team": "Counties Manukau",
+      "away_team": "Tasman",
+      "home_score": 35,
+      "away_score": 50,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-08-15",
-      "home_team": "Manawatu",
-      "away_team": "Otago",
-      "home_score": 27,
-      "away_score": 29,
+      "home_team": "Canterbury",
+      "away_team": "Bay of Plenty",
+      "home_score": 33,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -415,10 +433,10 @@
     },
     {
       "date": "2026-08-15",
-      "home_team": "Canterbury",
-      "away_team": "Bay of Plenty",
-      "home_score": 33,
-      "away_score": 28,
+      "home_team": "Manawatu",
+      "away_team": "Otago",
+      "home_score": 27,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -442,15 +460,6 @@
     },
     {
       "date": "2026-08-09",
-      "home_team": "Manawatu",
-      "away_team": "Southland",
-      "home_score": 36,
-      "away_score": 35,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-09",
       "home_team": "Otago",
       "away_team": "Canterbury",
       "home_score": 15,
@@ -459,11 +468,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-08-09",
+      "home_team": "Manawatu",
+      "away_team": "Southland",
+      "home_score": 36,
+      "away_score": 35,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-08-08",
-      "home_team": "Hawkes Bay",
-      "away_team": "Tasman",
-      "home_score": 50,
-      "away_score": 19,
+      "home_team": "Auckland",
+      "away_team": "Wellington",
+      "home_score": 34,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -478,10 +496,10 @@
     },
     {
       "date": "2026-08-08",
-      "home_team": "Auckland",
-      "away_team": "Wellington",
-      "home_score": 34,
-      "away_score": 31,
+      "home_team": "Hawkes Bay",
+      "away_team": "Tasman",
+      "home_score": 50,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -505,15 +523,6 @@
     },
     {
       "date": "2026-08-02",
-      "home_team": "Wellington",
-      "away_team": "Hawkes Bay",
-      "home_score": 33,
-      "away_score": 52,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-02",
       "home_team": "Northland",
       "away_team": "Manawatu",
       "home_score": 40,
@@ -522,11 +531,20 @@
       "away_odds": null
     },
     {
+      "date": "2026-08-02",
+      "home_team": "Wellington",
+      "away_team": "Hawkes Bay",
+      "home_score": 33,
+      "away_score": 52,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-08-01",
-      "home_team": "Canterbury",
-      "away_team": "Auckland",
-      "home_score": 38,
-      "away_score": 31,
+      "home_team": "Counties Manukau",
+      "away_team": "Taranaki",
+      "home_score": 5,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -541,10 +559,10 @@
     },
     {
       "date": "2026-08-01",
-      "home_team": "Counties Manukau",
-      "away_team": "Taranaki",
-      "home_score": 5,
-      "away_score": 20,
+      "home_team": "Canterbury",
+      "away_team": "Auckland",
+      "home_score": 38,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -604,19 +622,19 @@
     },
     {
       "date": "2025-10-11",
-      "home_team": "Hawkes Bay",
-      "away_team": "Taranaki",
-      "home_score": 26,
-      "away_score": 12,
+      "home_team": "Bay of Plenty",
+      "away_team": "Tasman",
+      "home_score": 27,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-10-11",
-      "home_team": "Bay of Plenty",
-      "away_team": "Tasman",
-      "home_score": 27,
-      "away_score": 7,
+      "home_team": "Hawkes Bay",
+      "away_team": "Taranaki",
+      "home_score": 26,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
@@ -631,15 +649,6 @@
     },
     {
       "date": "2025-10-05",
-      "home_team": "Canterbury",
-      "away_team": "Taranaki",
-      "home_score": 34,
-      "away_score": 14,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-10-05",
       "home_team": "Tasman",
       "away_team": "Counties Manukau",
       "home_score": 41,
@@ -648,20 +657,20 @@
       "away_odds": null
     },
     {
-      "date": "2025-10-04",
-      "home_team": "Manawatu",
-      "away_team": "Hawkes Bay",
-      "home_score": 10,
-      "away_score": 38,
+      "date": "2025-10-05",
+      "home_team": "Canterbury",
+      "away_team": "Taranaki",
+      "home_score": 34,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-10-04",
-      "home_team": "Waikato",
-      "away_team": "Northland",
-      "home_score": 25,
-      "away_score": 19,
+      "home_team": "Auckland",
+      "away_team": "Otago",
+      "home_score": 17,
+      "away_score": 51,
       "home_odds": null,
       "away_odds": null
     },
@@ -676,10 +685,19 @@
     },
     {
       "date": "2025-10-04",
-      "home_team": "Auckland",
-      "away_team": "Otago",
-      "home_score": 17,
-      "away_score": 51,
+      "home_team": "Waikato",
+      "away_team": "Northland",
+      "home_score": 25,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-10-04",
+      "home_team": "Manawatu",
+      "away_team": "Hawkes Bay",
+      "home_score": 10,
+      "away_score": 38,
       "home_odds": null,
       "away_odds": null
     },
@@ -694,10 +712,10 @@
     },
     {
       "date": "2025-09-28",
-      "home_team": "Northland",
-      "away_team": "Canterbury",
-      "home_score": 19,
-      "away_score": 19,
+      "home_team": "Bay of Plenty",
+      "away_team": "Waikato",
+      "home_score": 41,
+      "away_score": 5,
       "home_odds": null,
       "away_odds": null
     },
@@ -712,19 +730,10 @@
     },
     {
       "date": "2025-09-28",
-      "home_team": "Bay of Plenty",
-      "away_team": "Waikato",
-      "home_score": 41,
-      "away_score": 5,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-09-27",
-      "home_team": "Taranaki",
-      "away_team": "Wellington",
-      "home_score": 39,
-      "away_score": 20,
+      "home_team": "Northland",
+      "away_team": "Canterbury",
+      "home_score": 19,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -734,6 +743,15 @@
       "away_team": "North Harbour",
       "home_score": 41,
       "away_score": 26,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-09-27",
+      "home_team": "Taranaki",
+      "away_team": "Wellington",
+      "home_score": 39,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -757,15 +775,6 @@
     },
     {
       "date": "2025-09-21",
-      "home_team": "Manawatu",
-      "away_team": "Bay of Plenty",
-      "home_score": 19,
-      "away_score": 55,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-09-21",
       "home_team": "North Harbour",
       "away_team": "Northland",
       "home_score": 21,
@@ -774,20 +783,20 @@
       "away_odds": null
     },
     {
-      "date": "2025-09-20",
-      "home_team": "Tasman",
-      "away_team": "Waikato",
-      "home_score": 24,
-      "away_score": 29,
+      "date": "2025-09-21",
+      "home_team": "Manawatu",
+      "away_team": "Bay of Plenty",
+      "home_score": 19,
+      "away_score": 55,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-09-20",
-      "home_team": "Canterbury",
-      "away_team": "Otago",
-      "home_score": 36,
-      "away_score": 38,
+      "home_team": "Counties Manukau",
+      "away_team": "Auckland",
+      "home_score": 49,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -802,10 +811,19 @@
     },
     {
       "date": "2025-09-20",
-      "home_team": "Counties Manukau",
-      "away_team": "Auckland",
-      "home_score": 49,
-      "away_score": 28,
+      "home_team": "Canterbury",
+      "away_team": "Otago",
+      "home_score": 36,
+      "away_score": 38,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-09-20",
+      "home_team": "Tasman",
+      "away_team": "Waikato",
+      "home_score": 24,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -820,10 +838,10 @@
     },
     {
       "date": "2025-09-14",
-      "home_team": "Southland",
-      "away_team": "Counties Manukau",
-      "home_score": 10,
-      "away_score": 64,
+      "home_team": "Auckland",
+      "away_team": "Manawatu",
+      "home_score": 52,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -838,19 +856,10 @@
     },
     {
       "date": "2025-09-14",
-      "home_team": "Auckland",
-      "away_team": "Manawatu",
-      "home_score": 52,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-09-13",
-      "home_team": "Otago",
-      "away_team": "Taranaki",
-      "home_score": 28,
-      "away_score": 26,
+      "home_team": "Southland",
+      "away_team": "Counties Manukau",
+      "home_score": 10,
+      "away_score": 64,
       "home_odds": null,
       "away_odds": null
     },
@@ -860,6 +869,15 @@
       "away_team": "Hawkes Bay",
       "home_score": 21,
       "away_score": 24,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-09-13",
+      "home_team": "Otago",
+      "away_team": "Taranaki",
+      "home_score": 28,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -883,15 +901,6 @@
     },
     {
       "date": "2025-09-07",
-      "home_team": "Tasman",
-      "away_team": "Auckland",
-      "home_score": 21,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-09-07",
       "home_team": "Taranaki",
       "away_team": "Bay of Plenty",
       "home_score": 17,
@@ -900,11 +909,20 @@
       "away_odds": null
     },
     {
+      "date": "2025-09-07",
+      "home_team": "Tasman",
+      "away_team": "Auckland",
+      "home_score": 21,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2025-09-06",
-      "home_team": "Southland",
-      "away_team": "Canterbury",
-      "home_score": 14,
-      "away_score": 54,
+      "home_team": "Hawkes Bay",
+      "away_team": "Wellington",
+      "home_score": 45,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -919,10 +937,10 @@
     },
     {
       "date": "2025-09-06",
-      "home_team": "Hawkes Bay",
-      "away_team": "Wellington",
-      "home_score": 45,
-      "away_score": 19,
+      "home_team": "Southland",
+      "away_team": "Canterbury",
+      "home_score": 14,
+      "away_score": 54,
       "home_odds": null,
       "away_odds": null
     },
@@ -946,15 +964,6 @@
     },
     {
       "date": "2025-08-31",
-      "home_team": "Waikato",
-      "away_team": "Southland",
-      "home_score": 10,
-      "away_score": 25,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-08-31",
       "home_team": "Wellington",
       "away_team": "Auckland",
       "home_score": 36,
@@ -963,20 +972,20 @@
       "away_odds": null
     },
     {
-      "date": "2025-08-30",
-      "home_team": "Tasman",
-      "away_team": "Otago",
-      "home_score": 31,
-      "away_score": 27,
+      "date": "2025-08-31",
+      "home_team": "Waikato",
+      "away_team": "Southland",
+      "home_score": 10,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-08-30",
-      "home_team": "Northland",
-      "away_team": "Hawkes Bay",
-      "home_score": 27,
-      "away_score": 22,
+      "home_team": "Canterbury",
+      "away_team": "Manawatu",
+      "home_score": 53,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -991,10 +1000,19 @@
     },
     {
       "date": "2025-08-30",
-      "home_team": "Canterbury",
-      "away_team": "Manawatu",
-      "home_score": 53,
-      "away_score": 14,
+      "home_team": "Northland",
+      "away_team": "Hawkes Bay",
+      "home_score": 27,
+      "away_score": 22,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-08-30",
+      "home_team": "Tasman",
+      "away_team": "Otago",
+      "home_score": 31,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -1009,15 +1027,6 @@
     },
     {
       "date": "2025-08-24",
-      "home_team": "Manawatu",
-      "away_team": "Wellington",
-      "home_score": 38,
-      "away_score": 28,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-08-24",
       "home_team": "Otago",
       "away_team": "Counties Manukau",
       "home_score": 33,
@@ -1026,11 +1035,20 @@
       "away_odds": null
     },
     {
+      "date": "2025-08-24",
+      "home_team": "Manawatu",
+      "away_team": "Wellington",
+      "home_score": 38,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2025-08-23",
-      "home_team": "Auckland",
-      "away_team": "Northland",
-      "home_score": 24,
-      "away_score": 43,
+      "home_team": "Taranaki",
+      "away_team": "Waikato",
+      "home_score": 22,
+      "away_score": 23,
       "home_odds": null,
       "away_odds": null
     },
@@ -1045,10 +1063,10 @@
     },
     {
       "date": "2025-08-23",
-      "home_team": "Taranaki",
-      "away_team": "Waikato",
-      "home_score": 22,
-      "away_score": 23,
+      "home_team": "Auckland",
+      "away_team": "Northland",
+      "home_score": 24,
+      "away_score": 43,
       "home_odds": null,
       "away_odds": null
     },
@@ -1072,15 +1090,6 @@
     },
     {
       "date": "2025-08-17",
-      "home_team": "Waikato",
-      "away_team": "Counties Manukau",
-      "home_score": 27,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-08-17",
       "home_team": "Wellington",
       "away_team": "Otago",
       "home_score": 41,
@@ -1089,20 +1098,20 @@
       "away_odds": null
     },
     {
-      "date": "2025-08-16",
-      "home_team": "Hawkes Bay",
-      "away_team": "North Harbour",
-      "home_score": 36,
-      "away_score": 22,
+      "date": "2025-08-17",
+      "home_team": "Waikato",
+      "away_team": "Counties Manukau",
+      "home_score": 27,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-08-16",
-      "home_team": "Auckland",
-      "away_team": "Taranaki",
-      "home_score": 8,
-      "away_score": 50,
+      "home_team": "Bay of Plenty",
+      "away_team": "Canterbury",
+      "home_score": 7,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -1117,10 +1126,19 @@
     },
     {
       "date": "2025-08-16",
-      "home_team": "Bay of Plenty",
-      "away_team": "Canterbury",
-      "home_score": 7,
-      "away_score": 21,
+      "home_team": "Auckland",
+      "away_team": "Taranaki",
+      "home_score": 8,
+      "away_score": 50,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-08-16",
+      "home_team": "Hawkes Bay",
+      "away_team": "North Harbour",
+      "home_score": 36,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -1135,15 +1153,6 @@
     },
     {
       "date": "2025-08-10",
-      "home_team": "Otago",
-      "away_team": "Hawkes Bay",
-      "home_score": 21,
-      "away_score": 27,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-08-10",
       "home_team": "Counties Manukau",
       "away_team": "Bay of Plenty",
       "home_score": 22,
@@ -1152,20 +1161,20 @@
       "away_odds": null
     },
     {
-      "date": "2025-08-09",
-      "home_team": "Canterbury",
-      "away_team": "Auckland",
-      "home_score": 19,
-      "away_score": 15,
+      "date": "2025-08-10",
+      "home_team": "Otago",
+      "away_team": "Hawkes Bay",
+      "home_score": 21,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-08-09",
-      "home_team": "Tasman",
-      "away_team": "Manawatu",
-      "home_score": 49,
-      "away_score": 17,
+      "home_team": "North Harbour",
+      "away_team": "Taranaki",
+      "home_score": 24,
+      "away_score": 46,
       "home_odds": null,
       "away_odds": null
     },
@@ -1180,10 +1189,19 @@
     },
     {
       "date": "2025-08-09",
-      "home_team": "North Harbour",
-      "away_team": "Taranaki",
-      "home_score": 24,
-      "away_score": 46,
+      "home_team": "Tasman",
+      "away_team": "Manawatu",
+      "home_score": 49,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-08-09",
+      "home_team": "Canterbury",
+      "away_team": "Auckland",
+      "home_score": 19,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -1198,15 +1216,6 @@
     },
     {
       "date": "2025-08-03",
-      "home_team": "Hawkes Bay",
-      "away_team": "Counties Manukau",
-      "home_score": 54,
-      "away_score": 14,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-08-03",
       "home_team": "Bay of Plenty",
       "away_team": "Tasman",
       "home_score": 37,
@@ -1215,11 +1224,20 @@
       "away_odds": null
     },
     {
+      "date": "2025-08-03",
+      "home_team": "Hawkes Bay",
+      "away_team": "Counties Manukau",
+      "home_score": 54,
+      "away_score": 14,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2025-08-02",
-      "home_team": "Taranaki",
-      "away_team": "Northland",
-      "home_score": 23,
-      "away_score": 3,
+      "home_team": "Wellington",
+      "away_team": "Canterbury",
+      "home_score": 15,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -1234,10 +1252,10 @@
     },
     {
       "date": "2025-08-02",
-      "home_team": "Wellington",
-      "away_team": "Canterbury",
-      "home_score": 15,
-      "away_score": 33,
+      "home_team": "Taranaki",
+      "away_team": "Northland",
+      "home_score": 23,
+      "away_score": 3,
       "home_odds": null,
       "away_odds": null
     },
@@ -1270,19 +1288,19 @@
     },
     {
       "date": "2024-10-19",
-      "home_team": "Wellington",
-      "away_team": "Waikato",
-      "home_score": 29,
-      "away_score": 24,
+      "home_team": "Bay of Plenty",
+      "away_team": "Canterbury",
+      "home_score": 32,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-10-19",
-      "home_team": "Bay of Plenty",
-      "away_team": "Canterbury",
-      "home_score": 32,
-      "away_score": 20,
+      "home_team": "Wellington",
+      "away_team": "Waikato",
+      "home_score": 29,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -1297,19 +1315,19 @@
     },
     {
       "date": "2024-10-12",
-      "home_team": "Taranaki",
-      "away_team": "Waikato",
-      "home_score": 14,
-      "away_score": 15,
+      "home_team": "Bay of Plenty",
+      "away_team": "Hawkes Bay",
+      "home_score": 19,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-10-12",
-      "home_team": "Bay of Plenty",
-      "away_team": "Hawkes Bay",
-      "home_score": 19,
-      "away_score": 17,
+      "home_team": "Taranaki",
+      "away_team": "Waikato",
+      "home_score": 14,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -1324,15 +1342,6 @@
     },
     {
       "date": "2024-10-06",
-      "home_team": "Auckland",
-      "away_team": "Bay of Plenty",
-      "home_score": 24,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-10-06",
       "home_team": "Tasman",
       "away_team": "Taranaki",
       "home_score": 29,
@@ -1341,20 +1350,20 @@
       "away_odds": null
     },
     {
-      "date": "2024-10-05",
-      "home_team": "Canterbury",
-      "away_team": "Waikato",
-      "home_score": 36,
-      "away_score": 19,
+      "date": "2024-10-06",
+      "home_team": "Auckland",
+      "away_team": "Bay of Plenty",
+      "home_score": 24,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-10-05",
-      "home_team": "Wellington",
-      "away_team": "Hawkes Bay",
-      "home_score": 46,
-      "away_score": 28,
+      "home_team": "Manawatu",
+      "away_team": "Counties Manukau",
+      "home_score": 26,
+      "away_score": 45,
       "home_odds": null,
       "away_odds": null
     },
@@ -1369,10 +1378,19 @@
     },
     {
       "date": "2024-10-05",
-      "home_team": "Manawatu",
-      "away_team": "Counties Manukau",
-      "home_score": 26,
-      "away_score": 45,
+      "home_team": "Wellington",
+      "away_team": "Hawkes Bay",
+      "home_score": 46,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-10-05",
+      "home_team": "Canterbury",
+      "away_team": "Waikato",
+      "home_score": 36,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -1396,10 +1414,10 @@
     },
     {
       "date": "2024-09-29",
-      "home_team": "Taranaki",
-      "away_team": "Manawatu",
-      "home_score": 33,
-      "away_score": 31,
+      "home_team": "North Harbour",
+      "away_team": "Canterbury",
+      "home_score": 65,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -1414,19 +1432,19 @@
     },
     {
       "date": "2024-09-29",
-      "home_team": "North Harbour",
-      "away_team": "Canterbury",
-      "home_score": 65,
-      "away_score": 19,
+      "home_team": "Taranaki",
+      "away_team": "Manawatu",
+      "home_score": 33,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-09-28",
-      "home_team": "Otago",
-      "away_team": "Tasman",
-      "home_score": 47,
-      "away_score": 31,
+      "home_team": "Bay of Plenty",
+      "away_team": "Northland",
+      "home_score": 53,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -1441,10 +1459,10 @@
     },
     {
       "date": "2024-09-28",
-      "home_team": "Bay of Plenty",
-      "away_team": "Northland",
-      "home_score": 53,
-      "away_score": 13,
+      "home_team": "Otago",
+      "away_team": "Tasman",
+      "home_score": 47,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -1468,10 +1486,10 @@
     },
     {
       "date": "2024-09-22",
-      "home_team": "Manawatu",
-      "away_team": "Otago",
-      "home_score": 10,
-      "away_score": 28,
+      "home_team": "Waikato",
+      "away_team": "Tasman",
+      "home_score": 25,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -1486,19 +1504,19 @@
     },
     {
       "date": "2024-09-22",
-      "home_team": "Waikato",
-      "away_team": "Tasman",
-      "home_score": 25,
-      "away_score": 27,
+      "home_team": "Manawatu",
+      "away_team": "Otago",
+      "home_score": 10,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-09-21",
-      "home_team": "Canterbury",
-      "away_team": "Counties Manukau",
-      "home_score": 36,
-      "away_score": 28,
+      "home_team": "Northland",
+      "away_team": "North Harbour",
+      "home_score": 47,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -1513,10 +1531,10 @@
     },
     {
       "date": "2024-09-21",
-      "home_team": "Northland",
-      "away_team": "North Harbour",
-      "home_score": 47,
-      "away_score": 24,
+      "home_team": "Canterbury",
+      "away_team": "Counties Manukau",
+      "home_score": 36,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -1540,10 +1558,10 @@
     },
     {
       "date": "2024-09-15",
-      "home_team": "Northland",
-      "away_team": "Auckland",
-      "home_score": 17,
-      "away_score": 24,
+      "home_team": "Tasman",
+      "away_team": "Wellington",
+      "home_score": 28,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -1558,19 +1576,19 @@
     },
     {
       "date": "2024-09-15",
-      "home_team": "Tasman",
-      "away_team": "Wellington",
-      "home_score": 28,
-      "away_score": 15,
+      "home_team": "Northland",
+      "away_team": "Auckland",
+      "home_score": 17,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-09-14",
-      "home_team": "Waikato",
-      "away_team": "Hawkes Bay",
-      "home_score": 50,
-      "away_score": 5,
+      "home_team": "Bay of Plenty",
+      "away_team": "Taranaki",
+      "home_score": 33,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -1585,10 +1603,10 @@
     },
     {
       "date": "2024-09-14",
-      "home_team": "Bay of Plenty",
-      "away_team": "Taranaki",
-      "home_score": 33,
-      "away_score": 20,
+      "home_team": "Waikato",
+      "away_team": "Hawkes Bay",
+      "home_score": 50,
+      "away_score": 5,
       "home_odds": null,
       "away_odds": null
     },
@@ -1612,15 +1630,6 @@
     },
     {
       "date": "2024-09-08",
-      "home_team": "Counties Manukau",
-      "away_team": "Northland",
-      "home_score": 25,
-      "away_score": 14,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-09-08",
       "home_team": "Taranaki",
       "away_team": "Waikato",
       "home_score": 25,
@@ -1629,20 +1638,20 @@
       "away_odds": null
     },
     {
-      "date": "2024-09-07",
-      "home_team": "Hawkes Bay",
-      "away_team": "Tasman",
-      "home_score": 24,
-      "away_score": 25,
+      "date": "2024-09-08",
+      "home_team": "Counties Manukau",
+      "away_team": "Northland",
+      "home_score": 25,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-09-07",
-      "home_team": "Otago",
-      "away_team": "Canterbury",
-      "home_score": 16,
-      "away_score": 34,
+      "home_team": "Auckland",
+      "away_team": "North Harbour",
+      "home_score": 36,
+      "away_score": 32,
       "home_odds": null,
       "away_odds": null
     },
@@ -1657,10 +1666,19 @@
     },
     {
       "date": "2024-09-07",
-      "home_team": "Auckland",
-      "away_team": "North Harbour",
-      "home_score": 36,
-      "away_score": 32,
+      "home_team": "Otago",
+      "away_team": "Canterbury",
+      "home_score": 16,
+      "away_score": 34,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-09-07",
+      "home_team": "Hawkes Bay",
+      "away_team": "Tasman",
+      "home_score": 24,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -1684,15 +1702,6 @@
     },
     {
       "date": "2024-09-01",
-      "home_team": "Manawatu",
-      "away_team": "Hawkes Bay",
-      "home_score": 26,
-      "away_score": 38,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-09-01",
       "home_team": "Canterbury",
       "away_team": "Wellington",
       "home_score": 21,
@@ -1701,20 +1710,20 @@
       "away_odds": null
     },
     {
-      "date": "2024-08-31",
-      "home_team": "Tasman",
-      "away_team": "Bay of Plenty",
-      "home_score": 34,
-      "away_score": 15,
+      "date": "2024-09-01",
+      "home_team": "Manawatu",
+      "away_team": "Hawkes Bay",
+      "home_score": 26,
+      "away_score": 38,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-08-31",
-      "home_team": "Waikato",
-      "away_team": "Auckland",
-      "home_score": 39,
-      "away_score": 21,
+      "home_team": "North Harbour",
+      "away_team": "Counties Manukau",
+      "home_score": 33,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -1729,10 +1738,19 @@
     },
     {
       "date": "2024-08-31",
-      "home_team": "North Harbour",
-      "away_team": "Counties Manukau",
-      "home_score": 33,
-      "away_score": 36,
+      "home_team": "Waikato",
+      "away_team": "Auckland",
+      "home_score": 39,
+      "away_score": 21,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-08-31",
+      "home_team": "Tasman",
+      "away_team": "Bay of Plenty",
+      "home_score": 34,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -1756,10 +1774,10 @@
     },
     {
       "date": "2024-08-25",
-      "home_team": "North Harbour",
-      "away_team": "Waikato",
-      "home_score": 43,
-      "away_score": 29,
+      "home_team": "Otago",
+      "away_team": "Bay of Plenty",
+      "home_score": 31,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -1774,19 +1792,19 @@
     },
     {
       "date": "2024-08-25",
-      "home_team": "Otago",
-      "away_team": "Bay of Plenty",
-      "home_score": 31,
-      "away_score": 26,
+      "home_team": "North Harbour",
+      "away_team": "Waikato",
+      "home_score": 43,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-08-24",
-      "home_team": "Southland",
-      "away_team": "Taranaki",
-      "home_score": 24,
-      "away_score": 39,
+      "home_team": "Counties Manukau",
+      "away_team": "Tasman",
+      "home_score": 3,
+      "away_score": 48,
       "home_odds": null,
       "away_odds": null
     },
@@ -1801,10 +1819,10 @@
     },
     {
       "date": "2024-08-24",
-      "home_team": "Counties Manukau",
-      "away_team": "Tasman",
-      "home_score": 3,
-      "away_score": 48,
+      "home_team": "Southland",
+      "away_team": "Taranaki",
+      "home_score": 24,
+      "away_score": 39,
       "home_odds": null,
       "away_odds": null
     },
@@ -1819,10 +1837,10 @@
     },
     {
       "date": "2024-08-18",
-      "home_team": "Counties Manukau",
-      "away_team": "Waikato",
-      "home_score": 20,
-      "away_score": 26,
+      "home_team": "Bay of Plenty",
+      "away_team": "North Harbour",
+      "home_score": 24,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -1837,19 +1855,19 @@
     },
     {
       "date": "2024-08-18",
-      "home_team": "Bay of Plenty",
-      "away_team": "North Harbour",
-      "home_score": 24,
-      "away_score": 20,
+      "home_team": "Counties Manukau",
+      "away_team": "Waikato",
+      "home_score": 20,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-08-17",
-      "home_team": "Hawkes Bay",
-      "away_team": "Southland",
-      "home_score": 31,
-      "away_score": 17,
+      "home_team": "Northland",
+      "away_team": "Manawatu",
+      "home_score": 35,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -1864,10 +1882,10 @@
     },
     {
       "date": "2024-08-17",
-      "home_team": "Northland",
-      "away_team": "Manawatu",
-      "home_score": 35,
-      "away_score": 18,
+      "home_team": "Hawkes Bay",
+      "away_team": "Southland",
+      "home_score": 31,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -1891,15 +1909,6 @@
     },
     {
       "date": "2024-08-11",
-      "home_team": "Manawatu",
-      "away_team": "Tasman",
-      "home_score": 21,
-      "away_score": 54,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-08-11",
       "home_team": "North Harbour",
       "away_team": "Hawkes Bay",
       "home_score": 32,
@@ -1908,11 +1917,20 @@
       "away_odds": null
     },
     {
-      "date": "2024-08-10",
-      "home_team": "Waikato",
-      "away_team": "Bay of Plenty",
+      "date": "2024-08-11",
+      "home_team": "Manawatu",
+      "away_team": "Tasman",
       "home_score": 21,
-      "away_score": 36,
+      "away_score": 54,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-08-10",
+      "home_team": "Southland",
+      "away_team": "Otago",
+      "home_score": 22,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -1927,19 +1945,10 @@
     },
     {
       "date": "2024-08-10",
-      "home_team": "Southland",
-      "away_team": "Otago",
-      "home_score": 22,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-08-09",
-      "home_team": "Auckland",
-      "away_team": "Wellington",
+      "home_team": "Waikato",
+      "away_team": "Bay of Plenty",
       "home_score": 21,
-      "away_score": 29,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -1949,6 +1958,15 @@
       "away_team": "Counties Manukau",
       "home_score": 31,
       "away_score": 15,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-08-09",
+      "home_team": "Auckland",
+      "away_team": "Wellington",
+      "home_score": 21,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -1990,19 +2008,19 @@
     },
     {
       "date": "2023-10-07",
-      "home_team": "Taranaki",
-      "away_team": "Tasman",
-      "home_score": 34,
-      "away_score": 18,
+      "home_team": "Wellington",
+      "away_team": "Waikato",
+      "home_score": 32,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-10-07",
-      "home_team": "Wellington",
-      "away_team": "Waikato",
-      "home_score": 32,
-      "away_score": 28,
+      "home_team": "Taranaki",
+      "away_team": "Tasman",
+      "home_score": 34,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -2017,10 +2035,10 @@
     },
     {
       "date": "2023-10-01",
-      "home_team": "Manawatu",
-      "away_team": "Southland",
-      "home_score": 12,
-      "away_score": 37,
+      "home_team": "Bay of Plenty",
+      "away_team": "Tasman",
+      "home_score": 41,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
@@ -2035,19 +2053,19 @@
     },
     {
       "date": "2023-10-01",
-      "home_team": "Bay of Plenty",
-      "away_team": "Tasman",
-      "home_score": 41,
-      "away_score": 12,
+      "home_team": "Manawatu",
+      "away_team": "Southland",
+      "home_score": 12,
+      "away_score": 37,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-09-30",
-      "home_team": "Taranaki",
-      "away_team": "North Harbour",
-      "home_score": 54,
-      "away_score": 21,
+      "home_team": "Waikato",
+      "away_team": "Canterbury",
+      "home_score": 37,
+      "away_score": 35,
       "home_odds": null,
       "away_odds": null
     },
@@ -2062,10 +2080,10 @@
     },
     {
       "date": "2023-09-30",
-      "home_team": "Waikato",
-      "away_team": "Canterbury",
-      "home_score": 37,
-      "away_score": 35,
+      "home_team": "Taranaki",
+      "away_team": "North Harbour",
+      "home_score": 54,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2089,15 +2107,6 @@
     },
     {
       "date": "2023-09-24",
-      "home_team": "Waikato",
-      "away_team": "Otago",
-      "home_score": 47,
-      "away_score": 7,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-09-24",
       "home_team": "Wellington",
       "away_team": "North Harbour",
       "home_score": 26,
@@ -2106,20 +2115,20 @@
       "away_odds": null
     },
     {
-      "date": "2023-09-23",
-      "home_team": "Taranaki",
-      "away_team": "Auckland",
-      "home_score": 18,
-      "away_score": 16,
+      "date": "2023-09-24",
+      "home_team": "Waikato",
+      "away_team": "Otago",
+      "home_score": 47,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-09-23",
-      "home_team": "Canterbury",
-      "away_team": "Tasman",
-      "home_score": 30,
-      "away_score": 28,
+      "home_team": "Counties Manukau",
+      "away_team": "Manawatu",
+      "home_score": 46,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -2134,10 +2143,19 @@
     },
     {
       "date": "2023-09-23",
-      "home_team": "Counties Manukau",
-      "away_team": "Manawatu",
-      "home_score": 46,
-      "away_score": 19,
+      "home_team": "Canterbury",
+      "away_team": "Tasman",
+      "home_score": 30,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-09-23",
+      "home_team": "Taranaki",
+      "away_team": "Auckland",
+      "home_score": 18,
+      "away_score": 16,
       "home_odds": null,
       "away_odds": null
     },
@@ -2152,10 +2170,10 @@
     },
     {
       "date": "2023-09-17",
-      "home_team": "Tasman",
-      "away_team": "Counties Manukau",
-      "home_score": 27,
-      "away_score": 17,
+      "home_team": "Bay of Plenty",
+      "away_team": "Wellington",
+      "home_score": 14,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -2170,19 +2188,19 @@
     },
     {
       "date": "2023-09-17",
-      "home_team": "Bay of Plenty",
-      "away_team": "Wellington",
-      "home_score": 14,
-      "away_score": 26,
+      "home_team": "Tasman",
+      "away_team": "Counties Manukau",
+      "home_score": 27,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-09-16",
-      "home_team": "Otago",
-      "away_team": "Taranaki",
-      "home_score": 17,
-      "away_score": 36,
+      "home_team": "Auckland",
+      "away_team": "Waikato",
+      "home_score": 12,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -2197,10 +2215,10 @@
     },
     {
       "date": "2023-09-16",
-      "home_team": "Auckland",
-      "away_team": "Waikato",
-      "home_score": 12,
-      "away_score": 27,
+      "home_team": "Otago",
+      "away_team": "Taranaki",
+      "home_score": 17,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -2224,10 +2242,10 @@
     },
     {
       "date": "2023-09-10",
-      "home_team": "Otago",
-      "away_team": "Northland",
-      "home_score": 30,
-      "away_score": 15,
+      "home_team": "Manawatu",
+      "away_team": "North Harbour",
+      "home_score": 29,
+      "away_score": 48,
       "home_odds": null,
       "away_odds": null
     },
@@ -2242,18 +2260,18 @@
     },
     {
       "date": "2023-09-10",
-      "home_team": "Manawatu",
-      "away_team": "North Harbour",
-      "home_score": 29,
-      "away_score": 48,
+      "home_team": "Otago",
+      "away_team": "Northland",
+      "home_score": 30,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-09-09",
-      "home_team": "Auckland",
-      "away_team": "Canterbury",
-      "home_score": 36,
+      "home_team": "Counties Manukau",
+      "away_team": "Southland",
+      "home_score": 39,
       "away_score": 29,
       "home_odds": null,
       "away_odds": null
@@ -2269,9 +2287,9 @@
     },
     {
       "date": "2023-09-09",
-      "home_team": "Counties Manukau",
-      "away_team": "Southland",
-      "home_score": 39,
+      "home_team": "Auckland",
+      "away_team": "Canterbury",
+      "home_score": 36,
       "away_score": 29,
       "home_odds": null,
       "away_odds": null
@@ -2296,15 +2314,6 @@
     },
     {
       "date": "2023-09-03",
-      "home_team": "Tasman",
-      "away_team": "Manawatu",
-      "home_score": 58,
-      "away_score": 19,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-09-03",
       "home_team": "Southland",
       "away_team": "Auckland",
       "home_score": 13,
@@ -2313,20 +2322,20 @@
       "away_odds": null
     },
     {
-      "date": "2023-09-02",
-      "home_team": "Wellington",
-      "away_team": "Counties Manukau",
-      "home_score": 56,
-      "away_score": 25,
+      "date": "2023-09-03",
+      "home_team": "Tasman",
+      "away_team": "Manawatu",
+      "home_score": 58,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-09-02",
-      "home_team": "North Harbour",
-      "away_team": "Waikato",
-      "home_score": 39,
-      "away_score": 17,
+      "home_team": "Bay of Plenty",
+      "away_team": "Otago",
+      "home_score": 38,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -2341,10 +2350,19 @@
     },
     {
       "date": "2023-09-02",
-      "home_team": "Bay of Plenty",
-      "away_team": "Otago",
-      "home_score": 38,
-      "away_score": 14,
+      "home_team": "North Harbour",
+      "away_team": "Waikato",
+      "home_score": 39,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-09-02",
+      "home_team": "Wellington",
+      "away_team": "Counties Manukau",
+      "home_score": 56,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -2368,10 +2386,10 @@
     },
     {
       "date": "2023-08-27",
-      "home_team": "Waikato",
-      "away_team": "Counties Manukau",
-      "home_score": 37,
-      "away_score": 15,
+      "home_team": "Canterbury",
+      "away_team": "Wellington",
+      "home_score": 31,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -2386,19 +2404,19 @@
     },
     {
       "date": "2023-08-27",
-      "home_team": "Canterbury",
-      "away_team": "Wellington",
-      "home_score": 31,
-      "away_score": 36,
+      "home_team": "Waikato",
+      "away_team": "Counties Manukau",
+      "home_score": 37,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-08-26",
-      "home_team": "Otago",
-      "away_team": "Southland",
-      "home_score": 31,
-      "away_score": 21,
+      "home_team": "Auckland",
+      "away_team": "Hawkes Bay",
+      "home_score": 41,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -2413,10 +2431,10 @@
     },
     {
       "date": "2023-08-26",
-      "home_team": "Auckland",
-      "away_team": "Hawkes Bay",
-      "home_score": 41,
-      "away_score": 22,
+      "home_team": "Otago",
+      "away_team": "Southland",
+      "home_score": 31,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2440,15 +2458,6 @@
     },
     {
       "date": "2023-08-20",
-      "home_team": "Waikato",
-      "away_team": "Taranaki",
-      "home_score": 17,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-20",
       "home_team": "Hawkes Bay",
       "away_team": "Otago",
       "home_score": 33,
@@ -2457,20 +2466,20 @@
       "away_odds": null
     },
     {
-      "date": "2023-08-19",
-      "home_team": "Northland",
-      "away_team": "Tasman",
-      "home_score": 32,
-      "away_score": 5,
+      "date": "2023-08-20",
+      "home_team": "Waikato",
+      "away_team": "Taranaki",
+      "home_score": 17,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-08-19",
-      "home_team": "Canterbury",
-      "away_team": "Manawatu",
-      "home_score": 68,
-      "away_score": 26,
+      "home_team": "North Harbour",
+      "away_team": "Auckland",
+      "home_score": 23,
+      "away_score": 43,
       "home_odds": null,
       "away_odds": null
     },
@@ -2485,10 +2494,19 @@
     },
     {
       "date": "2023-08-19",
-      "home_team": "North Harbour",
-      "away_team": "Auckland",
-      "home_score": 23,
-      "away_score": 43,
+      "home_team": "Canterbury",
+      "away_team": "Manawatu",
+      "home_score": 68,
+      "away_score": 26,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-19",
+      "home_team": "Northland",
+      "away_team": "Tasman",
+      "home_score": 32,
+      "away_score": 5,
       "home_odds": null,
       "away_odds": null
     },
@@ -2512,10 +2530,10 @@
     },
     {
       "date": "2023-08-13",
-      "home_team": "Manawatu",
-      "away_team": "Taranaki",
-      "home_score": 17,
-      "away_score": 26,
+      "home_team": "North Harbour",
+      "away_team": "Canterbury",
+      "home_score": 24,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -2530,19 +2548,19 @@
     },
     {
       "date": "2023-08-13",
-      "home_team": "North Harbour",
-      "away_team": "Canterbury",
-      "home_score": 24,
-      "away_score": 28,
+      "home_team": "Manawatu",
+      "away_team": "Taranaki",
+      "home_score": 17,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-08-12",
-      "home_team": "Tasman",
-      "away_team": "Auckland",
-      "home_score": 24,
-      "away_score": 12,
+      "home_team": "Bay of Plenty",
+      "away_team": "Waikato",
+      "home_score": 19,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -2557,10 +2575,10 @@
     },
     {
       "date": "2023-08-12",
-      "home_team": "Bay of Plenty",
-      "away_team": "Waikato",
-      "home_score": 19,
-      "away_score": 15,
+      "home_team": "Tasman",
+      "away_team": "Auckland",
+      "home_score": 24,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
@@ -2584,15 +2602,6 @@
     },
     {
       "date": "2023-08-06",
-      "home_team": "Southland",
-      "away_team": "Waikato",
-      "home_score": 21,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-06",
       "home_team": "Bay of Plenty",
       "away_team": "Auckland",
       "home_score": 30,
@@ -2601,11 +2610,20 @@
       "away_odds": null
     },
     {
+      "date": "2023-08-06",
+      "home_team": "Southland",
+      "away_team": "Waikato",
+      "home_score": 21,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2023-08-05",
-      "home_team": "Northland",
-      "away_team": "Canterbury",
-      "home_score": 11,
-      "away_score": 43,
+      "home_team": "Hawkes Bay",
+      "away_team": "North Harbour",
+      "home_score": 23,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2620,19 +2638,10 @@
     },
     {
       "date": "2023-08-05",
-      "home_team": "Hawkes Bay",
-      "away_team": "North Harbour",
-      "home_score": 23,
-      "away_score": 21,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-04",
-      "home_team": "Taranaki",
-      "away_team": "Counties Manukau",
-      "home_score": 37,
-      "away_score": 29,
+      "home_team": "Northland",
+      "away_team": "Canterbury",
+      "home_score": 11,
+      "away_score": 43,
       "home_odds": null,
       "away_odds": null
     },
@@ -2642,6 +2651,15 @@
       "away_team": "Otago",
       "home_score": 27,
       "away_score": 15,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-04",
+      "home_team": "Taranaki",
+      "away_team": "Counties Manukau",
+      "home_score": 37,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -2683,19 +2701,19 @@
     },
     {
       "date": "2022-10-08",
-      "home_team": "Wellington",
-      "away_team": "Hawkes Bay",
-      "home_score": 28,
-      "away_score": 21,
+      "home_team": "Canterbury",
+      "away_team": "Northland",
+      "home_score": 23,
+      "away_score": 16,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-10-08",
-      "home_team": "Canterbury",
-      "away_team": "Northland",
-      "home_score": 23,
-      "away_score": 16,
+      "home_team": "Wellington",
+      "away_team": "Hawkes Bay",
+      "home_score": 28,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2710,10 +2728,10 @@
     },
     {
       "date": "2022-10-02",
-      "home_team": "Waikato",
-      "away_team": "Bay of Plenty",
-      "home_score": 35,
-      "away_score": 34,
+      "home_team": "Counties Manukau",
+      "away_team": "Wellington",
+      "home_score": 31,
+      "away_score": 64,
       "home_odds": null,
       "away_odds": null
     },
@@ -2728,19 +2746,19 @@
     },
     {
       "date": "2022-10-02",
-      "home_team": "Counties Manukau",
-      "away_team": "Wellington",
-      "home_score": 31,
-      "away_score": 64,
+      "home_team": "Waikato",
+      "away_team": "Bay of Plenty",
+      "home_score": 35,
+      "away_score": 34,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-10-01",
-      "home_team": "Otago",
-      "away_team": "Canterbury",
-      "home_score": 21,
-      "away_score": 27,
+      "home_team": "Southland",
+      "away_team": "North Harbour",
+      "home_score": 8,
+      "away_score": 66,
       "home_odds": null,
       "away_odds": null
     },
@@ -2755,10 +2773,10 @@
     },
     {
       "date": "2022-10-01",
-      "home_team": "Southland",
-      "away_team": "North Harbour",
-      "home_score": 8,
-      "away_score": 66,
+      "home_team": "Otago",
+      "away_team": "Canterbury",
+      "home_score": 21,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -2782,10 +2800,10 @@
     },
     {
       "date": "2022-09-25",
-      "home_team": "Southland",
-      "away_team": "Counties Manukau",
-      "home_score": 30,
-      "away_score": 26,
+      "home_team": "Manawatu",
+      "away_team": "Otago",
+      "home_score": 35,
+      "away_score": 54,
       "home_odds": null,
       "away_odds": null
     },
@@ -2800,19 +2818,19 @@
     },
     {
       "date": "2022-09-25",
-      "home_team": "Manawatu",
-      "away_team": "Otago",
-      "home_score": 35,
-      "away_score": 54,
+      "home_team": "Southland",
+      "away_team": "Counties Manukau",
+      "home_score": 30,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-09-24",
-      "home_team": "Wellington",
-      "away_team": "Waikato",
-      "home_score": 34,
-      "away_score": 6,
+      "home_team": "Bay of Plenty",
+      "away_team": "Hawkes Bay",
+      "home_score": 20,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -2827,10 +2845,10 @@
     },
     {
       "date": "2022-09-24",
-      "home_team": "Bay of Plenty",
-      "away_team": "Hawkes Bay",
-      "home_score": 20,
-      "away_score": 14,
+      "home_team": "Wellington",
+      "away_team": "Waikato",
+      "home_score": 34,
+      "away_score": 6,
       "home_odds": null,
       "away_odds": null
     },
@@ -2854,10 +2872,10 @@
     },
     {
       "date": "2022-09-18",
-      "home_team": "Northland",
-      "away_team": "North Harbour",
-      "home_score": 21,
-      "away_score": 48,
+      "home_team": "Bay of Plenty",
+      "away_team": "Southland",
+      "home_score": 54,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2872,19 +2890,19 @@
     },
     {
       "date": "2022-09-18",
-      "home_team": "Bay of Plenty",
-      "away_team": "Southland",
-      "home_score": 54,
-      "away_score": 21,
+      "home_team": "Northland",
+      "away_team": "North Harbour",
+      "home_score": 21,
+      "away_score": 48,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-09-17",
-      "home_team": "Hawkes Bay",
-      "away_team": "Wellington",
-      "home_score": 12,
-      "away_score": 19,
+      "home_team": "Counties Manukau",
+      "away_team": "Canterbury",
+      "home_score": 39,
+      "away_score": 44,
       "home_odds": null,
       "away_odds": null
     },
@@ -2899,10 +2917,10 @@
     },
     {
       "date": "2022-09-17",
-      "home_team": "Counties Manukau",
-      "away_team": "Canterbury",
-      "home_score": 39,
-      "away_score": 44,
+      "home_team": "Hawkes Bay",
+      "away_team": "Wellington",
+      "home_score": 12,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -2926,10 +2944,10 @@
     },
     {
       "date": "2022-09-11",
-      "home_team": "Canterbury",
-      "away_team": "Northland",
-      "home_score": 46,
-      "away_score": 17,
+      "home_team": "Wellington",
+      "away_team": "Otago",
+      "home_score": 32,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -2944,19 +2962,19 @@
     },
     {
       "date": "2022-09-11",
-      "home_team": "Wellington",
-      "away_team": "Otago",
-      "home_score": 32,
-      "away_score": 26,
+      "home_team": "Canterbury",
+      "away_team": "Northland",
+      "home_score": 46,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-09-10",
-      "home_team": "Counties Manukau",
-      "away_team": "Manawatu",
-      "home_score": 41,
-      "away_score": 33,
+      "home_team": "Hawkes Bay",
+      "away_team": "Southland",
+      "home_score": 69,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -2971,10 +2989,10 @@
     },
     {
       "date": "2022-09-10",
-      "home_team": "Hawkes Bay",
-      "away_team": "Southland",
-      "home_score": 69,
-      "away_score": 24,
+      "home_team": "Counties Manukau",
+      "away_team": "Manawatu",
+      "home_score": 41,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -2998,10 +3016,10 @@
     },
     {
       "date": "2022-09-04",
-      "home_team": "North Harbour",
-      "away_team": "Counties Manukau",
-      "home_score": 37,
-      "away_score": 12,
+      "home_team": "Canterbury",
+      "away_team": "Hawkes Bay",
+      "home_score": 32,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -3016,19 +3034,19 @@
     },
     {
       "date": "2022-09-04",
-      "home_team": "Canterbury",
-      "away_team": "Hawkes Bay",
-      "home_score": 32,
-      "away_score": 28,
+      "home_team": "North Harbour",
+      "away_team": "Counties Manukau",
+      "home_score": 37,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-09-03",
-      "home_team": "Southland",
-      "away_team": "Wellington",
-      "home_score": 28,
-      "away_score": 41,
+      "home_team": "Northland",
+      "away_team": "Auckland",
+      "home_score": 23,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -3043,10 +3061,10 @@
     },
     {
       "date": "2022-09-03",
-      "home_team": "Northland",
-      "away_team": "Auckland",
-      "home_score": 23,
-      "away_score": 22,
+      "home_team": "Southland",
+      "away_team": "Wellington",
+      "home_score": 28,
+      "away_score": 41,
       "home_odds": null,
       "away_odds": null
     },
@@ -3070,10 +3088,10 @@
     },
     {
       "date": "2022-08-28",
-      "home_team": "Northland",
-      "away_team": "Southland",
-      "home_score": 32,
-      "away_score": 19,
+      "home_team": "Bay of Plenty",
+      "away_team": "Counties Manukau",
+      "home_score": 13,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -3088,19 +3106,10 @@
     },
     {
       "date": "2022-08-28",
-      "home_team": "Bay of Plenty",
-      "away_team": "Counties Manukau",
-      "home_score": 13,
-      "away_score": 18,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-08-27",
-      "home_team": "Auckland",
-      "away_team": "Otago",
-      "home_score": 35,
-      "away_score": 17,
+      "home_team": "Northland",
+      "away_team": "Southland",
+      "home_score": 32,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -3114,11 +3123,11 @@
       "away_odds": null
     },
     {
-      "date": "2022-08-26",
-      "home_team": "Waikato",
-      "away_team": "Manawatu",
-      "home_score": 53,
-      "away_score": 6,
+      "date": "2022-08-27",
+      "home_team": "Auckland",
+      "away_team": "Otago",
+      "home_score": 35,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -3132,11 +3141,20 @@
       "away_odds": null
     },
     {
+      "date": "2022-08-26",
+      "home_team": "Waikato",
+      "away_team": "Manawatu",
+      "home_score": 53,
+      "away_score": 6,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2022-08-21",
-      "home_team": "Manawatu",
-      "away_team": "Hawkes Bay",
+      "home_team": "Auckland",
+      "away_team": "Bay of Plenty",
       "home_score": 17,
-      "away_score": 43,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -3151,19 +3169,19 @@
     },
     {
       "date": "2022-08-21",
-      "home_team": "Auckland",
-      "away_team": "Bay of Plenty",
+      "home_team": "Manawatu",
+      "away_team": "Hawkes Bay",
       "home_score": 17,
-      "away_score": 21,
+      "away_score": 43,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-08-20",
-      "home_team": "North Harbour",
-      "away_team": "Tasman",
-      "home_score": 35,
-      "away_score": 27,
+      "home_team": "Taranaki",
+      "away_team": "Canterbury",
+      "home_score": 16,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
@@ -3178,10 +3196,10 @@
     },
     {
       "date": "2022-08-20",
-      "home_team": "Taranaki",
-      "away_team": "Canterbury",
-      "home_score": 16,
-      "away_score": 10,
+      "home_team": "North Harbour",
+      "away_team": "Tasman",
+      "home_score": 35,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -3205,10 +3223,10 @@
     },
     {
       "date": "2022-08-14",
-      "home_team": "North Harbour",
-      "away_team": "Manawatu",
-      "home_score": 64,
-      "away_score": 14,
+      "home_team": "Bay of Plenty",
+      "away_team": "Taranaki",
+      "home_score": 46,
+      "away_score": 6,
       "home_odds": null,
       "away_odds": null
     },
@@ -3223,19 +3241,19 @@
     },
     {
       "date": "2022-08-14",
-      "home_team": "Bay of Plenty",
-      "away_team": "Taranaki",
-      "home_score": 46,
-      "away_score": 6,
+      "home_team": "North Harbour",
+      "away_team": "Manawatu",
+      "home_score": 64,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-08-13",
-      "home_team": "Canterbury",
-      "away_team": "Wellington",
-      "home_score": 43,
-      "away_score": 10,
+      "home_team": "Otago",
+      "away_team": "Tasman",
+      "home_score": 25,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -3250,10 +3268,10 @@
     },
     {
       "date": "2022-08-13",
-      "home_team": "Otago",
-      "away_team": "Tasman",
-      "home_score": 25,
-      "away_score": 19,
+      "home_team": "Canterbury",
+      "away_team": "Wellington",
+      "home_score": 43,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
@@ -3277,10 +3295,10 @@
     },
     {
       "date": "2022-08-07",
-      "home_team": "Wellington",
-      "away_team": "Bay of Plenty",
-      "home_score": 37,
-      "away_score": 35,
+      "home_team": "Taranaki",
+      "away_team": "Northland",
+      "home_score": 11,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -3295,19 +3313,19 @@
     },
     {
       "date": "2022-08-07",
-      "home_team": "Taranaki",
-      "away_team": "Northland",
-      "home_score": 11,
-      "away_score": 13,
+      "home_team": "Wellington",
+      "away_team": "Bay of Plenty",
+      "home_score": 37,
+      "away_score": 35,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-08-06",
-      "home_team": "Auckland",
-      "away_team": "North Harbour",
-      "home_score": 36,
-      "away_score": 26,
+      "home_team": "Counties Manukau",
+      "away_team": "Otago",
+      "home_score": 23,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -3322,10 +3340,10 @@
     },
     {
       "date": "2022-08-06",
-      "home_team": "Counties Manukau",
-      "away_team": "Otago",
-      "home_score": 23,
-      "away_score": 22,
+      "home_team": "Auckland",
+      "away_team": "North Harbour",
+      "home_score": 36,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -3349,19 +3367,19 @@
     },
     {
       "date": "2021-11-13",
-      "home_team": "Hawkes Bay",
-      "away_team": "Tasman",
-      "home_score": 27,
-      "away_score": 33,
+      "home_team": "Waikato",
+      "away_team": "Canterbury",
+      "home_score": 17,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-11-13",
-      "home_team": "Waikato",
-      "away_team": "Canterbury",
-      "home_score": 17,
-      "away_score": 14,
+      "home_team": "Hawkes Bay",
+      "away_team": "Tasman",
+      "home_score": 27,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -3376,19 +3394,19 @@
     },
     {
       "date": "2021-11-06",
-      "home_team": "Tasman",
-      "away_team": "Wellington",
-      "home_score": 34,
-      "away_score": 22,
+      "home_team": "Canterbury",
+      "away_team": "Bay of Plenty",
+      "home_score": 40,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-11-06",
-      "home_team": "Canterbury",
-      "away_team": "Bay of Plenty",
-      "home_score": 40,
-      "away_score": 28,
+      "home_team": "Tasman",
+      "away_team": "Wellington",
+      "home_score": 34,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -3412,10 +3430,10 @@
     },
     {
       "date": "2021-10-30",
-      "home_team": "Southland",
-      "away_team": "Northland",
-      "home_score": 37,
-      "away_score": 33,
+      "home_team": "Manawatu",
+      "away_team": "Hawkes Bay",
+      "home_score": 31,
+      "away_score": 40,
       "home_odds": null,
       "away_odds": null
     },
@@ -3430,10 +3448,10 @@
     },
     {
       "date": "2021-10-30",
-      "home_team": "Manawatu",
-      "away_team": "Hawkes Bay",
-      "home_score": 31,
-      "away_score": 40,
+      "home_team": "Southland",
+      "away_team": "Northland",
+      "home_score": 37,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -3448,19 +3466,19 @@
     },
     {
       "date": "2021-10-23",
-      "home_team": "Taranaki",
-      "away_team": "Manawatu",
-      "home_score": 47,
-      "away_score": 35,
+      "home_team": "Hawkes Bay",
+      "away_team": "Waikato",
+      "home_score": 41,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-10-23",
-      "home_team": "Hawkes Bay",
-      "away_team": "Waikato",
-      "home_score": 41,
-      "away_score": 14,
+      "home_team": "Taranaki",
+      "away_team": "Manawatu",
+      "home_score": 47,
+      "away_score": 35,
       "home_odds": null,
       "away_odds": null
     },
@@ -3475,10 +3493,10 @@
     },
     {
       "date": "2021-10-16",
-      "home_team": "Waikato",
-      "away_team": "Taranaki",
-      "home_score": 26,
-      "away_score": 33,
+      "home_team": "Manawatu",
+      "away_team": "Wellington",
+      "home_score": 16,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -3493,10 +3511,10 @@
     },
     {
       "date": "2021-10-16",
-      "home_team": "Manawatu",
-      "away_team": "Wellington",
-      "home_score": 16,
-      "away_score": 36,
+      "home_team": "Waikato",
+      "away_team": "Taranaki",
+      "home_score": 26,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -3520,19 +3538,19 @@
     },
     {
       "date": "2021-10-09",
-      "home_team": "Hawkes Bay",
-      "away_team": "Tasman",
-      "home_score": 34,
-      "away_score": 22,
+      "home_team": "Otago",
+      "away_team": "Taranaki",
+      "home_score": 23,
+      "away_score": 30,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-10-09",
-      "home_team": "Otago",
-      "away_team": "Taranaki",
-      "home_score": 23,
-      "away_score": 30,
+      "home_team": "Hawkes Bay",
+      "away_team": "Tasman",
+      "home_score": 34,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -3556,19 +3574,19 @@
     },
     {
       "date": "2021-10-02",
-      "home_team": "Bay of Plenty",
-      "away_team": "Wellington",
-      "home_score": 33,
-      "away_score": 32,
+      "home_team": "Manawatu",
+      "away_team": "Otago",
+      "home_score": 27,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-10-02",
-      "home_team": "Manawatu",
-      "away_team": "Otago",
-      "home_score": 27,
-      "away_score": 14,
+      "home_team": "Bay of Plenty",
+      "away_team": "Wellington",
+      "home_score": 33,
+      "away_score": 32,
       "home_odds": null,
       "away_odds": null
     },
@@ -3583,15 +3601,6 @@
     },
     {
       "date": "2021-09-26",
-      "home_team": "Wellington",
-      "away_team": "Hawkes Bay",
-      "home_score": 28,
-      "away_score": 31,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-09-26",
       "home_team": "Bay of Plenty",
       "away_team": "Taranaki",
       "home_score": 28,
@@ -3600,11 +3609,11 @@
       "away_odds": null
     },
     {
-      "date": "2021-09-25",
-      "home_team": "Manawatu",
-      "away_team": "Northland",
-      "home_score": 31,
-      "away_score": 19,
+      "date": "2021-09-26",
+      "home_team": "Wellington",
+      "away_team": "Hawkes Bay",
+      "home_score": 28,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -3613,6 +3622,15 @@
       "home_team": "Southland",
       "away_team": "Canterbury",
       "home_score": 16,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-09-25",
+      "home_team": "Manawatu",
+      "away_team": "Northland",
+      "home_score": 31,
       "away_score": 19,
       "home_odds": null,
       "away_odds": null
@@ -3637,19 +3655,19 @@
     },
     {
       "date": "2021-09-18",
-      "home_team": "Taranaki",
-      "away_team": "Wellington",
-      "home_score": 32,
-      "away_score": 26,
+      "home_team": "Northland",
+      "away_team": "Tasman",
+      "home_score": 29,
+      "away_score": 48,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-09-18",
-      "home_team": "Northland",
-      "away_team": "Tasman",
-      "home_score": 29,
-      "away_score": 48,
+      "home_team": "Taranaki",
+      "away_team": "Wellington",
+      "home_score": 32,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -3664,10 +3682,10 @@
     },
     {
       "date": "2021-08-15",
-      "home_team": "Waikato",
-      "away_team": "Wellington",
-      "home_score": 43,
-      "away_score": 37,
+      "home_team": "Northland",
+      "away_team": "Taranaki",
+      "home_score": 14,
+      "away_score": 48,
       "home_odds": null,
       "away_odds": null
     },
@@ -3682,19 +3700,19 @@
     },
     {
       "date": "2021-08-15",
-      "home_team": "Northland",
-      "away_team": "Taranaki",
-      "home_score": 14,
-      "away_score": 48,
+      "home_team": "Waikato",
+      "away_team": "Wellington",
+      "home_score": 43,
+      "away_score": 37,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-08-14",
-      "home_team": "Tasman",
-      "away_team": "Auckland",
-      "home_score": 16,
-      "away_score": 11,
+      "home_team": "Hawkes Bay",
+      "away_team": "Otago",
+      "home_score": 34,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
@@ -3709,10 +3727,10 @@
     },
     {
       "date": "2021-08-14",
-      "home_team": "Hawkes Bay",
-      "away_team": "Otago",
-      "home_score": 34,
-      "away_score": 10,
+      "home_team": "Tasman",
+      "away_team": "Auckland",
+      "home_score": 16,
+      "away_score": 11,
       "home_odds": null,
       "away_odds": null
     },
@@ -3727,10 +3745,10 @@
     },
     {
       "date": "2021-08-08",
-      "home_team": "North Harbour",
-      "away_team": "Waikato",
-      "home_score": 15,
-      "away_score": 28,
+      "home_team": "Auckland",
+      "away_team": "Canterbury",
+      "home_score": 35,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -3745,19 +3763,19 @@
     },
     {
       "date": "2021-08-08",
-      "home_team": "Auckland",
-      "away_team": "Canterbury",
-      "home_score": 35,
-      "away_score": 24,
+      "home_team": "North Harbour",
+      "away_team": "Waikato",
+      "home_score": 15,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-08-07",
-      "home_team": "Wellington",
-      "away_team": "Northland",
-      "home_score": 54,
-      "away_score": 7,
+      "home_team": "Otago",
+      "away_team": "Southland",
+      "home_score": 26,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -3772,10 +3790,10 @@
     },
     {
       "date": "2021-08-07",
-      "home_team": "Otago",
-      "away_team": "Southland",
-      "home_score": 26,
-      "away_score": 19,
+      "home_team": "Wellington",
+      "away_team": "Northland",
+      "home_score": 54,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
