@@ -3,8 +3,8 @@
     "sport": "Formula 1",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "Formula 1 Grand Prix finishing orders (TheSportsDB league 4370). Main race only - practice, qualifying and sprint sessions are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
-    "row_count": 96,
-    "last_auto_update": "2026-09-24",
+    "row_count": 97,
+    "last_auto_update": "2026-09-28",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js",
     "team_names": {
       "134806": "Scuderia Ferrari HP",
@@ -26,9 +26,146 @@
       "154529": "Cadillac Formula 1 Team"
     },
     "schema_version": 2,
-    "no_results_event_ids": []
+    "no_results_ids_v3": []
   },
   "events": [
+    {
+      "id": "2408191",
+      "date": "2026-09-26",
+      "event": "Azerbaijan Grand Prix",
+      "season": "2026",
+      "finishers": 16,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "1:38:02.143"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "+0.196s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "134813",
+          "detail": "+10.704s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+14.136s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+14.512s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+22.382s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Arvid Lindblad",
+          "team_id": "139631",
+          "detail": "+31.159s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+31.189s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+31.929s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+32.416s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+33.231s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+34.013s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+36.401s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "154529",
+          "detail": "+41.400s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+44.230s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Valtteri Bottas",
+          "team_id": "154529",
+          "detail": "DNF"
+        }
+      ]
+    },
     {
       "id": "2408914",
       "date": "2026-09-13",
