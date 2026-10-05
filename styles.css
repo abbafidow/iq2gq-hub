@@ -1470,3 +1470,30 @@ border: 1px solid rgba(255,255,255,0.10);
   border-top: 1px solid var(--line);
 }
 .mini-table-team-header:first-child td { border-top: none; padding-top: 6px; }
+
+/* Acknowledge payment (Oct 2026) - button on the back of Dashboard's
+   Outstanding fines tile, plus the member's fines checklist. Reuses the
+   Drop a Pick panel/tile/badge styles for everything else. */
+.fine-ack-btn {
+  margin-top: 12px; width: 100%; border-radius: 10px; border: 1px solid rgb(200, 170, 60);
+  background: rgba(200, 170, 60, 0.18); color: var(--text); padding: 10px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.fine-ack-btn:hover { filter: brightness(1.15); }
+.fine-tile-owing { display: block; font-size: 11px; font-weight: 400; margin-top: 4px; opacity: 0.9; }
+.fine-back-btn { margin-bottom: 16px; padding: 8px 12px; }
+.fine-row {
+  display: flex; align-items: center; gap: 10px; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer;
+}
+.fine-row.is-selected { border-color: var(--accent); }
+.fine-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+.fine-row-date { flex: 1; font-size: 14px; }
+.fine-row-amt { font-weight: 600; }
+.fine-row-paid { cursor: default; }
+.fine-undo-btn { padding: 6px 12px; font-size: 13px; }
+.fine-confirm-btn { width: 100%; margin-top: 6px; font-weight: 500; border-color: var(--good); color: var(--good); }
+.fine-msg {
+  font-size: 13px; margin: 0 0 14px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel2);
+}
