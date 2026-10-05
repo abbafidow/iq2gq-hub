@@ -3,8 +3,8 @@
     "sport": "Formula 1",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "Formula 1 Grand Prix finishing orders (TheSportsDB league 4370). Main race only - practice, qualifying and sprint sessions are excluded. Started empty on 2026-09-24 and built entirely from TheSportsDB.",
-    "row_count": 97,
-    "last_auto_update": "2026-09-28",
+    "row_count": 98,
+    "last_auto_update": "2026-10-05",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js",
     "team_names": {
       "134806": "Scuderia Ferrari HP",
@@ -29,6 +29,175 @@
     "no_results_ids_v3": []
   },
   "events": [
+    {
+      "id": "2581150",
+      "date": "2026-10-04",
+      "event": "Bahrain in Malaysia Grand Prix",
+      "season": "2026",
+      "finishers": 20,
+      "results": [
+        {
+          "position": 1,
+          "tied": false,
+          "status": null,
+          "name": "Max Verstappen",
+          "team_id": "134813",
+          "detail": "1:47:14.808"
+        },
+        {
+          "position": 2,
+          "tied": false,
+          "status": null,
+          "name": "Andrea Kimi Antonelli",
+          "team_id": "134812",
+          "detail": "+2.307s"
+        },
+        {
+          "position": 3,
+          "tied": false,
+          "status": null,
+          "name": "Lewis Hamilton",
+          "team_id": "134806",
+          "detail": "+4.919s"
+        },
+        {
+          "position": 4,
+          "tied": false,
+          "status": null,
+          "name": "Charles Leclerc",
+          "team_id": "134806",
+          "detail": "+7.258s"
+        },
+        {
+          "position": 5,
+          "tied": false,
+          "status": null,
+          "name": "Isack Hadjar",
+          "team_id": "134813",
+          "detail": "+8.571s"
+        },
+        {
+          "position": 6,
+          "tied": false,
+          "status": null,
+          "name": "Oscar Piastri",
+          "team_id": "134811",
+          "detail": "+9.454s"
+        },
+        {
+          "position": 7,
+          "tied": false,
+          "status": null,
+          "name": "Liam Lawson",
+          "team_id": "139631",
+          "detail": "+12.753s"
+        },
+        {
+          "position": 8,
+          "tied": false,
+          "status": null,
+          "name": "Fernando Alonso",
+          "team_id": "135126",
+          "detail": "+13.372s"
+        },
+        {
+          "position": 9,
+          "tied": false,
+          "status": null,
+          "name": "Lando Norris",
+          "team_id": "134811",
+          "detail": "+13.993s"
+        },
+        {
+          "position": 10,
+          "tied": false,
+          "status": null,
+          "name": "Arvid Lindblad",
+          "team_id": "139631",
+          "detail": "+15.928s"
+        },
+        {
+          "position": 11,
+          "tied": false,
+          "status": null,
+          "name": "Nico Hulkenberg",
+          "team_id": "137569",
+          "detail": "+17.404s"
+        },
+        {
+          "position": 12,
+          "tied": false,
+          "status": null,
+          "name": "Lance Stroll",
+          "team_id": "135126",
+          "detail": "+18.052s"
+        },
+        {
+          "position": 13,
+          "tied": false,
+          "status": null,
+          "name": "Franco Colapinto",
+          "team_id": "135706",
+          "detail": "+18.997s"
+        },
+        {
+          "position": 14,
+          "tied": false,
+          "status": null,
+          "name": "Oliver Bearman",
+          "team_id": "135705",
+          "detail": "+22.305s"
+        },
+        {
+          "position": 15,
+          "tied": false,
+          "status": null,
+          "name": "Esteban Ocon",
+          "team_id": "135705",
+          "detail": "+22.532s"
+        },
+        {
+          "position": 16,
+          "tied": false,
+          "status": null,
+          "name": "Pierre Gasly",
+          "team_id": "135706",
+          "detail": "+23.315s"
+        },
+        {
+          "position": 17,
+          "tied": false,
+          "status": null,
+          "name": "Carlos Sainz Jr",
+          "team_id": "134816",
+          "detail": "+25.431s"
+        },
+        {
+          "position": 18,
+          "tied": false,
+          "status": null,
+          "name": "Gabriel Bortoleto",
+          "team_id": "137569",
+          "detail": "+28.233s"
+        },
+        {
+          "position": 19,
+          "tied": false,
+          "status": null,
+          "name": "Sergio Perez",
+          "team_id": "154529",
+          "detail": "+29.310s"
+        },
+        {
+          "position": 20,
+          "tied": false,
+          "status": null,
+          "name": "George Russell",
+          "team_id": "134812",
+          "detail": "DNF"
+        }
+      ]
+    },
     {
       "id": "2408191",
       "date": "2026-09-26",
