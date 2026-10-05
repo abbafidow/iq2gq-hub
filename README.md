@@ -1,3 +1,18 @@
+## v7.2 changes
+
+**Acknowledge payment - new button on the Outstanding fines tile**
+- **Members can now mark their fines as paid directly in the Hub**, instead of editing the Spreadsheet. Flip the Outstanding fines tile on the Dashboard, tap Acknowledge payment, tap your own 2-letter code (same team-coloured tiles as Drop a Pick), tick the fines you've paid and confirm.
+- **The member grid shows who owes what** - each tile shows that member's total owing, or "All square". Members with nothing owing are dimmed but still tappable, so a mistaken payment can still be reached and undone.
+- **What it writes to Raw_Live:** today's date into "Date MM / Fine Paid" and, only if that cell is empty, the fine amount into "Fines". An amount already entered by hand is never overwritten, and a fine already marked as paid is left alone.
+- **Undo in the Hub.** Every fine paid this season has an Undo button, which clears "Date MM / Fine Paid" only - the amount stays as the record of what was owed.
+- **Tiles update straight away.** Outstanding fines, Gross revenue and YTD position all refresh the moment a payment is recorded or undone, without reloading the Sheet data.
+- **Phone back button works through the flow** - back from a member's fines returns to the member grid, then to the Dashboard, same as Drop a Pick.
+- **Backend is a new file, FineAck.gs, in the existing Drop a Pick Apps Script project** - Code.gs is untouched. PickEntry.gs gains two lines at the top of doPost that hand fine payments to FineAck.gs and leave Drop a Pick submissions exactly as before. Rows are found by member code + round date, matching columns by header name rather than position, and writes are locked so two payments at the same moment can't clash. `testFineAckSetup()` can be run from the editor as a read-only check that every column is found.
+- **Identity:** anyone can currently select any member, the same trust model as Drop a Pick. Once the Hub moves behind Cloudflare Access, the member grid can be skipped so each member only sees and acknowledges their own fines.
+
+**Housekeeping**
+- Footer version updated to v7.2.
+
 ## v5.0 changes
 
 **Drop a Pick - new tab**
