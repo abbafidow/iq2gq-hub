@@ -1618,6 +1618,7 @@ function render() {
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
   if (page === 'droppick') app.innerHTML = dropAPickPage(data);
   if (page === 'fineack') app.innerHTML = fineAckPage();
+  setTimeout(applyPhoneLayout, 0);
 }
 
 function dashboard(data) {
@@ -6544,6 +6545,49 @@ function bindFineAck() {
 
   document.querySelectorAll('[data-undo-date]').forEach(btn => {
     btn.onclick = () => undoFineAck(btn.dataset.undoDate, btn);
+  });
+}
+
+// ---------- Phone layout clean-up (v7.3 proposal) ----------
+// Two light touches on top of the phone-only CSS: icons on the bottom nav
+// tabs, and tap-to-fold section headers. Desktop is unaffected (the fold
+// header only becomes clickable/visible as such under the phone CSS, and
+// folding is ignored on wider screens).
+const TAB_ICONS = {
+  dashboard: '<path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z"/>',
+  droppick: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  pickassistant: '<path d="M12 3l2.5 5.5L20 9.5l-4 4 1 5.5-5-2.7-5 2.7 1-5.5-4-4 5.5-1z"/>',
+  stats: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  records: '<circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+};
+const TAB_SHORT = { dashboard: 'Home', droppick: 'Drop pick', pickassistant: 'Assistant', stats: 'Stats', records: 'Records', search: 'Search' };
+state.foldedPanels = state.foldedPanels || {};
+
+function isPhoneWidth() { return window.matchMedia('(max-width: 640px)').matches; }
+
+function applyPhoneLayout() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    if (tab.dataset.iconised) return;
+    const key = tab.dataset.page;
+    if (!TAB_ICONS[key]) return;
+    tab.dataset.iconised = '1';
+    tab.dataset.fullLabel = tab.textContent.trim();
+    tab.innerHTML = `<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[key]}</svg><span class="tab-text">${isPhoneWidth() ? TAB_SHORT[key] : tab.dataset.fullLabel}</span>`;
+  });
+  // Only panels that open with their own heading get a fold header.
+  document.querySelectorAll('#app .panel').forEach(panel => {
+    const head = panel.firstElementChild;
+    if (!head || !/^H[23]$/.test(head.tagName) || panel.dataset.foldReady) return;
+    panel.dataset.foldReady = '1';
+    const key = `${state.page}|${head.textContent.trim()}`;
+    head.classList.add('fold-head');
+    if (isPhoneWidth() && state.foldedPanels[key]) panel.classList.add('is-folded');
+    head.addEventListener('click', () => {
+      if (!isPhoneWidth()) return;
+      panel.classList.toggle('is-folded');
+      state.foldedPanels[key] = panel.classList.contains('is-folded');
+    });
   });
 }
 
