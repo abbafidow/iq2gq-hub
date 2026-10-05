@@ -100,6 +100,12 @@ const state = {
     roundStatus: null, // { date, members: [{member, hasPicked}] } - who's already dropped a pick this round, shown on the tile grid
     roundStatusLoading: false,
   },
+  fineAck: {
+    step: 'grid', // 'grid' | 'fines' | 'saving'
+    member: null,
+    selected: [], // fine dates (as shown in the Sheet) ticked for acknowledgement
+    message: null, // { text, tone: 'good' | 'bad' | 'muted' }
+  },
   filters: { member: '', group: '', betType: '', year: '', odds: '', result: '', query: '' }, // Search-page-local
   realWorldGames: {}, // sport -> array of {date, home_team, away_team, home_score, away_score, ...}
   rankedEvents: {}, // sport -> array of {date, dateObj, event, results: [{position, status, name, ...}]}, oldest first
@@ -998,9 +1004,17 @@ function bind() {
       resetDropPick();
       return;
     }
+    // Same idea for Acknowledge payment: back from a member's fines
+    // returns to the member grid first.
+    if (state.page === 'fineack' && state.fineAck.step !== 'grid') {
+      resetFineAck();
+      return;
+    }
     const targetPage = (e.state && e.state.page) || 'dashboard';
     state.page = targetPage;
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === targetPage));
+    // Acknowledge payment isn't a tab of its own - it lives under Dashboard.
+    const tabPage = targetPage === 'fineack' ? 'dashboard' : targetPage;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === tabPage));
     render();
   });
 }
@@ -1603,6 +1617,7 @@ function render() {
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
   if (page === 'droppick') app.innerHTML = dropAPickPage(data);
+  if (page === 'fineack') app.innerHTML = fineAckPage();
 }
 
 function dashboard(data) {
@@ -3395,7 +3410,11 @@ function currentSeasonFines(data) {
       const paid = Boolean(clean(r.row['Date MM / Fine Paid']));
       const recordedAmount = Number(r.row?.Fines);
       const amount = paid && recordedAmount > 0 ? recordedAmount : cappedStreak * 10;
-      fines.push({ date: r.date, amount, paid });
+      // paidOn + rowRef are for Acknowledge payment (Oct 2026): paidOn to
+      // show when a fine was paid, rowRef so a successful acknowledgement
+      // or undo can update this exact row in state.raw straight away,
+      // without re-fetching the whole Sheet feed.
+      fines.push({ date: r.date, amount, paid, paidOn: clean(r.row['Date MM / Fine Paid']), rowRef: r });
       // Forfeit-and-reset: the 4th consecutive loss is the last one that
       // escalates - the member sits out the following week, and whatever
       // pick they resume with afterward starts a fresh streak rather
@@ -3468,12 +3487,15 @@ function financialTilesStrip(data, previousSeasonRows) {
 
   const grossBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) plus fines collected (${fmtMoney(finesCollected)}) = ${fmtMoney(grossRevenue)}.</p>`;
 
-  const outstandingBack = outstandingFines.length
+  const outstandingBack = (outstandingFines.length
     ? `<div class="flip-options-list">${outstandingFines
         .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
         .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
         .join('')}</div>`
-    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`;
+    : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`)
+    // Always shown, even when nothing's owing, so a mistaken
+    // acknowledgement can still be reached and undone.
+    + `<button type="button" class="fine-ack-btn" id="fineAckOpen">Acknowledge payment</button>`;
 
   const positionCls = netPosition >= 0 ? 'sport-league' : 'sport-nfl';
   const positionBack = `<p class="flip-rationale">MM winnings (${fmtMoney(mmWinnings)}) + fines collected (${fmtMoney(finesCollected)}) - MM costs (${fmtMoney(mmCosts)}, ${MM_COST_TEAM_COUNT} teams &times; ${roundsSoFar} rounds &times; $${MM_COST_PER_TEAM_PER_WEEK}) = ${fmtMoney(netPosition)}.</p>`;
@@ -3513,6 +3535,7 @@ function financialTilesStrip(data, previousSeasonRows) {
     : '';
 
   setTimeout(bindFlipTiles, 0);
+  setTimeout(bindFineAckOpen, 0);
 
   return `<div class="panel"><h3>Financial position</h3><div class="flip-tile-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
     ${tile('sport-football', 'Gross revenue', fmtMoney(grossRevenue), `${fmtMoney(mmWinnings)} winnings + ${fmtMoney(finesCollected)} fines`, grossBack)}
@@ -6273,6 +6296,255 @@ function bindDropAPick() {
       }
     };
   }
+}
+
+// ==========================================================================
+// Acknowledge payment (Oct 2026)
+// Lets a member mark their own outstanding fines as paid from the Hub,
+// instead of editing the Spreadsheet. Opened from the button on the back of
+// Dashboard's Outstanding fines tile; same two-step shape as Drop a Pick
+// (member tile grid, then that member's fines).
+//
+// Writes go through the existing Drop a Pick Web App (PICK_ENTRY_API_URL),
+// via FineAck.gs - Code.gs is untouched. For each acknowledged fine it
+// writes today's date into "Date MM / Fine Paid" and, only if the cell is
+// empty, the fine amount into "Fines". Undo clears "Date MM / Fine Paid"
+// only, leaving the amount as the record of what was owed.
+//
+// Identity: anyone can currently pick any member (same trust model as Drop
+// a Pick). Once the Hub moves behind Cloudflare Access, fineAckOpen() can
+// skip the grid and go straight to the signed-in member's own fines.
+// ==========================================================================
+
+function fineAckFinesFor(member) {
+  const { members } = currentSeasonFines(state.raw);
+  const entry = members.find(m => m.member === member);
+  const fines = entry ? entry.fines : [];
+  const newestFirst = (a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0);
+  return {
+    unpaid: fines.filter(f => !f.paid).sort(newestFirst),
+    paid: fines.filter(f => f.paid).sort(newestFirst),
+  };
+}
+
+// "Date MM / Fine Paid" may arrive from the feed as dd/mm/yyyy or as a full
+// date string, depending on how the cell is formatted - always shown as
+// dd/mm/yyyy.
+function fineAckDateLabel(value) {
+  const s = clean(value);
+  if (!s) return '';
+  if (parseDMY(s)) return s;
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return s;
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+function fineAckToday() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+function resetFineAck() {
+  state.fineAck = { step: 'grid', member: null, selected: [], message: null };
+  render();
+}
+
+function fineAckOpen() {
+  state.page = 'fineack';
+  state.fineAck = { step: 'grid', member: null, selected: [], message: null };
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === 'dashboard'));
+  history.pushState({ page: 'fineack' }, '');
+  render();
+  window.scrollTo(0, 0);
+}
+
+function bindFineAckOpen() {
+  const btn = document.getElementById('fineAckOpen');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation(); // the button sits inside a flip-tile - don't flip it back
+    fineAckOpen();
+  });
+}
+
+function fineAckHeaderHtml() {
+  const code = state.fineAck.member;
+  const team = DROP_PICK_TEAMS.find(t => t.members.includes(code));
+  const color = team ? team.color : 'var(--accent)';
+  const dark = team ? team.dark : 'var(--panel2)';
+  return `<div class="drop-pick-badge-row">
+    <div class="drop-pick-badge" style="background:${dark}; color:${color}; border-color:${color};">${escapeHtml(code)}</div>
+    <div><p class="muted small" style="margin:0;">Acknowledging payment for</p><p style="margin:0; font-weight:500;">${escapeHtml(code)}</p></div>
+    <button type="button" class="drop-pick-btn" id="fineAckNotYou" style="margin-left:auto;">Not you?</button>
+  </div>`;
+}
+
+function fineAckGridHtml() {
+  const groups = DROP_PICK_TEAMS.map(team => `
+    <div class="drop-pick-team">
+      <p class="drop-pick-team-label" style="color:${team.color};"><span>${escapeHtml(team.name)}</span></p>
+      <div class="drop-pick-tile-row">
+        ${team.members.map(code => {
+          const owing = fineAckFinesFor(code).unpaid.reduce((s, f) => s + f.amount, 0);
+          return `<button type="button" class="drop-pick-tile fine-ack-tile${owing ? '' : ' drop-pick-tile-done'}" data-fine-member="${code}"
+            style="background:${team.dark}; border-color:${team.color}; color:${team.color};">${escapeHtml(code)}<span class="fine-tile-owing">${owing ? `${fmtMoney(owing)} owing` : 'All square'}</span></button>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  return `<p class="drop-pick-prompt">Whose payment are you acknowledging?</p>${groups}`;
+}
+
+function fineAckFinesHtml() {
+  const fa = state.fineAck;
+  const { unpaid, paid } = fineAckFinesFor(fa.member);
+  const selectedTotal = unpaid.filter(f => fa.selected.includes(f.date)).reduce((s, f) => s + f.amount, 0);
+  const toneColor = { good: 'var(--good)', bad: 'var(--bad)', muted: 'var(--muted)' };
+  const msg = fa.message
+    ? `<p class="fine-msg" style="color:${toneColor[fa.message.tone] || 'var(--muted)'};">${escapeHtml(fa.message.text)}</p>`
+    : '';
+  const unpaidBlock = unpaid.length
+    ? `<p class="drop-pick-existing-label">Unpaid this season</p>
+       ${unpaid.map(f => `<label class="fine-row${fa.selected.includes(f.date) ? ' is-selected' : ''}">
+         <input type="checkbox" data-fine-date="${escapeHtml(f.date)}" ${fa.selected.includes(f.date) ? 'checked' : ''}>
+         <span class="fine-row-date">Round ${escapeHtml(f.date)}</span><span class="fine-row-amt">${fmtMoney(f.amount)}</span></label>`).join('')}
+       <button type="button" class="drop-pick-btn fine-confirm-btn" id="fineAckConfirm">${selectedTotal ? `Confirm ${fmtMoney(selectedTotal)} paid` : 'Tick the fines you\'ve paid'}</button>`
+    : `<div class="drop-pick-existing-card"><p style="margin:0; color:var(--good); font-weight:500;">All square - nothing owing this season.</p></div>`;
+  const paidBlock = paid.length
+    ? `<p class="drop-pick-existing-label" style="margin-top:22px;">Paid this season</p>
+       ${paid.map(f => `<div class="fine-row fine-row-paid">
+         <span class="fine-row-date">Round ${escapeHtml(f.date)}${f.paidOn ? `<span class="muted small" style="display:block;">Paid ${escapeHtml(fineAckDateLabel(f.paidOn))}</span>` : ''}</span>
+         <span class="fine-row-amt">${fmtMoney(f.amount)}</span>
+         <button type="button" class="drop-pick-btn fine-undo-btn" data-undo-date="${escapeHtml(f.date)}">Undo</button></div>`).join('')}`
+    : '';
+  return `${fineAckHeaderHtml()}${msg}${unpaidBlock}${paidBlock}`;
+}
+
+function fineAckPage() {
+  const fa = state.fineAck;
+  let body;
+  if (fa.step === 'grid') body = fineAckGridHtml();
+  else if (fa.step === 'saving') body = `${fineAckHeaderHtml()}<p class="muted">Saving...</p>`;
+  else body = fineAckFinesHtml();
+  setTimeout(bindFineAck, 0);
+  return `<div class="page-header"><h1>Acknowledge payment</h1></div>
+    <div class="panel drop-pick-panel">
+      <button type="button" class="drop-pick-btn fine-back-btn" id="fineAckBack">&larr; Back to Dashboard</button>
+      ${body}
+    </div>`;
+}
+
+async function postFineAction(body) {
+  const res = await fetch(PICK_ENTRY_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // avoids a CORS preflight Apps Script doesn't handle
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+// Mirrors a successful write onto the already-loaded row, so every tile
+// (Outstanding fines, Gross revenue, YTD position) updates immediately
+// without re-fetching the whole Sheet feed.
+function applyFinePaidLocally(fine, paidOn) {
+  const row = fine.rowRef && fine.rowRef.row;
+  if (!row) return;
+  row['Date MM / Fine Paid'] = paidOn;
+  if (paidOn && !(Number(row.Fines) > 0)) row.Fines = fine.amount;
+}
+
+async function confirmFineAck() {
+  const fa = state.fineAck;
+  const toPay = fineAckFinesFor(fa.member).unpaid.filter(f => fa.selected.includes(f.date));
+  if (!toPay.length) {
+    fa.message = { text: 'Tick at least one fine first.', tone: 'bad' };
+    render();
+    return;
+  }
+  fa.step = 'saving';
+  fa.message = null;
+  render();
+  try {
+    const result = await postFineAction({
+      action: 'ackFines',
+      memberCode: fa.member,
+      fines: toPay.map(f => ({ date: f.date, amount: f.amount })),
+    });
+    if (!result || result.error) throw new Error((result && result.error) || 'No response');
+    const done = new Set((result.results || []).filter(r => r.status === 'paid' || r.status === 'alreadyPaid').map(r => r.date));
+    const today = fineAckToday();
+    let total = 0;
+    toPay.forEach(f => {
+      if (done.has(f.date)) { applyFinePaidLocally(f, today); total += f.amount; }
+    });
+    const missed = toPay.length - done.size;
+    fa.selected = [];
+    fa.message = missed
+      ? { text: `Recorded ${fmtMoney(total)}, but ${missed} fine${missed === 1 ? '' : 's'} couldn't be found in the Sheet - check with the treasurer.`, tone: 'bad' }
+      : { text: `Payment of ${fmtMoney(total)} recorded - thanks.`, tone: 'good' };
+  } catch (err) {
+    fa.message = { text: `Couldn't save the payment (${err.message}). Nothing was changed - try again.`, tone: 'bad' };
+  }
+  fa.step = 'fines';
+  render();
+}
+
+async function undoFineAck(date, btn) {
+  const fa = state.fineAck;
+  const fine = fineAckFinesFor(fa.member).paid.find(f => f.date === date);
+  if (!fine) return;
+  btn.disabled = true;
+  btn.textContent = 'Undoing...';
+  try {
+    const result = await postFineAction({ action: 'undoFine', memberCode: fa.member, date });
+    if (!result || result.error) throw new Error((result && result.error) || 'No response');
+    applyFinePaidLocally(fine, '');
+    fa.message = { text: `Round ${date} moved back to unpaid.`, tone: 'muted' };
+  } catch (err) {
+    fa.message = { text: `Couldn't undo (${err.message}). Nothing was changed - try again.`, tone: 'bad' };
+  }
+  render();
+}
+
+function bindFineAck() {
+  const fa = state.fineAck;
+
+  const backBtn = document.getElementById('fineAckBack');
+  if (backBtn) backBtn.onclick = () => {
+    state.page = 'dashboard';
+    history.pushState({ page: 'dashboard' }, '');
+    render();
+  };
+
+  document.querySelectorAll('[data-fine-member]').forEach(btn => {
+    btn.onclick = () => {
+      fa.member = btn.dataset.fineMember;
+      fa.step = 'fines';
+      fa.message = null;
+      fa.selected = fineAckFinesFor(fa.member).unpaid.map(f => f.date); // all ticked to start
+      history.pushState({ page: 'fineack', fineAckStep: 'fines' }, '');
+      render();
+    };
+  });
+
+  const notYouBtn = document.getElementById('fineAckNotYou');
+  if (notYouBtn) notYouBtn.onclick = resetFineAck;
+
+  document.querySelectorAll('[data-fine-date]').forEach(cb => {
+    cb.onchange = () => {
+      const date = cb.dataset.fineDate;
+      fa.selected = cb.checked ? [...new Set([...fa.selected, date])] : fa.selected.filter(d => d !== date);
+      fa.message = null;
+      render();
+    };
+  });
+
+  const confirmBtn = document.getElementById('fineAckConfirm');
+  if (confirmBtn) confirmBtn.onclick = confirmFineAck;
+
+  document.querySelectorAll('[data-undo-date]').forEach(btn => {
+    btn.onclick = () => undoFineAck(btn.dataset.undoDate, btn);
+  });
 }
 
 init();
