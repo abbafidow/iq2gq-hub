@@ -1,3 +1,16 @@
+## v7.3 changes
+
+**Cleaner phone layout - same content, phones only**
+- **Bottom navigation bar on phones.** All six sections (Home, Drop pick, Assistant, Stats, Records, Search) sit in a bar at the bottom of the screen with icons, instead of a tab row that scrolled sideways and hid Records and Search off-screen.
+- **Tighter tiles.** The Dashboard's top tiles stay three across, with less padding and better-sized text. Insights this year and Financial position tiles now sit three across instead of one per row; tapping one flips it and opens it to full width so the detail is readable.
+- **Records award tiles two across** instead of one per row.
+- **Tap a section heading to fold it.** Every Dashboard section with a heading (Presidential race, Teams competition, Recent picks, etc.) folds and unfolds with a tap. All sections start open, so nothing is hidden by default.
+- **Lighter styling.** Slimmer header, less padding, and tables sized to fit the screen.
+- **Desktop is unchanged.** Every change sits inside a phone-only (640px and narrower) style block, plus a small `applyPhoneLayout()` helper in app.js that adds the nav icons and fold headers.
+
+**Housekeeping**
+- Footer version updated to v7.3.
+
 ## v7.2 changes
 
 **Acknowledge payment - new button on the Outstanding fines tile**
