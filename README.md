@@ -1,3 +1,16 @@
+## v7.4 changes
+
+**Faster, more reliable opening**
+- **Opens instantly after the first visit.** The Hub now saves the last Sheet data it loaded on each member's own device. Next time, it opens straight away with that copy (the status line shows how old it is, e.g. "Showing data from 2 hours ago - updating...") and quietly swaps in fresh data once Google answers.
+- **No more "Could not load Google Sheet data" on a slow first open.** The Sheet feed comes from Google Apps Script, which can take 10-20 seconds to wake up after a quiet spell and sometimes fails on that first wake-up. Each attempt now has a 25-second time limit and is retried automatically (up to 3 attempts), with "Google Sheets is waking up - still loading..." shown on the loading screen meanwhile.
+- **If Google still can't be reached,** members keep seeing the saved copy with its age shown, or - on a first visit with nothing saved - get a Try again button instead of a dead end.
+- **Fresh data never interrupts someone mid-task.** If new data arrives while a member is dropping a pick, acknowledging a fine or typing in Search, the page isn't redrawn under them; it picks up the new data on the next screen.
+- **Real-world sports files (about 10MB) are no longer re-downloaded on every visit.** The browser now checks with GitHub and only downloads files that have actually changed (they update once a day).
+- Code.gs is untouched - all changes are in app.js.
+
+**Housekeeping**
+- Footer version updated to v7.4.
+
 ## v7.3 changes
 
 **Cleaner phone layout - same content, phones only**
