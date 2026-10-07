@@ -705,40 +705,199 @@ function hideLoadingScreen() {
   if (el) el.style.display = 'none';
 }
 
-async function init() {
+// ---------- Startup data loading (v7.4) ----------
+// The Sheet feed comes from a Google Apps Script web app, which can take
+// 10-20s to answer when it hasn't been used for a while ("cold start"), and
+// occasionally fails outright on that first wake-up. Three changes here:
+//   1. The last successful feed is saved on the member's own device
+//      (IndexedDB), so on every visit after the first the Hub opens
+//      instantly with that copy, then quietly swaps in fresh data.
+//   2. Each fetch has a time limit and is retried automatically, so a slow
+//      or failed first wake-up no longer ends in an error.
+//   3. If Google still can't be reached, the member keeps the saved copy
+//      (with its age shown), or - with no saved copy - gets a Retry button
+//      instead of a dead end.
+// Code.gs is untouched; this is all on the Hub side.
+const FEED_TIMEOUT_MS = 25000;
+const FEED_ATTEMPTS = 3;
+const FEED_CACHE_DB = 'iq2gq-hub';
+const FEED_CACHE_STORE = 'feed';
+
+function feedCacheOpen() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) { reject(new Error('IndexedDB unavailable')); return; }
+    const req = indexedDB.open(FEED_CACHE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(FEED_CACHE_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function feedCacheRead() {
   try {
-    const res = await fetch(`${API_URL}?v=${Date.now()}`, { cache: 'no-store' });
-
-    const json = await res.json();
-
-    console.log("API count:", json.count);
-    console.log("API data length:", json.data.length);
-
-    state.apiCount = Number(json.count || 0);
-    state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
-    canonicalizeCasing(state.raw, 'betType');
-    canonicalizeCasing(state.raw, 'name');
-    canonicalizeCasing(state.raw, 'sport');
-
-    // Real-world match history is separate from the syndicate's own Sheet
-    // data and loaded independently - if one sport's file is missing or
-    // fails to fetch, that sport's real-world patterns simply won't appear
-    // rather than breaking the whole Hub. Not awaited alongside the main
-    // fetch above deliberately: the syndicate data is the Hub's core
-    // purpose and should render immediately, with real-world patterns
-    // filling in a moment later once (if) they arrive.
-    loadRealWorldGames();
-
-    history.replaceState({ page: state.page }, '');
-    bind();
-    render();
-    hideLoadingScreen();
-    $('status').textContent = `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
-  } catch (error) {
-    $('status').textContent = 'Could not load Google Sheet data';
-    hideLoadingScreen();
-    console.error(error);
+    const db = await feedCacheOpen();
+    return await new Promise(resolve => {
+      const req = db.transaction(FEED_CACHE_STORE, 'readonly').objectStore(FEED_CACHE_STORE).get('latest');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (e) {
+    return null; // private browsing, storage blocked, etc. - just load from Google as before
   }
+}
+
+async function feedCacheWrite(json) {
+  try {
+    const db = await feedCacheOpen();
+    db.transaction(FEED_CACHE_STORE, 'readwrite').objectStore(FEED_CACHE_STORE)
+      .put({ savedAt: Date.now(), count: json.count, data: json.data }, 'latest');
+  } catch (e) {
+    // Not being able to save a copy only means the next visit loads the slow way.
+  }
+}
+
+async function fetchFeedOnce() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FEED_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_URL}?v=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
+    if (!res.ok) throw new Error(`Google returned ${res.status}`);
+    const json = await res.json();
+    if (!json || !Array.isArray(json.data) || !json.data.length) throw new Error('Empty response from Google');
+    return json;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchFeedWithRetry(onAttempt) {
+  let lastError;
+  for (let attempt = 1; attempt <= FEED_ATTEMPTS; attempt++) {
+    if (onAttempt) onAttempt(attempt);
+    try {
+      return await fetchFeedOnce();
+    } catch (error) {
+      lastError = error;
+      console.warn(`Sheet feed attempt ${attempt} failed:`, error);
+      if (attempt < FEED_ATTEMPTS) await new Promise(r => setTimeout(r, 1500 * attempt));
+    }
+  }
+  throw lastError;
+}
+
+function applyFeed(json) {
+  state.apiCount = Number(json.count || 0);
+  state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
+  canonicalizeCasing(state.raw, 'betType');
+  canonicalizeCasing(state.raw, 'name');
+  canonicalizeCasing(state.raw, 'sport');
+}
+
+function feedAgeLabel(savedAt) {
+  const mins = Math.round((Date.now() - savedAt) / 60000);
+  if (mins < 2) return 'just now';
+  if (mins < 60) return `${mins} minutes ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function setLoadingText(text) {
+  const el = document.querySelector('#loading-screen .loading-text');
+  if (el) el.textContent = text;
+}
+
+function liveStatusText() {
+  return `${state.raw.length.toLocaleString()} picks loaded from Google Sheets (${state.apiCount.toLocaleString()} source rows)`;
+}
+
+// Re-render with fresh data only where it can't interrupt someone - not in
+// the middle of dropping a pick or acknowledging a fine, and not on Search
+// (re-rendering there steals focus from the search box). Those pages pick
+// the fresh data up on their next render anyway.
+function renderIfSafe() {
+  const busy = (state.page === 'droppick' && state.dropPick.step !== 'grid')
+    || (state.page === 'fineack' && state.fineAck.step !== 'grid')
+    || state.page === 'search';
+  if (!busy) render();
+}
+
+function showLoadFailure(error) {
+  console.error(error);
+  setLoadingText('Google Sheets is taking too long to respond.');
+  const screen = document.getElementById('loading-screen');
+  if (screen && !document.getElementById('loadRetry')) {
+    const btn = document.createElement('button');
+    btn.id = 'loadRetry';
+    btn.type = 'button';
+    btn.className = 'drop-pick-btn';
+    btn.style.marginTop = '16px';
+    btn.textContent = 'Try again';
+    btn.onclick = () => { btn.remove(); init(); };
+    screen.appendChild(btn);
+  }
+  $('status').textContent = 'Could not reach Google Sheets';
+}
+
+let hubStarted = false;
+function startHub() {
+  if (hubStarted) return;
+  hubStarted = true;
+  // Real-world match history is separate from the syndicate's own Sheet
+  // data and loaded independently - if one sport's file is missing or
+  // fails to fetch, that sport's real-world patterns simply won't appear
+  // rather than breaking the whole Hub.
+  loadRealWorldGames();
+  history.replaceState({ page: state.page }, '');
+  bind();
+  render();
+  hideLoadingScreen();
+}
+
+async function init() {
+  // 1. Open instantly from the saved copy, if this device has one.
+  const cached = hubStarted ? null : await feedCacheRead();
+  if (cached && Array.isArray(cached.data) && cached.data.length) {
+    try {
+      applyFeed(cached);
+      startHub();
+      $('status').textContent = `Showing data from ${feedAgeLabel(cached.savedAt)} - updating...`;
+    } catch (error) {
+      console.error('Saved copy could not be used:', error);
+    }
+  }
+
+  // 2. Fetch fresh data from Google (with time limit + automatic retries).
+  let json;
+  try {
+    json = await fetchFeedWithRetry(attempt => {
+      if (!hubStarted) {
+        setLoadingText(attempt === 1 ? 'Loading syndicate data...' : 'Google Sheets is waking up - still loading...');
+      }
+    });
+  } catch (error) {
+    if (hubStarted) {
+      $('status').textContent = cached
+        ? `Couldn't reach Google Sheets - showing data from ${feedAgeLabel(cached.savedAt)}`
+        : 'Could not reach Google Sheets';
+      console.error(error);
+    } else {
+      showLoadFailure(error);
+    }
+    return;
+  }
+
+  // 3. Use the fresh data and save it for next time.
+  console.log('API count:', json.count, '| API data length:', json.data.length);
+  applyFeed(json);
+  feedCacheWrite(json);
+  if (hubStarted) {
+    renderIfSafe();
+  } else {
+    startHub();
+  }
+  $('status').textContent = liveStatusText();
 }
 
 async function loadRealWorldGames() {
@@ -746,7 +905,7 @@ async function loadRealWorldGames() {
   const rankedEntries = Object.entries(RANKED_SOURCES);
   await Promise.all(rankedEntries.map(async ([sport, filename]) => {
     try {
-      const res = await fetch(`${filename}?v=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(filename, { cache: 'no-cache' }); // revalidates with GitHub; only re-downloads files that changed
       const json = await res.json();
       state.rankedEvents[sport] = (json.events || [])
         .map(e => ({ ...e, dateObj: e.date ? new Date(`${e.date}T00:00:00Z`) : null }))
@@ -759,7 +918,7 @@ async function loadRealWorldGames() {
   }));
   await Promise.all(entries.map(async ([sport, filename]) => {
     try {
-      const res = await fetch(`${filename}?v=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(filename, { cache: 'no-cache' }); // revalidates with GitHub; only re-downloads files that changed
       const json = await res.json();
       state.realWorldGames[sport] = (json.games || []).map(g => ({
         ...g,
