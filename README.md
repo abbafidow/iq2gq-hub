@@ -1,3 +1,21 @@
+## v7.5 changes
+
+**AGM Report - a temporary report section for AGM week**
+- **Replaces the PDF Annual Performance Report.** A full report inside the Hub: cover, Season at a glance, State of IQ2GQ, Season highlights, strike rate history, A season in four acts, Presidency standings with key moments, Teams, Member profiles (nickname, stats and the reason for the nickname), Financial review with prize rules, Matters arising from the last AGM, and Syndicate records.
+- **Every figure is calculated live from the Sheet** using the Hub's own functions (Presidential race, teams, fines, records), so the report updates itself each week and always matches the rest of the Hub. Comparisons are against the same point last season.
+- **Your writing lives in a new "AGM Report" tab** in the Spreadsheet (Type | Key | Title | Text | Who | Status): AGM date, venue, season, President, season title, narratives, highlights, moments, member nicknames and reasons, matters arising and prize rules. Read by the new AgmReport.gs in the Drop a Pick Apps Script project (one line added at the top of doGet); Code.gs untouched.
+- **Hidden from members until AGM week.** A gold banner appears on the Dashboard from the agm_start date for agm_days days (default 7), then disappears. Before that, the Hub address + `#agm-preview` opens a private preview, where anything not yet written shows in red.
+- **Present mode** shows one section per screen for the AGM (arrow keys, swipe, Esc to close). **Download PDF** prints the report one section per page via the device's Save as PDF.
+- **Powder blue, navy and sunshine gold** - used only for the AGM report; the rest of the Hub keeps its own colours.
+
+**Fines - Spreadsheet payments now show in the Hub**
+- **Header names are tidied before they're read.** A stray space in the "Date MM / Fine Paid" header made every fine read as unpaid (tested: $460 across 36 fines shown as owing instead of the real $60 across 6). The fines columns are also found by a looser match, and amounts like "$10" read correctly.
+- **The Hub re-reads the Sheet quietly** whenever a member comes back to it and whenever Acknowledge payment is opened, so fines paid straight into the Spreadsheet show up without a reload.
+- **Fines with no amount in the Sheet yet** are labelled "amount not in the Sheet yet" (the Hub shows the escalation rule's amount) so they aren't mistaken for errors.
+
+**Housekeeping**
+- Footer version updated to v7.5.
+
 ## v7.4 changes
 
 **Faster, more reliable opening**
