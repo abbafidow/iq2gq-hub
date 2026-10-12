@@ -1,3 +1,16 @@
+## v7.7 changes
+
+**Fines - the Hub now follows the Spreadsheet's own rule**
+- **A fine counts as paid once its amount is in the Raw_Live "Fines" column** (or a paid date is entered). This matches Crash & Financials, which only shows what has been paid. Example: TP's 2 Oct fine had $10 entered with no date and showed as owing; it now shows as paid.
+- **Fines still owing** are losses with nothing in the Fines column. The Hub shows the escalation rule's amount for these ($10 per loss in a row, up to $40).
+- **Acknowledge payment** writes the amount and today's date, and leaves alone any fine that already has an amount or a date.
+- **Undo** now clears both the amount and the date, so the fine goes back to owing in the Hub and in Crash & Financials.
+- Removed the "amount not in the Sheet yet" labels, which no longer apply.
+- **FineAck.gs updated** in the Drop a Pick Apps Script project (Code.gs untouched) - needs a new deployment version.
+
+**Housekeeping**
+- Footer version updated to v7.7.
+
 ## v7.6 changes
 
 **AGM Report - auto-written text**
