@@ -1,3 +1,15 @@
+## v7.6 changes
+
+**AGM Report - auto-written text**
+- **Any written section left empty in the AGM Report tab now writes itself from the data.** Your own text in the tab always takes priority; clear a cell to switch that item back to automatic. In the #agm-preview view, automatic text carries an "Auto-written" tag; members never see the tag.
+- **A season in four acts = the four quarters** of the syndicate year, using the Sheet's Quarter column (Q1 Aug-Oct, Q2 Nov-Jan, Q3 Feb-Apr, Q4 May-Jul). Each act covers the quarter's strike rate (and change on the quarter before), the standout member, the leading MM team, the best and worst rounds, $2+ winners, and the Presidency race at the end of the quarter. The title follows the race: "sets the pace", "holds on" or "takes control". A quarter still in progress is written as "so far".
+- **Moments that shaped the race** are picked from the data: the biggest MM return, the highest-priced winner, the costliest $2+ miss, the shortest odds to fail, and the biggest single-round climb in the Presidency race.
+- **Also automatic:** State of IQ2GQ, Season highlights, the Teams and Financial review comments, and each member's "why" line (this season's strike rate and odds against their career, favourite pick record, MM Killers, streaks and $2+ record).
+- Nicknames and the season title stay yours to write.
+
+**Housekeeping**
+- Footer version updated to v7.6.
+
 ## v7.5 changes
 
 **AGM Report - a temporary report section for AGM week**
