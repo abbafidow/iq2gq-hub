@@ -1733,3 +1733,7 @@ body.agm-presenting { overflow: hidden; }
   body.agm-printing .agm-sec { break-after: page; break-inside: avoid; border-radius: 0; }
   body.agm-printing .agm-report { max-width: none; gap: 0; }
 }
+
+/* v7.6: auto-written text tag (preview only) */
+.agm-auto { display: inline-block; align-self: flex-start; width: max-content; margin-right: 6px; padding: 0 7px; border-radius: 999px; border: 1px dashed var(--agm-gold); color: var(--agm-gold); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; }
+.agm-muted-note { color: var(--agm-muted); font-style: italic; }
