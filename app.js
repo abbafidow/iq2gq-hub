@@ -3627,9 +3627,14 @@ function currentSeasonFines(data) {
       if (!r.loss) return; // no result yet, or a Stand Down - skip without resetting the streak
       streak += 1;
       const cappedStreak = Math.min(streak, 4);
-      const paid = Boolean(clean(r.row['Date MM / Fine Paid']));
+      // The Syndicate's own rule (confirmed Oct 2026): a fine's amount goes
+      // into the Fines column once it's PAID - that's what Crash &
+      // Financials totals - and the paid date is optional. So a fine counts
+      // as paid when either the amount or a paid date is there. A loss with
+      // neither is still owed, shown at the escalation rule's amount.
       const recordedAmount = fineAmountOf(r.row?.Fines);
-      const amount = paid && recordedAmount > 0 ? recordedAmount : cappedStreak * 10;
+      const paid = recordedAmount > 0 || Boolean(clean(r.row['Date MM / Fine Paid']));
+      const amount = recordedAmount > 0 ? recordedAmount : cappedStreak * 10;
       // paidOn + rowRef are for Acknowledge payment (Oct 2026): paidOn to
       // show when a fine was paid, rowRef so a successful acknowledgement
       // or undo can update this exact row in state.raw straight away,
@@ -3688,7 +3693,7 @@ function financialTilesStrip(data, previousSeasonRows) {
   if (previousSeasonRows && previousSeasonRows.length) {
     const prevMmWinnings = previousSeasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
     const prevFinesCollected = previousSeasonRows
-      .filter(r => fineAmountOf(r.row?.Fines) > 0 && clean(r.row?.['Date MM / Fine Paid']))
+      .filter(r => fineAmountOf(r.row?.Fines) > 0)
       .reduce((sum, r) => sum + fineAmountOf(r.row.Fines), 0);
     const prevRounds = uniq(previousSeasonRows.filter(r => r.result).map(r => r.date)).length;
     const prevMmCosts = prevRounds * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
@@ -3712,7 +3717,7 @@ function financialTilesStrip(data, previousSeasonRows) {
   const outstandingBack = (outstandingFines.length
     ? `<div class="flip-options-list">${outstandingFines
         .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
-        .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}${f.predicted ? ' · amount not in the Sheet yet' : ''}</p></div>`)
+        .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
         .join('')}</div>`
     : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`)
     // Always shown, even when nothing's owing, so a mistaken
@@ -6632,7 +6637,7 @@ function fineAckFinesHtml() {
     ? `<p class="drop-pick-existing-label">Unpaid this season</p>
        ${unpaid.map(f => `<label class="fine-row${fa.selected.includes(f.date) ? ' is-selected' : ''}">
          <input type="checkbox" data-fine-date="${escapeHtml(f.date)}" ${fa.selected.includes(f.date) ? 'checked' : ''}>
-         <span class="fine-row-date">Round ${escapeHtml(f.date)}${f.predicted ? '<span class="muted small" style="display:block;">Amount not in the Sheet yet</span>' : ''}</span><span class="fine-row-amt">${fmtMoney(f.amount)}</span></label>`).join('')}
+         <span class="fine-row-date">Round ${escapeHtml(f.date)}</span><span class="fine-row-amt">${fmtMoney(f.amount)}</span></label>`).join('')}
        <button type="button" class="drop-pick-btn fine-confirm-btn" id="fineAckConfirm">${selectedTotal ? `Confirm ${fmtMoney(selectedTotal)} paid` : 'Tick the fines you\'ve paid'}</button>`
     : `<div class="drop-pick-existing-card"><p style="margin:0; color:var(--good); font-weight:500;">All square - nothing owing this season.</p></div>`;
   const paidBlock = paid.length
@@ -6676,6 +6681,8 @@ function applyFinePaidLocally(fine, paidOn) {
   if (!row) return;
   row['Date MM / Fine Paid'] = paidOn;
   if (paidOn && !(fineAmountOf(row.Fines) > 0)) row.Fines = fine.amount;
+  // Undo: the amount is the Syndicate's paid marker, so it's cleared too.
+  if (!paidOn) row.Fines = '';
 }
 
 async function confirmFineAck() {
