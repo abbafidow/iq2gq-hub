@@ -785,9 +785,39 @@ async function fetchFeedWithRetry(onAttempt) {
   throw lastError;
 }
 
+// Sheet headers can carry stray spaces (Raw_Live's "Result " already does),
+// and a header that doesn't match exactly is silently read as empty - which
+// for "Date MM / Fine Paid" means every fine paid in the Spreadsheet looks
+// unpaid in the Hub. Header names are tidied (trimmed, single spaces) before
+// anything reads them, and the two fines columns are also found by a looser
+// match in case their wording drifts slightly (Oct 2026).
+function tidyFeedRow(row) {
+  const out = {};
+  Object.keys(row || {}).forEach(key => {
+    const tidy = String(key).replace(/\s+/g, ' ').trim();
+    if (!(tidy in out) || clean(out[tidy]) === '') out[tidy] = row[key];
+  });
+  if (!('Date MM / Fine Paid' in out)) {
+    const k = Object.keys(out).find(x => /fine\s*paid/i.test(x));
+    if (k) out['Date MM / Fine Paid'] = out[k];
+  }
+  if (!('Fines' in out)) {
+    const k = Object.keys(out).find(x => /^fines?$/i.test(x));
+    if (k) out.Fines = out[k];
+  }
+  return out;
+}
+
+// "$10" or "10 " in the Fines column should still read as 10.
+function fineAmountOf(value) {
+  const n = Number(String(value ?? '').replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
 function applyFeed(json) {
   state.apiCount = Number(json.count || 0);
-  state.raw = (json.data || []).map(normalise).filter(r => r.name !== '');
+  state.raw = (json.data || []).map(tidyFeedRow).map(normalise).filter(r => r.name !== '');
+  state.lastFeedAt = Date.now();
   canonicalizeCasing(state.raw, 'betType');
   canonicalizeCasing(state.raw, 'name');
   canonicalizeCasing(state.raw, 'sport');
@@ -840,6 +870,32 @@ function showLoadFailure(error) {
   $('status').textContent = 'Could not reach Google Sheets';
 }
 
+// Re-reads the Sheet in the background (Oct 2026) so changes made directly
+// in the Spreadsheet - fines paid, results entered - show up without a full
+// reload: whenever the member comes back to the Hub (tab/app switched back
+// to), and when Acknowledge payment is opened. At most once every 30
+// seconds unless forced; failures are silent (the current data stays).
+let feedRefreshInFlight = false;
+async function refreshFeedQuietly(force) {
+  if (!hubStarted || feedRefreshInFlight) return;
+  if (!force && state.lastFeedAt && Date.now() - state.lastFeedAt < 30000) return;
+  feedRefreshInFlight = true;
+  try {
+    const json = await fetchFeedOnce();
+    applyFeed(json);
+    feedCacheWrite(json);
+    renderIfSafe();
+    $('status').textContent = liveStatusText();
+  } catch (error) {
+    console.warn('Background refresh failed:', error);
+  } finally {
+    feedRefreshInFlight = false;
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshFeedQuietly(false);
+});
+
 let hubStarted = false;
 function startHub() {
   if (hubStarted) return;
@@ -853,6 +909,8 @@ function startHub() {
   bind();
   render();
   hideLoadingScreen();
+  loadAgmReport();
+  if (state.agm.preview) openAgmReport();
 }
 
 async function init() {
@@ -1172,7 +1230,7 @@ function bind() {
     const targetPage = (e.state && e.state.page) || 'dashboard';
     state.page = targetPage;
     // Acknowledge payment isn't a tab of its own - it lives under Dashboard.
-    const tabPage = targetPage === 'fineack' ? 'dashboard' : targetPage;
+    const tabPage = (targetPage === 'fineack' || targetPage === 'agmreport') ? 'dashboard' : targetPage;
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === tabPage));
     render();
   });
@@ -1777,6 +1835,7 @@ function render() {
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
   if (page === 'droppick') app.innerHTML = dropAPickPage(data);
   if (page === 'fineack') app.innerHTML = fineAckPage();
+  if (page === 'agmreport') app.innerHTML = agmReportPage();
   setTimeout(applyPhoneLayout, 0);
 }
 
@@ -1795,7 +1854,8 @@ function dashboard(data) {
   const recent = data.slice().sort(comparePickOrder).slice(-12).reverse().map((r, i) => ({
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
-  return `${pageHeader}${seasonHeading}
+  setTimeout(() => { const b = document.getElementById('agmBanner'); if (b) b.onclick = openAgmReport; }, 0);
+  return `${pageHeader}${agmBannerHtml()}${seasonHeading}
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
@@ -3568,13 +3628,15 @@ function currentSeasonFines(data) {
       streak += 1;
       const cappedStreak = Math.min(streak, 4);
       const paid = Boolean(clean(r.row['Date MM / Fine Paid']));
-      const recordedAmount = Number(r.row?.Fines);
+      const recordedAmount = fineAmountOf(r.row?.Fines);
       const amount = paid && recordedAmount > 0 ? recordedAmount : cappedStreak * 10;
       // paidOn + rowRef are for Acknowledge payment (Oct 2026): paidOn to
       // show when a fine was paid, rowRef so a successful acknowledgement
       // or undo can update this exact row in state.raw straight away,
       // without re-fetching the whole Sheet feed.
-      fines.push({ date: r.date, amount, paid, paidOn: clean(r.row['Date MM / Fine Paid']), rowRef: r });
+      // predicted: no amount in the Sheet yet, so the Hub is showing the
+      // escalation rule's amount - flagged so nobody mistakes it for a typo.
+      fines.push({ date: r.date, amount, paid, paidOn: clean(r.row['Date MM / Fine Paid']), rowRef: r, predicted: !paid && !(recordedAmount > 0) });
       // Forfeit-and-reset: the 4th consecutive loss is the last one that
       // escalates - the member sits out the following week, and whatever
       // pick they resume with afterward starts a fresh streak rather
@@ -3626,8 +3688,8 @@ function financialTilesStrip(data, previousSeasonRows) {
   if (previousSeasonRows && previousSeasonRows.length) {
     const prevMmWinnings = previousSeasonRows.reduce((sum, r) => sum + (r.mmReturn || 0), 0);
     const prevFinesCollected = previousSeasonRows
-      .filter(r => Number(r.row?.Fines) > 0 && clean(r.row?.['Date MM / Fine Paid']))
-      .reduce((sum, r) => sum + Number(r.row.Fines), 0);
+      .filter(r => fineAmountOf(r.row?.Fines) > 0 && clean(r.row?.['Date MM / Fine Paid']))
+      .reduce((sum, r) => sum + fineAmountOf(r.row.Fines), 0);
     const prevRounds = uniq(previousSeasonRows.filter(r => r.result).map(r => r.date)).length;
     const prevMmCosts = prevRounds * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
     const prevNet = prevMmWinnings + prevFinesCollected - prevMmCosts;
@@ -3650,7 +3712,7 @@ function financialTilesStrip(data, previousSeasonRows) {
   const outstandingBack = (outstandingFines.length
     ? `<div class="flip-options-list">${outstandingFines
         .sort((a, b) => (parseDMY(b.date) || 0) - (parseDMY(a.date) || 0))
-        .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}</p></div>`)
+        .map(f => `<div class="flip-option"><p class="flip-option-header"><span>${escapeHtml(f.member)}</span><span class="flip-rating">${fmtMoney(f.amount)}</span></p><p class="flip-rationale">${escapeHtml(f.date)}${f.predicted ? ' · amount not in the Sheet yet' : ''}</p></div>`)
         .join('')}</div>`
     : `<p class="flip-rationale">No outstanding fines this season - everyone's square.</p>`)
     // Always shown, even when nothing's owing, so a mistaken
@@ -6510,6 +6572,9 @@ function resetFineAck() {
 }
 
 function fineAckOpen() {
+  // Fines are often paid straight into the Spreadsheet - fetch the latest
+  // before anyone ticks anything, so the list matches the Sheet.
+  refreshFeedQuietly(true);
   state.page = 'fineack';
   state.fineAck = { step: 'grid', member: null, selected: [], message: null };
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === 'dashboard'));
@@ -6567,7 +6632,7 @@ function fineAckFinesHtml() {
     ? `<p class="drop-pick-existing-label">Unpaid this season</p>
        ${unpaid.map(f => `<label class="fine-row${fa.selected.includes(f.date) ? ' is-selected' : ''}">
          <input type="checkbox" data-fine-date="${escapeHtml(f.date)}" ${fa.selected.includes(f.date) ? 'checked' : ''}>
-         <span class="fine-row-date">Round ${escapeHtml(f.date)}</span><span class="fine-row-amt">${fmtMoney(f.amount)}</span></label>`).join('')}
+         <span class="fine-row-date">Round ${escapeHtml(f.date)}${f.predicted ? '<span class="muted small" style="display:block;">Amount not in the Sheet yet</span>' : ''}</span><span class="fine-row-amt">${fmtMoney(f.amount)}</span></label>`).join('')}
        <button type="button" class="drop-pick-btn fine-confirm-btn" id="fineAckConfirm">${selectedTotal ? `Confirm ${fmtMoney(selectedTotal)} paid` : 'Tick the fines you\'ve paid'}</button>`
     : `<div class="drop-pick-existing-card"><p style="margin:0; color:var(--good); font-weight:500;">All square - nothing owing this season.</p></div>`;
   const paidBlock = paid.length
@@ -6610,7 +6675,7 @@ function applyFinePaidLocally(fine, paidOn) {
   const row = fine.rowRef && fine.rowRef.row;
   if (!row) return;
   row['Date MM / Fine Paid'] = paidOn;
-  if (paidOn && !(Number(row.Fines) > 0)) row.Fines = fine.amount;
+  if (paidOn && !(fineAmountOf(row.Fines) > 0)) row.Fines = fine.amount;
 }
 
 async function confirmFineAck() {
@@ -6749,5 +6814,452 @@ function applyPhoneLayout() {
     });
   });
 }
+
+
+// ==========================================================================
+// AGM Report (v7.5, Oct 2026)
+// A temporary report page for AGM week. Every figure is calculated live
+// from the Sheet with the Hub's own functions (Presidential race, teams,
+// records, fines), so it always matches the rest of the Hub. Everything
+// written - narratives, nicknames, highlights, the AGM date - comes from the
+// "AGM Report" tab via the Drop a Pick Web App (AgmReport.gs); Code.gs is
+// untouched.
+//
+// Members only see it during AGM week: from the "agm_start" date in the tab
+// for "agm_days" days (default 7), via a gold banner on the Dashboard.
+// Any time before that, the Hub address + #agm-preview opens a preview,
+// where anything not yet written shows in red.
+// ==========================================================================
+
+state.agm = { loaded: false, loading: false, rows: [], error: null, preview: location.hash === '#agm-preview', presentIndex: 0 };
+
+async function loadAgmReport() {
+  if (state.agm.loading) return;
+  state.agm.loading = true;
+  try {
+    const res = await fetch(`${PICK_ENTRY_API_URL}?action=agmReport&v=${Date.now()}`, { cache: 'no-store' });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    state.agm.rows = Array.isArray(json.rows) ? json.rows : [];
+    state.agm.error = null;
+  } catch (error) {
+    state.agm.error = error.message || String(error);
+    console.warn('AGM report text could not be loaded:', error);
+  }
+  state.agm.loaded = true;
+  state.agm.loading = false;
+  if (state.page === 'dashboard' || state.page === 'agmreport') render();
+}
+
+// Tab rows: Type | Key | Title | Text | Who | Status
+function agmContent() {
+  const c = { settings: {}, sections: {}, highlights: [], moments: [], members: {}, actions: [], prizes: [] };
+  state.agm.rows.forEach(row => {
+    const type = clean(row.type).toLowerCase();
+    const key = clean(row.key);
+    const item = { key, title: clean(row.title), text: clean(row.text), who: clean(row.who), status: clean(row.status) };
+    if (type === 'setting') c.settings[key.toLowerCase()] = item.text;
+    else if (type === 'section') c.sections[key.toLowerCase()] = item;
+    else if (type === 'highlight' && (item.title || item.text)) c.highlights.push(item);
+    else if (type === 'moment' && (item.title || item.text)) c.moments.push(item);
+    else if (type === 'member') c.members[key.toUpperCase()] = item;
+    else if (type === 'action' && item.title) c.actions.push(item);
+    else if (type === 'prize' && item.title) c.prizes.push(item);
+  });
+  return c;
+}
+
+function agmWindow(settings) {
+  const start = parseDMY(settings.agm_start || '');
+  if (!start) return null;
+  const days = Number(settings.agm_days) || 7;
+  const end = new Date(start.getTime() + days * 86400000);
+  return { start, end, open: Date.now() >= start.getTime() && Date.now() < end.getTime() };
+}
+
+function agmVisible() {
+  if (state.agm.preview) return true;
+  const w = agmWindow(agmContent().settings);
+  return Boolean(w && w.open);
+}
+
+function agmBannerHtml() {
+  if (!state.agm.loaded || !agmVisible()) return '';
+  const s = agmContent().settings;
+  const label = state.agm.preview && !(agmWindow(s) || {}).open ? 'Preview: AGM report' : `AGM ${agmYear(s)} report is here`;
+  const sub = [s.venue, state.agm.preview ? 'only you can see this preview' : 'available this week only'].filter(Boolean).join(' · ');
+  return `<button type="button" class="agm-banner" id="agmBanner"><span><b>${escapeHtml(label)}</b><small>${escapeHtml(sub)}</small></span><span class="agm-banner-go">Open</span></button>`;
+}
+
+// AGM year: from the AGM date if set, otherwise the end year of the season
+// being reported on (2026/27 -> 2027).
+function agmYear(settings) {
+  const w = agmWindow(settings);
+  if (w) return w.start.getFullYear();
+  const m = String(settings.season || currentYear(state.raw) || '').match(/^(\d{4})\/(\d{2})$/);
+  return m ? Number(m[1]) + 1 : '';
+}
+function agmDate(dmy) {
+  const d = parseDMY(dmy);
+  return d ? d.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }) : dmy;
+}
+
+function openAgmReport() {
+  state.page = 'agmreport';
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === 'dashboard'));
+  history.pushState({ page: 'agmreport' }, '');
+  render();
+  window.scrollTo(0, 0);
+}
+
+// ---------- writing helpers ----------
+// Text from the tab is plain text; blank lines start a new paragraph.
+function agmParagraphs(text) {
+  return String(text).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+    .map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('');
+}
+function agmMissing(what) {
+  return state.agm.preview ? `<p class="agm-stale">Not written yet: ${escapeHtml(what)} (AGM Report tab)</p>` : '';
+}
+function agmWriting(item, what) {
+  if (item && item.text) return agmParagraphs(item.text);
+  return agmMissing(what);
+}
+
+// ---------- calculations ----------
+const agmMoney = n => `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const agmOdds = n => `$${Number(n).toFixed(2)}`;
+function agmArrow(cur, prev, higherIsBetter = true) {
+  if (prev == null || !Number.isFinite(prev) || cur === prev) return '';
+  const up = cur > prev;
+  return `<span class="${up === higherIsBetter ? 'agm-up' : 'agm-down'}">${up ? '▲' : '▼'}</span> `;
+}
+function agmMode(values) {
+  const counts = {};
+  values.forEach(v => { if (v) counts[v] = (counts[v] || 0) + 1; });
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return top ? { value: top[0], count: top[1] } : null;
+}
+function agmDisplayName(code, presidentCode) {
+  const nick = MEMBER_NICKNAMES[code];
+  const base = nick ? `${code} ${nick === 'Te Pioneer' ? 'Te Pioneer' : 'the ' + nick}` : code;
+  return code === presidentCode ? `President ${base}` : base;
+}
+function agmBlock(rows) {
+  const resulted = rows.filter(r => r.win || r.loss);
+  const wins = resulted.filter(r => r.win);
+  const odds = resulted.filter(r => Number.isFinite(r.odds));
+  const winOdds = wins.filter(r => Number.isFinite(r.odds));
+  const mm = computeTeamMM(resulted);
+  return {
+    resulted, wins: wins.length, picks: resulted.length,
+    sr: resulted.length ? wins.length / resulted.length : 0,
+    revenue: resulted.reduce((s, r) => s + (r.mmReturn || 0), 0),
+    mmDropped: mm.size, mmWon: [...mm.values()].filter(e => e.successful).length,
+    avgOdds: odds.length ? odds.reduce((s, r) => s + r.odds, 0) / odds.length : 0,
+    avgWinOdds: winOdds.length ? winOdds.reduce((s, r) => s + r.odds, 0) / winOdds.length : 0,
+    rounds: roundDatesSorted(resulted),
+  };
+}
+
+function agmData() {
+  const content = agmContent();
+  const s = content.settings;
+  const season = s.season || currentYear(state.raw);
+  const { current, previous } = seasonToDateComparison(season);
+  const cur = agmBlock(current);
+  const prev = previous ? agmBlock(previous) : null;
+  const real = current.filter(isRealPick);
+  const presidentCode = clean(s.president).toUpperCase();
+  const race = presidentialRace(current);
+  const teams = teamStats(current);
+  const teamPickSuccess = name => {
+    const rows = cur.resulted.filter(r => TEAM_MAP[r.member] === name);
+    return rows.length ? rows.filter(r => r.win).length / rows.length : 0;
+  };
+
+  // Strike rate by syndicate year, every season in the data.
+  const bySeason = {};
+  state.raw.forEach(r => {
+    if (!(r.win || r.loss)) return;
+    const key = normalisedSeason(r.year);
+    if (!bySeason[key]) bySeason[key] = { season: key, wins: 0, picks: 0 };
+    bySeason[key].picks += 1;
+    if (r.win) bySeason[key].wins += 1;
+  });
+  const history = Object.values(bySeason).filter(x => x.picks >= 20)
+    .sort((a, b) => seasonStart(a.season) - seasonStart(b.season)).slice(-15)
+    .map(x => ({ ...x, sr: x.wins / x.picks, current: seasonEqual(x.season, season) }));
+
+  // Members, in ladder order.
+  const members = race.map((row, i, arr) => {
+    const picks = cur.resulted.filter(r => r.member === row.name).sort(comparePickOrder);
+    const wins = picks.filter(r => r.win);
+    let run = 0, best = 0;
+    picks.forEach(r => { if (r.win) { run += 1; best = Math.max(best, run); } else run = 0; });
+    const big = picks.filter(r => Number.isFinite(r.odds) && r.odds >= 2);
+    const team = teams.find(t => t.name === TEAM_MAP[row.name]);
+    const favPick = agmMode(picks.map(r => r.name));
+    const tied = arr.filter(x => x.points === row.points).length > 1;
+    const pos = arr.findIndex(x => x.points === row.points) + 1;
+    return {
+      code: row.name, name: agmDisplayName(row.name, presidentCode),
+      pos: `${tied ? '=' : ''}${pos}${['th', 'st', 'nd', 'rd'][(pos % 100 > 10 && pos % 100 < 14) ? 0 : Math.min(pos % 10, 4) % 4] || 'th'}`,
+      points: row.points, wins: wins.length, picks: picks.length,
+      sr: picks.length ? wins.length / picks.length : 0,
+      mmWon: team ? team.mmWon : 0, best,
+      big: `${big.filter(r => r.win).length}-${big.filter(r => r.loss).length}`,
+      avgOdds: picks.length ? picks.reduce((s2, r) => s2 + (r.odds || 0), 0) / picks.length : 0,
+      bestWin: wins.length ? Math.max(...wins.map(r => r.odds || 0)) : 0,
+      favSport: (agmMode(picks.map(r => r.sport)) || {}).value || '-',
+      favPick: favPick && favPick.count > 1 ? `${favPick.value} (${favPick.count})` : `${picks.length} different picks`,
+      writing: content.members[row.name] || null,
+    };
+  });
+
+  // Finance (current season).
+  const fines = currentSeasonFines(state.raw).members.flatMap(m => m.fines);
+  const finesCollected = fines.filter(f => f.paid).reduce((x, f) => x + f.amount, 0);
+  const owing = fines.filter(f => !f.paid);
+  const mmCosts = cur.rounds.length * MM_COST_TEAM_COUNT * MM_COST_PER_TEAM_PER_WEEK;
+
+  // Records.
+  const fmtOddsRec = rec => {
+    if (!rec) return '-';
+    const who = [...new Set(rec.matches.map(r => r.member))].join(' and ');
+    const one = rec.matches.length === 1 ? rec.matches[0] : null;
+    return `${agmOdds(rec.odds)} · ${who}${one ? ` (${one.name}, ${agmDate(one.date)})` : ''}`;
+  };
+  const streakRec = rec => rec && rec.streak ? `${rec.streak} · ${rec.members.join(', ')}` : '-';
+  const winPct = bestWinPercentRecord(real.filter(r => r.win || r.loss), 1);
+  const mostWins = mostWinsRecord(real.filter(r => r.win || r.loss));
+  const killers = memberFieldLeaderboard(current, 'mmKiller');
+  const lonesome = fieldEventTotal(current, 'lonesomeLoser');
+  const all = recordsPool(false);
+  const annual = bestAnnualWinPercentRecord(all, 10);
+  const seasonRecords = [
+    ['Highest successful odds', fmtOddsRec(extremeOddsRecord(real, true, 'max'))],
+    ['Lowest cracked odds', fmtOddsRec(extremeOddsRecord(real, false, 'min'))],
+    ['Longest winning streak', streakRec(longestStreakRecord(real, true))],
+    ['Most wins', mostWins ? `${mostWins.wins} · ${mostWins.names.join(', ')}` : '-'],
+    ['Highest win %', winPct ? `${pct(winPct.success)} · ${winPct.names.join(', ')}` : '-'],
+    ['Most MM Killers', killers.count ? `${killers.count} · ${killers.members.join(', ')}` : '0'],
+    ['Lonesome Losers', lonesome.total ? `${lonesome.total} · ${lonesome.names.join(', ')}` : '0'],
+    ['Tier Crashers', String(tierCrasherCount(real))],
+    ['Perfect Rounds', String(perfectRoundCount(real))],
+  ];
+  const allTime = [
+    ['Highest successful odds', fmtOddsRec(extremeOddsRecord(all, true, 'max'))],
+    ['Longest winning streak', streakRec(longestStreakRecord(all, true))],
+    ['Longest losing streak', streakRec(longestStreakRecord(all, false))],
+    ['Highest annual win %', annual ? `${pct(annual.success)} · ${annual.member} (${annual.wins} of ${annual.picks}, ${annual.season})` : '-'],
+    ['Highest IM winnings', '$2,595 · TP'],
+  ];
+
+  return { content, s, season, cur, prev, presidentCode, race, teams, teamPickSuccess, history, members, finesCollected, owing, mmCosts, seasonRecords, allTime };
+}
+
+// ---------- rendering ----------
+function agmStrikeChart(history) {
+  const W = 640, H = 230, L = 34, R = 8, T = 22, B = 30;
+  const n = history.length || 1, bw = (W - L - R) / n, y = v => T + (H - T - B) * (1 - v / 0.8);
+  let s = `<svg class="agm-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Strike rate by syndicate year">`;
+  [0, 0.2, 0.4, 0.6, 0.8].forEach(t => { s += `<line class="g-line" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text class="g-txt" x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${Math.round(t * 100)}%</text>`; });
+  history.forEach((h, i) => {
+    const x = L + i * bw + bw * 0.16, w = bw * 0.68, v = Math.min(h.sr, 0.8);
+    const lab = h.season.replace(/^20(\d\d)\/(\d\d)$/, '$1/$2');
+    s += `<rect class="${h.current ? 'g-cur' : 'g-bar'}" x="${x}" y="${y(v)}" width="${w}" height="${y(0) - y(v)}" rx="3"/>`;
+    s += `<text class="g-txt" x="${x + w / 2}" y="${y(v) - 5}" text-anchor="middle">${Math.round(h.sr * 100)}</text>`;
+    s += `<text class="g-txt" x="${x + w / 2}" y="${H - 10}" text-anchor="middle">${lab}${h.current ? '*' : ''}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function agmSections() {
+  const d = agmData();
+  const { content, s, cur, prev } = d;
+  const sec = content.sections;
+  const asAt = cur.rounds.length ? `As at round ${cur.rounds.length} · ${agmDate(cur.rounds[cur.rounds.length - 1])}` : '';
+  const head = (eyebrow, title) => `<div class="agm-head"><span class="agm-eyebrow">${escapeHtml(eyebrow)}</span><h2>${escapeHtml(title)}</h2></div>`;
+  const out = [];
+  const w = agmWindow(s);
+  const dateLabel = w ? w.start.toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' }) : 'dates TBC';
+  const title = s.title ? escapeHtml(s.title) : (state.agm.preview ? '<span class="agm-stale">Season title not set</span>' : `${escapeHtml(d.season)} season`);
+  out.push(['Cover', `<section class="agm-sec agm-cover">
+    <span class="agm-eyebrow">AGM ${escapeHtml(agmYear(s) || '')}${s.venue ? ' · ' + escapeHtml(s.venue) : ''} · ${escapeHtml(dateLabel)}</span>
+    <h2>${title}</h2>
+    <span class="agm-sub">IQ2GQ ${escapeHtml(d.season)} Annual Performance Report${asAt ? ' · ' + escapeHtml(asAt) : ''}</span>
+    <span class="agm-motto">${escapeHtml(s.motto || '"Where intellect meets style"')}</span>
+    <div class="agm-cover-stats"><div><b>${agmMoney(cur.revenue)}</b><small>MM winnings</small></div><div><b>${pct(cur.sr)}</b><small>of all picks successful</small></div><div><b>${escapeHtml(d.presidentCode || '-')}</b><small>President ${escapeHtml(d.season)}</small></div></div>
+  </section>`]);
+
+  const vs = (label, curV, prevV, fmt, better = true) => prev ? `${agmArrow(curV, prevV, better)}${fmt(prevV)} ${label}` : '';
+  const glance = [
+    ['MM revenue', agmMoney(cur.revenue), vs('at the same point last year', cur.revenue, prev && prev.revenue, agmMoney)],
+    ['Strike rate', pct(cur.sr), vs('at the same point last year', cur.sr, prev && prev.sr, pct)],
+    ['Total picks', String(cur.picks), `${cur.rounds.length} rounds${cur.rounds[0] ? ' since ' + agmDate(cur.rounds[0]) : ''}`],
+    ['Successful picks', String(cur.wins), prev ? `${prev.wins} at the same point last year` : ''],
+    ['Successful MMs', `${cur.mmWon} of ${cur.mmDropped}`, prev ? `${prev.mmWon} of ${prev.mmDropped} at the same point last year` : ''],
+    ['Avg odds / win odds', `${agmOdds(cur.avgOdds)} / ${agmOdds(cur.avgWinOdds)}`, prev ? `${agmOdds(prev.avgOdds)} / ${agmOdds(prev.avgWinOdds)} last year` : ''],
+  ];
+  out.push(['Season at a glance', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`${d.season} regular season${asAt ? ' · ' + asAt : ''}`, 'Season at a glance')}
+    <div class="agm-stats">${glance.map(([k, v, c]) => `<div class="agm-stat"><span class="k">${k}</span><span class="v">${v}</span><span class="c">${c}</span></div>`).join('')}</div></section>`]);
+
+  if (sec.state_of_iq2gq || state.agm.preview) {
+    out.push(['State of IQ2GQ', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('Executive summary', 'State of IQ2GQ')}
+      <div class="agm-writing">${agmWriting(sec.state_of_iq2gq, 'state_of_iq2gq')}</div></section>`]);
+  }
+  if (content.highlights.length || state.agm.preview) {
+    out.push(['Season highlights', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head(d.season, 'Season highlights')}
+      ${content.highlights.length ? `<div class="agm-cards">${content.highlights.map(h => `<div class="agm-card"><b>${escapeHtml(h.title)}</b><span>${escapeHtml(h.text)}</span></div>`).join('')}</div>` : agmMissing('highlight rows')}</section>`]);
+  }
+  out.push(['Strike rate history', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head('By syndicate year', 'Strike rate history')}
+    ${agmStrikeChart(d.history)}<p class="agm-note">* ${escapeHtml(d.season)}${asAt ? ' (' + escapeHtml(asAt.toLowerCase()) + ')' : ''}</p></section>`]);
+  const acts = ['act_1', 'act_2', 'act_3', 'act_4'];
+  if (acts.some(k => sec[k] && sec[k].text) || state.agm.preview) {
+    out.push(['A season in four acts', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('The story of the season', 'A season in four acts')}
+      <div class="agm-writing">${acts.map((k, i) => sec[k] && sec[k].text ? `<p><b>${escapeHtml(sec[k].title || `Act ${i + 1}`)}.</b> ${escapeHtml(sec[k].text)}</p>` : agmMissing(k)).join('')}</div></section>`]);
+  }
+  const ladderRows = d.race.map((r, i, arr) => {
+    const tied = arr.filter(x => x.points === r.points).length > 1;
+    const pos = arr.findIndex(x => x.points === r.points) + 1;
+    return `<tr${i === 6 ? ' class="agm-cut"' : ''}><td>${tied ? '=' : ''}${pos}</td><td>${escapeHtml(agmDisplayName(r.name, d.presidentCode))}</td><td class="r">${r.points.toFixed(1)}</td><td>${i < 6 ? '<span class="agm-pill">Top six</span>' : '<span class="agm-pill out">Chasing</span>'}</td></tr>`;
+  }).join('');
+  const moments = content.moments.length
+    ? `<div class="agm-moments"><p class="agm-label">Moments that shaped the race</p>${content.moments.map(m => `<div class="agm-moment"><b>${escapeHtml(m.title)}</b><span>${escapeHtml(m.text)}</span></div>`).join('')}</div>`
+    : (state.agm.preview ? `<div class="agm-moments">${agmMissing('moment rows')}</div>` : '');
+  out.push(['Presidency race', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`Race for the Presidency${asAt ? ' · ' + asAt : ''}`, 'Presidency standings')}
+    <div class="agm-split"><div class="agm-tbl"><table><thead><tr><th>#</th><th>Member</th><th class="r">Points</th><th></th></tr></thead><tbody>${ladderRows}</tbody></table></div>${moments}</div></section>`]);
+  out.push(['Teams', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`Team championship${asAt ? ' · ' + asAt : ''}`, `${d.season} teams`)}
+    <div class="agm-tbl"><table><thead><tr><th>Team</th><th>Members</th><th class="r">MM wins</th><th class="r">MM winnings</th><th class="r">Pick success</th></tr></thead><tbody>
+    ${d.teams.map(t => `<tr><td>${t.name}</td><td>${t.members.join(', ')}</td><td class="r">${t.mmWon} of ${t.mmDropped}</td><td class="r">${agmMoney(t.winnings)}</td><td class="r">${pct(d.teamPickSuccess(t.name))}</td></tr>`).join('')}</tbody></table></div>
+    ${(sec.teams_comment && sec.teams_comment.text) || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.teams_comment, 'teams_comment')}</div>` : ''}</section>`]);
+
+  const memberCard = m => {
+    const team = DROP_PICK_TEAMS.find(t => t.members.includes(m.code));
+    const col = team ? team.color : '#ffffff', dark = team ? team.dark : '#002a5e';
+    const nick = m.writing && m.writing.title ? escapeHtml(m.writing.title) : (state.agm.preview ? '<span class="agm-stale">Nickname not set</span>' : '');
+    const why = m.writing && m.writing.text ? `<div class="agm-why">${escapeHtml(m.writing.text)}</div>` : (state.agm.preview ? '<div class="agm-why agm-stale">Why not written yet</div>' : '');
+    return `<div class="agm-member">
+      <div class="agm-m-top"><div class="agm-badge" style="color:${col};border-color:${col};background:${dark}">${m.code}</div>
+        <div class="agm-m-name"><b>${escapeHtml(m.name)}</b><i>${nick}</i></div><span class="agm-m-pos">${m.pos}</span></div>
+      <div class="agm-m-grid"><div><b>${m.wins}/${m.picks}</b><small>wins</small></div><div><b>${pct(m.sr)}</b><small>strike rate</small></div><div><b>${m.mmWon}</b><small>MM wins</small></div><div><b>${m.best}</b><small>best streak</small></div></div>
+      <div class="agm-m-line">$2+ picks <b>${m.big}</b> · avg odds <b>${agmOdds(m.avgOdds)}</b> · best win <b>${m.bestWin ? agmOdds(m.bestWin) : '-'}</b></div>
+      <div class="agm-m-line">Favourite sport <b>${escapeHtml(m.favSport)}</b> · <b>${escapeHtml(m.favPick)}</b></div>
+      ${why}</div>`;
+  };
+  for (let i = 0; i < d.members.length; i += 4) {
+    const part = i / 4 + 1, parts = Math.ceil(d.members.length / 4);
+    out.push([`Members ${part} of ${parts}`, `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`Member profiles · ${part} of ${parts}`, i === 0 ? 'Member profiles' : 'Member profiles (continued)')}
+      <div class="agm-members">${d.members.slice(i, i + 4).map(memberCard).join('')}</div></section>`]);
+  }
+
+  const ytd = cur.revenue + d.finesCollected - d.mmCosts;
+  const prizes = content.prizes.length ? content.prizes : [];
+  out.push(['Financial review', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`${d.season} financial review${asAt ? ' · ' + asAt : ''}`, 'Revenue, costs and prizes')}
+    <div class="agm-money">
+      <div class="agm-stat"><span class="k">MM winnings</span><span class="v">${agmMoney(cur.revenue)}</span><span class="c">${prev ? agmMoney(prev.revenue) + ' at this point last year' : ''}</span></div>
+      <div class="agm-stat"><span class="k">Fines collected</span><span class="v">${agmMoney(d.finesCollected)}</span><span class="c">${d.owing.length ? `${agmMoney(d.owing.reduce((x, f) => x + f.amount, 0))} still owing (${d.owing.length})` : 'Nothing owing'}</span></div>
+      <div class="agm-stat"><span class="k">MM costs</span><span class="v">${agmMoney(d.mmCosts)}</span><span class="c">${cur.rounds.length} rounds × ${MM_COST_TEAM_COUNT} teams × $${MM_COST_PER_TEAM_PER_WEEK}</span></div>
+      <div class="agm-stat"><span class="k">YTD position</span><span class="v">${ytd >= 0 ? '+' : ''}${agmMoney(ytd)}</span><span class="c">MM winnings + fines − MM costs</span></div>
+    </div>
+    <div class="agm-split">${prizes.length ? `<div class="agm-tbl"><table><thead><tr><th>Prize (AGM-agreed rules)</th><th class="r">Cap</th></tr></thead><tbody>${prizes.map(p => `<tr><td>${escapeHtml(p.title)}</td><td class="r">${escapeHtml(p.text)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${(sec.finance_comment && sec.finance_comment.text) || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.finance_comment, 'finance_comment')}</div>` : ''}</div></section>`]);
+
+  if (content.actions.length) {
+    out.push(['Matters arising', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('From the last AGM', 'Matters arising')}
+      <div class="agm-tbl"><table><thead><tr><th>Action</th><th>Who</th><th>What</th><th>Status</th></tr></thead><tbody>
+      ${content.actions.map(a => `<tr><td>${escapeHtml(a.title)}</td><td>${escapeHtml(a.who)}</td><td>${escapeHtml(a.text)}</td><td><span class="agm-pill${/done|complete/i.test(a.status) ? '' : ' out'}">${escapeHtml(a.status || 'To report')}</span></td></tr>`).join('')}</tbody></table></div></section>`]);
+  }
+  out.push(['Records', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head('Records celebration', 'Syndicate records')}
+    <div class="agm-records"><div><p class="agm-label">${escapeHtml(d.season)} season</p><ul class="agm-rec">${d.seasonRecords.map(([a, b]) => `<li><span>${a}</span><span>${escapeHtml(b)}</span></li>`).join('')}</ul></div>
+    <div><p class="agm-label">All time</p><ul class="agm-rec">${d.allTime.map(([a, b]) => `<li><span>${a}</span><span>${escapeHtml(b)}</span></li>`).join('')}</ul></div></div></section>`]);
+  return out;
+}
+
+function agmReportPage() {
+  setTimeout(bindAgmReport, 0);
+  if (!state.agm.loaded) {
+    if (!state.agm.loading) loadAgmReport();
+    return `<div class="agm agm-page"><p class="agm-loading">Loading the AGM report...</p></div>`;
+  }
+  if (!agmVisible()) {
+    return `<div class="page-header"><h1>AGM report</h1></div><div class="panel"><p class="muted">The AGM report isn't available right now.</p>
+      <button type="button" class="drop-pick-btn" id="agmBack">&larr; Back to Dashboard</button></div>`;
+  }
+  const sections = agmSections();
+  const notice = state.agm.preview
+    ? `<div class="agm-notice">Preview only. Members won't see this until AGM week${state.agm.error ? ` · Couldn't load the AGM Report tab (${escapeHtml(state.agm.error)}), so only calculated figures are shown` : ''}. Red text is still to write in the AGM Report tab.</div>`
+    : '';
+  return `<div class="agm agm-page">
+    <div class="agm-toolbar">
+      <button type="button" class="agm-btn" id="agmBack">&larr; Dashboard</button>
+      <button type="button" class="agm-btn gold" id="agmPdf">Download PDF</button>
+      <button type="button" class="agm-btn" id="agmPresent">Present</button>
+    </div>
+    ${notice}
+    <div class="agm-report">${sections.map(([, html]) => html).join('')}</div>
+  </div>`;
+}
+
+function bindAgmReport() {
+  const back = document.getElementById('agmBack');
+  if (back) back.onclick = () => { state.page = 'dashboard'; history.pushState({ page: 'dashboard' }, ''); render(); };
+  const pdf = document.getElementById('agmPdf');
+  if (pdf) pdf.onclick = () => {
+    document.body.classList.add('agm-printing');
+    const done = () => { document.body.classList.remove('agm-printing'); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    setTimeout(() => window.print(), 50);
+  };
+  const present = document.getElementById('agmPresent');
+  if (present) present.onclick = () => agmPresentOpen(0);
+}
+
+// ---------- Present mode: one section per screen ----------
+function agmPresentOpen(index) {
+  agmPresentClose();
+  const sections = agmSections();
+  const el = document.createElement('div');
+  el.id = 'agmPresentLayer';
+  el.className = 'agm agm-present';
+  el.innerHTML = `<div class="agm-stage">${sections.map(([name, html], i) => `<div class="agm-slide${i === index ? ' on' : ''}" data-name="${escapeHtml(name)}">${html}</div>`).join('')}</div>
+    <div class="agm-pbar"><button type="button" class="agm-btn" data-p="prev">&larr;</button><span class="agm-pcount"></span><button type="button" class="agm-btn" data-p="next">&rarr;</button><button type="button" class="agm-btn" data-p="close">Close</button></div>`;
+  document.body.appendChild(el);
+  document.body.classList.add('agm-presenting');
+  state.agm.presentIndex = index;
+  agmPresentShow(index);
+  el.querySelector('[data-p="prev"]').onclick = () => agmPresentShow(state.agm.presentIndex - 1);
+  el.querySelector('[data-p="next"]').onclick = () => agmPresentShow(state.agm.presentIndex + 1);
+  el.querySelector('[data-p="close"]').onclick = agmPresentClose;
+  let tx = null;
+  el.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) agmPresentShow(state.agm.presentIndex + (dx < 0 ? 1 : -1)); tx = null; });
+  if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+}
+function agmPresentShow(i) {
+  const slides = [...document.querySelectorAll('#agmPresentLayer .agm-slide')];
+  if (!slides.length) return;
+  const idx = Math.max(0, Math.min(slides.length - 1, i));
+  state.agm.presentIndex = idx;
+  slides.forEach((s, j) => s.classList.toggle('on', j === idx));
+  const count = document.querySelector('#agmPresentLayer .agm-pcount');
+  if (count) count.textContent = `${idx + 1} / ${slides.length} · ${slides[idx].dataset.name}`;
+}
+function agmPresentClose() {
+  const el = document.getElementById('agmPresentLayer');
+  if (el) el.remove();
+  document.body.classList.remove('agm-presenting');
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('agmPresentLayer')) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); agmPresentShow(state.agm.presentIndex + 1); }
+  if (e.key === 'ArrowLeft') agmPresentShow(state.agm.presentIndex - 1);
+  if (e.key === 'Escape') agmPresentClose();
+});
+window.addEventListener('hashchange', () => {
+  if (location.hash === '#agm-preview') { state.agm.preview = true; if (hubStarted) openAgmReport(); }
+});
 
 init();
