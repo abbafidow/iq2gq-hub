@@ -6921,8 +6921,9 @@ function agmParagraphs(text) {
 function agmMissing(what) {
   return state.agm.preview ? `<p class="agm-stale">Not written yet: ${escapeHtml(what)} (AGM Report tab)</p>` : '';
 }
-function agmWriting(item, what) {
+function agmWriting(item, what, auto) {
   if (item && item.text) return agmParagraphs(item.text);
+  if (auto) return agmAutoTag() + agmParagraphs(auto);
   return agmMissing(what);
 }
 
@@ -7056,7 +7057,194 @@ function agmData() {
     ['Highest IM winnings', '$2,595 · TP'],
   ];
 
-  return { content, s, season, cur, prev, presidentCode, race, teams, teamPickSuccess, history, members, finesCollected, owing, mmCosts, seasonRecords, allTime };
+  const data = { content, s, season, cur, prev, presidentCode, race, teams, teamPickSuccess, history, members, finesCollected, owing, mmCosts, seasonRecords, allTime };
+  data.auto = agmAuto(data, current);
+  return data;
+}
+
+
+// ---------- Auto-written text (v7.6) ----------
+// Plain-English text built from the same figures the report shows. Used
+// only where the matching AGM Report tab cell is empty - anything typed in
+// the tab always wins. In the preview, auto text carries an "Auto-written"
+// tag so it's clear what still could be personalised.
+const AGM_ACT_WORDS = ['one', 'two', 'three', 'four'];
+const AGM_QUARTER_MONTHS = { Q1: 'August to October', Q2: 'November to January', Q3: 'February to April', Q4: 'May to July' };
+
+function agmQuarterOf(r) {
+  const q = clean(r.row && r.row.Quarter).toUpperCase();
+  if (/^Q[1-4]$/.test(q)) return q;
+  const d = parseDMY(r.date);
+  if (!d) return '';
+  const m = d.getMonth() + 1; // syndicate year runs August to July
+  return m >= 8 && m <= 10 ? 'Q1' : (m >= 11 || m === 1) ? 'Q2' : m <= 4 ? 'Q3' : 'Q4';
+}
+function agmJoin(list) {
+  if (list.length <= 1) return list.join('');
+  return `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
+}
+function agmPositions(race) {
+  const pos = {};
+  race.forEach(r => { pos[r.name] = race.findIndex(x => x.points === r.points) + 1; });
+  return pos;
+}
+function agmLeaders(race, nameOf) {
+  if (!race.length) return null;
+  const top = race[0].points;
+  const leaders = race.filter(r => r.points === top).map(r => nameOf(r.name));
+  const nextPts = (race.find(r => r.points < top) || {}).points;
+  const chasers = nextPts == null ? [] : race.filter(r => r.points === nextPts).map(r => nameOf(r.name));
+  const bottomPts = race[race.length - 1].points;
+  const bottom = race.filter(r => r.points === bottomPts).map(r => nameOf(r.name));
+  return { leaders, top, chasers, nextPts, bottom, bottomPts };
+}
+
+function agmAuto(d, current) {
+  const nameOf = code => agmDisplayName(code, d.presidentCode);
+  const cur = d.cur;
+  const out = { acts: [null, null, null, null], moments: [], highlights: [], why: {} };
+  const ord = (a, b) => (parseDMY(a.date) || 0) - (parseDMY(b.date) || 0);
+  const resulted = cur.resulted.slice().sort(ord);
+  if (!resulted.length) return out;
+  const lastDate = parseDMY(resulted[resulted.length - 1].date);
+  const lead = agmLeaders(d.race, nameOf);
+  const ytd = cur.revenue + d.finesCollected - d.mmCosts;
+
+  // State of IQ2GQ
+  out.state = `${cur.rounds.length} rounds into ${d.season}, the Syndicate has landed ${cur.wins} winners from ${cur.picks} picks (${pct(cur.sr)})`
+    + (d.prev ? `, ${cur.sr >= d.prev.sr ? 'up on' : 'down on'} ${pct(d.prev.sr)} at the same point last year` : '') + '. '
+    + `${cur.mmWon} of ${cur.mmDropped} MMs have landed, returning ${agmMoney(cur.revenue)}`
+    + (d.prev ? ` against ${agmMoney(d.prev.revenue)} at this stage last season` : '') + '. '
+    + `With ${agmMoney(d.finesCollected)} in fines collected and ${agmMoney(d.mmCosts)} spent on MM drops, the Syndicate is ${agmMoney(Math.abs(ytd))} ${ytd >= 0 ? 'in front' : 'behind'} for the year.`
+    + (lead ? ` ${agmJoin(lead.leaders)} ${lead.leaders.length > 1 ? 'share' : 'leads'} the Presidency race on ${lead.top.toFixed(1)} points.` : '');
+
+  // A season in four acts - one per quarter of the syndicate year
+  let prevLeaders = null, prevQSr = null;
+  ['Q1', 'Q2', 'Q3', 'Q4'].forEach((q, i) => {
+    const rows = resulted.filter(r => agmQuarterOf(r) === q);
+    if (!rows.length) return;
+    const qLast = parseDMY(rows[rows.length - 1].date);
+    const laterExists = resulted.some(r => ['Q1', 'Q2', 'Q3', 'Q4'].indexOf(agmQuarterOf(r)) > i);
+    const finished = laterExists;
+    const wins = rows.filter(r => r.win).length;
+    const sr = wins / rows.length;
+    const byMember = {};
+    rows.forEach(r => { if (!byMember[r.member]) byMember[r.member] = { w: 0, n: 0 }; byMember[r.member].n += 1; if (r.win) byMember[r.member].w += 1; });
+    const bestW = Math.max(...Object.values(byMember).map(x => x.w));
+    const stars = Object.entries(byMember).filter(([, x]) => x.w === bestW);
+    const qTeams = teamStats(rows).filter(t => t.mmDropped).sort((a, b) => b.mmWon - a.mmWon || b.winnings - a.winnings);
+    const qMM = qTeams.reduce((s, t) => s + t.mmWon, 0);
+    const rounds = {};
+    rows.forEach(r => { if (!rounds[r.date]) rounds[r.date] = { w: 0, n: 0 }; rounds[r.date].n += 1; if (r.win) rounds[r.date].w += 1; });
+    const roundList = Object.entries(rounds).sort((a, b) => b[1].w - a[1].w || (parseDMY(a[0]) - parseDMY(b[0])));
+    const best = roundList[0], worst = roundList[roundList.length - 1];
+    const bigWins = rows.filter(r => r.win && r.odds >= 2);
+    const raceAt = presidentialRace(current.filter(r => { const dt = parseDMY(r.date); return dt && dt <= qLast; }));
+    const qLead = agmLeaders(raceAt, nameOf);
+    const leaderKey = qLead ? qLead.leaders.join('|') : '';
+    const verb = !prevLeaders ? (qLead.leaders.length > 1 ? 'set the pace' : 'sets the pace') : prevLeaders === leaderKey ? 'hold on'.replace('hold', qLead.leaders.length > 1 ? 'hold' : 'holds') : (qLead.leaders.length > 1 ? 'take control' : 'takes control');
+    const title = `Act ${AGM_ACT_WORDS[i]}: ${agmJoin(qLead.leaders)} ${verb}${finished ? '' : ' (so far)'}`;
+    let text = `${finished ? '' : 'So far, '}${AGM_QUARTER_MONTHS[q]} ${finished ? 'produced' : 'has produced'} ${wins} winners from ${rows.length} picks (${pct(sr)})`
+      + (prevQSr != null ? `, ${sr >= prevQSr ? 'up on' : 'down on'} ${pct(prevQSr)} the quarter before` : '') + '. ';
+    text += `${agmJoin(stars.map(([m]) => nameOf(m)))} led the way with ${bestW} from ${stars[0][1].n}. `;
+    if (qTeams.length && qTeams[0].mmWon) text += `${qTeams[0].name} landed ${qTeams[0].mmWon} of the quarter's ${qMM} winning MMs. `;
+    text += `The best round was ${agmDate(best[0])} with ${best[1].w} from ${best[1].n}`;
+    if (worst && worst[0] !== best[0]) text += `, the worst ${agmDate(worst[0])} with just ${worst[1].w}`;
+    text += '. ';
+    if (bigWins.length) text += `$2+ winners: ${agmJoin(bigWins.map(r => `${r.member} with ${r.name} @ ${agmOdds(r.odds)}`))}. `;
+    text += `${finished ? 'At the end of the quarter' : 'Right now'}, ${agmJoin(qLead.leaders)} ${qLead.leaders.length > 1 ? 'shared' : 'led'} the Presidency race on ${qLead.top.toFixed(1)} points`
+      + (qLead.chasers.length ? `, ahead of ${agmJoin(qLead.chasers)} (${qLead.nextPts.toFixed(1)})` : '')
+      + `, while ${agmJoin(qLead.bottom)} ${qLead.bottom.length > 1 ? 'sat' : 'sat'} last on ${qLead.bottomPts.toFixed(1)}.`;
+    if (!finished) text = text.replace(/ shared the Presidency/, ' share the Presidency').replace(/ led the Presidency/, ' leads the Presidency').replace(/ sat last/, ' sit last');
+    out.acts[i] = { title, text };
+    prevLeaders = leaderKey; prevQSr = sr;
+  });
+
+  // Moments that shaped the race
+  const real = resulted.filter(isRealPick);
+  const mmTop = real.filter(r => r.mmReturn > 0).sort((a, b) => b.mmReturn - a.mmReturn)[0];
+  if (mmTop) out.moments.push({ date: mmTop.date, title: 'Biggest MM of the season', text: `${TEAM_MAP[mmTop.member] || mmTop.member} landed the season's biggest MM on ${agmDate(mmTop.date)}, returning ${agmMoney(mmTop.mmReturn)}.` });
+  const hiWin = real.filter(r => r.win && Number.isFinite(r.odds)).sort((a, b) => b.odds - a.odds)[0];
+  if (hiWin) out.moments.push({ date: hiWin.date, title: `${hiWin.member} lands ${agmOdds(hiWin.odds)}`, text: `${hiWin.name} ${hiWin.betType} @ ${agmOdds(hiWin.odds)} (${agmDate(hiWin.date)}) is the highest-priced winner of the season${hiWin.odds >= 2 ? ', worth 3 bonus Presidency points' : ''}.` });
+  const bigMiss = real.filter(r => r.loss && r.odds >= 2).sort((a, b) => b.odds - a.odds)[0];
+  if (bigMiss) out.moments.push({ date: bigMiss.date, title: `${bigMiss.member} goes big on ${bigMiss.name}`, text: `${bigMiss.name} ${bigMiss.betType} @ ${agmOdds(bigMiss.odds)} (${agmDate(bigMiss.date)}) missed, costing 3 Presidency points.` });
+  const lowLoss = real.filter(r => r.loss && Number.isFinite(r.odds)).sort((a, b) => a.odds - b.odds)[0];
+  if (lowLoss) {
+    const same = real.filter(r => r.loss && r.odds === lowLoss.odds && r.date === lowLoss.date && r.name === lowLoss.name);
+    const killer = same.find(r => r.mmKiller);
+    out.moments.push({ date: lowLoss.date, title: `${lowLoss.name} crack at ${agmOdds(lowLoss.odds)}`, text: `${agmJoin(same.map(r => r.member))} backed ${lowLoss.name} @ ${agmOdds(lowLoss.odds)} (${agmDate(lowLoss.date)}) and ${same.length > 1 ? 'both went' : 'went'} down, the shortest odds to fail all season.${killer ? ` ${killer.member} was named MM Killer.` : ''}` });
+  }
+  // Biggest single-round climb in the Presidency race
+  let jump = null, prevPos = null;
+  cur.rounds.forEach(date => {
+    const dt = parseDMY(date);
+    const pos = agmPositions(presidentialRace(current.filter(r => { const x = parseDMY(r.date); return x && x <= dt; })));
+    if (prevPos) Object.keys(pos).forEach(m => {
+      const climb = (prevPos[m] || pos[m]) - pos[m];
+      if (climb >= 3 && (!jump || climb > jump.climb)) jump = { member: m, climb, from: prevPos[m], to: pos[m], date };
+    });
+    prevPos = pos;
+  });
+  if (jump && out.moments.length < 5) out.moments.push({ date: jump.date, title: `${jump.member} climbs ${jump.climb} places`, text: `The round on ${agmDate(jump.date)} lifted ${nameOf(jump.member)} from ${jump.from}${agmSuffix(jump.from)} to ${jump.to}${agmSuffix(jump.to)} in the Presidency race, the biggest single-round climb of the season.` });
+  out.moments = out.moments.slice(0, 4).sort((a, b) => (parseDMY(a.date) || 0) - (parseDMY(b.date) || 0));
+
+  // Season highlights
+  if (lead) out.highlights.push({ title: `${agmJoin(lead.leaders)} ${lead.leaders.length > 1 ? 'lead' : 'leads'} the way`, text: `Top of the Presidency race on ${lead.top.toFixed(1)} points` });
+  const topTeam = d.teams.slice().sort((a, b) => b.mmWon - a.mmWon || b.winnings - a.winnings)[0];
+  if (topTeam && topTeam.mmWon) out.highlights.push({ title: `${topTeam.name} out in front`, text: `${topTeam.mmWon} of ${cur.mmWon} winning MMs and ${agmMoney(topTeam.winnings)}` });
+  const fav = agmMode(real.map(r => r.name.replace(/^New Zealand Warriors$/, 'NZ Warriors')));
+  if (fav && fav.count > 2) {
+    const favWins = real.filter(r => r.name.replace(/^New Zealand Warriors$/, 'NZ Warriors') === fav.value && r.win).length;
+    out.highlights.push({ title: `${fav.value} the favourite`, text: `Picked ${fav.count} times, landing ${favWins}` });
+  }
+  const perfect = perfectRoundCount(real);
+  if (perfect) out.highlights.push({ title: `${perfect} Perfect Round${perfect > 1 ? 's' : ''}`, text: 'Every member landed their pick' });
+  else {
+    const rounds = {};
+    real.forEach(r => { if (!rounds[r.date]) rounds[r.date] = { w: 0, n: 0 }; rounds[r.date].n += 1; if (r.win) rounds[r.date].w += 1; });
+    const closest = Object.entries(rounds).sort((a, b) => b[1].w - a[1].w)[0];
+    if (closest) out.highlights.push({ title: 'Still no Perfect Round', text: `Closest so far: ${closest[1].w} from ${closest[1].n} on ${agmDate(closest[0])}` });
+  }
+
+  // Teams and finance comments
+  const teamsSorted = d.teams.slice().sort((a, b) => b.mmWon - a.mmWon || b.winnings - a.winnings);
+  if (teamsSorted.length) {
+    const t1 = teamsSorted[0], t2 = teamsSorted[1], tl = teamsSorted[teamsSorted.length - 1];
+    out.teams = `${t1.name} (${t1.members.join(', ')}) leads the team race, landing ${t1.mmWon} of ${t1.mmDropped} MMs for ${agmMoney(t1.winnings)}`
+      + (t2 ? `, ahead of ${t2.name} on ${t2.mmWon} (${agmMoney(t2.winnings)})` : '') + '. '
+      + (tl && tl !== t1 ? `${tl.name} (${tl.members.join(', ')}) has landed ${tl.mmWon}.` : '');
+  }
+  const ratio = d.mmCosts ? cur.revenue / d.mmCosts : 0;
+  out.finance = `MM returns are covering ${agmMoney(ratio)} for every $1 spent on MM drops (${agmMoney(cur.revenue)} from ${agmMoney(d.mmCosts)}). `
+    + `Fines collected (${agmMoney(d.finesCollected)}) leave the Syndicate ${agmMoney(Math.abs(ytd))} ${ytd >= 0 ? 'in front' : 'behind'}`
+    + (d.owing.length ? `, with ${agmMoney(d.owing.reduce((s, f) => s + f.amount, 0))} still owing.` : '.');
+
+  // Member "why" lines: this season against their career before it
+  d.members.forEach(m => {
+    const career = state.raw.filter(r => r.member === m.code && !seasonEqual(r.year, d.season) && (r.win || r.loss));
+    const cWins = career.filter(r => r.win).length;
+    const cOdds = career.filter(r => Number.isFinite(r.odds));
+    const parts = [];
+    parts.push(`${pct(m.sr)} this season${career.length >= 20 ? ` against a career ${pct(cWins / career.length)}` : ''}`
+      + (cOdds.length >= 20 ? `, average odds ${agmOdds(m.avgOdds)} (career ${agmOdds(cOdds.reduce((s, r) => s + r.odds, 0) / cOdds.length)})` : '') + '.');
+    const mine = real.filter(r => r.member === m.code);
+    const favPick = agmMode(mine.map(r => r.name));
+    if (favPick && favPick.count >= 2) parts.push(`${favPick.value} picked ${favPick.count === 2 ? 'twice' : favPick.count + ' times'} (${mine.filter(r => r.name === favPick.value && r.win).length} ${mine.filter(r => r.name === favPick.value && r.win).length === 1 ? 'win' : 'wins'}).`);
+    const kills = current.filter(r => r.mmKiller === m.code).length;
+    if (kills >= 2) parts.push(`${kills} MM Killers.`);
+    if (m.best >= 5) parts.push(`Best run: ${m.best} in a row.`);
+    if (m.big !== '0-0') parts.push(`$2+ picks ${m.big}.`);
+    out.why[m.code] = parts.join(' ');
+  });
+  return out;
+}
+function agmSuffix(n) {
+  const v = n % 100;
+  if (v > 10 && v < 14) return 'th';
+  return ['th', 'st', 'nd', 'rd'][n % 10] || 'th';
+}
+function agmAutoTag() {
+  return state.agm.preview ? '<span class="agm-auto">Auto-written</span>' : '';
 }
 
 // ---------- rendering ----------
@@ -7105,41 +7293,52 @@ function agmSections() {
   out.push(['Season at a glance', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`${d.season} regular season${asAt ? ' · ' + asAt : ''}`, 'Season at a glance')}
     <div class="agm-stats">${glance.map(([k, v, c]) => `<div class="agm-stat"><span class="k">${k}</span><span class="v">${v}</span><span class="c">${c}</span></div>`).join('')}</div></section>`]);
 
-  if (sec.state_of_iq2gq || state.agm.preview) {
+  if ((sec.state_of_iq2gq && sec.state_of_iq2gq.text) || d.auto.state || state.agm.preview) {
     out.push(['State of IQ2GQ', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('Executive summary', 'State of IQ2GQ')}
-      <div class="agm-writing">${agmWriting(sec.state_of_iq2gq, 'state_of_iq2gq')}</div></section>`]);
+      <div class="agm-writing">${agmWriting(sec.state_of_iq2gq, 'state_of_iq2gq', d.auto.state)}</div></section>`]);
   }
-  if (content.highlights.length || state.agm.preview) {
+  const highlights = content.highlights.length ? content.highlights : d.auto.highlights;
+  if (highlights.length || state.agm.preview) {
     out.push(['Season highlights', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head(d.season, 'Season highlights')}
-      ${content.highlights.length ? `<div class="agm-cards">${content.highlights.map(h => `<div class="agm-card"><b>${escapeHtml(h.title)}</b><span>${escapeHtml(h.text)}</span></div>`).join('')}</div>` : agmMissing('highlight rows')}</section>`]);
+      ${!content.highlights.length && highlights.length ? agmAutoTag() : ''}${highlights.length ? `<div class="agm-cards">${highlights.map(h => `<div class="agm-card"><b>${escapeHtml(h.title)}</b><span>${escapeHtml(h.text)}</span></div>`).join('')}</div>` : agmMissing('highlight rows')}</section>`]);
   }
   out.push(['Strike rate history', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head('By syndicate year', 'Strike rate history')}
     ${agmStrikeChart(d.history)}<p class="agm-note">* ${escapeHtml(d.season)}${asAt ? ' (' + escapeHtml(asAt.toLowerCase()) + ')' : ''}</p></section>`]);
   const acts = ['act_1', 'act_2', 'act_3', 'act_4'];
-  if (acts.some(k => sec[k] && sec[k].text) || state.agm.preview) {
+  const actHtml = (k, i) => {
+    if (sec[k] && sec[k].text) return `<p><b>${escapeHtml(sec[k].title || `Act ${AGM_ACT_WORDS[i]}`)}.</b> ${escapeHtml(sec[k].text)}</p>`;
+    const a = d.auto.acts[i];
+    if (a) return `<p>${agmAutoTag()}<b>${escapeHtml(a.title)}.</b> ${escapeHtml(a.text)}</p>`;
+    return state.agm.preview ? `<p class="agm-muted-note">Act ${AGM_ACT_WORDS[i]} (${AGM_QUARTER_MONTHS['Q' + (i + 1)]}) writes itself once Q${i + 1} results are in.</p>` : '';
+  };
+  if (acts.some((k, i) => (sec[k] && sec[k].text) || d.auto.acts[i]) || state.agm.preview) {
     out.push(['A season in four acts', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('The story of the season', 'A season in four acts')}
-      <div class="agm-writing">${acts.map((k, i) => sec[k] && sec[k].text ? `<p><b>${escapeHtml(sec[k].title || `Act ${i + 1}`)}.</b> ${escapeHtml(sec[k].text)}</p>` : agmMissing(k)).join('')}</div></section>`]);
+      <div class="agm-writing">${acts.map(actHtml).join('')}</div></section>`]);
   }
   const ladderRows = d.race.map((r, i, arr) => {
     const tied = arr.filter(x => x.points === r.points).length > 1;
     const pos = arr.findIndex(x => x.points === r.points) + 1;
     return `<tr${i === 6 ? ' class="agm-cut"' : ''}><td>${tied ? '=' : ''}${pos}</td><td>${escapeHtml(agmDisplayName(r.name, d.presidentCode))}</td><td class="r">${r.points.toFixed(1)}</td><td>${i < 6 ? '<span class="agm-pill">Top six</span>' : '<span class="agm-pill out">Chasing</span>'}</td></tr>`;
   }).join('');
-  const moments = content.moments.length
-    ? `<div class="agm-moments"><p class="agm-label">Moments that shaped the race</p>${content.moments.map(m => `<div class="agm-moment"><b>${escapeHtml(m.title)}</b><span>${escapeHtml(m.text)}</span></div>`).join('')}</div>`
+  const momentList = content.moments.length ? content.moments : d.auto.moments;
+  const moments = momentList.length
+    ? `<div class="agm-moments"><p class="agm-label">Moments that shaped the race ${!content.moments.length ? agmAutoTag() : ''}</p>${momentList.map(m => `<div class="agm-moment"><b>${escapeHtml(m.title)}</b><span>${escapeHtml(m.text)}</span></div>`).join('')}</div>`
     : (state.agm.preview ? `<div class="agm-moments">${agmMissing('moment rows')}</div>` : '');
   out.push(['Presidency race', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`Race for the Presidency${asAt ? ' · ' + asAt : ''}`, 'Presidency standings')}
     <div class="agm-split"><div class="agm-tbl"><table><thead><tr><th>#</th><th>Member</th><th class="r">Points</th><th></th></tr></thead><tbody>${ladderRows}</tbody></table></div>${moments}</div></section>`]);
   out.push(['Teams', `<section class="agm-sec"><span class="agm-src">From the Sheet</span>${head(`Team championship${asAt ? ' · ' + asAt : ''}`, `${d.season} teams`)}
     <div class="agm-tbl"><table><thead><tr><th>Team</th><th>Members</th><th class="r">MM wins</th><th class="r">MM winnings</th><th class="r">Pick success</th></tr></thead><tbody>
     ${d.teams.map(t => `<tr><td>${t.name}</td><td>${t.members.join(', ')}</td><td class="r">${t.mmWon} of ${t.mmDropped}</td><td class="r">${agmMoney(t.winnings)}</td><td class="r">${pct(d.teamPickSuccess(t.name))}</td></tr>`).join('')}</tbody></table></div>
-    ${(sec.teams_comment && sec.teams_comment.text) || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.teams_comment, 'teams_comment')}</div>` : ''}</section>`]);
+    ${(sec.teams_comment && sec.teams_comment.text) || d.auto.teams || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.teams_comment, 'teams_comment', d.auto.teams)}</div>` : ''}</section>`]);
 
   const memberCard = m => {
     const team = DROP_PICK_TEAMS.find(t => t.members.includes(m.code));
     const col = team ? team.color : '#ffffff', dark = team ? team.dark : '#002a5e';
     const nick = m.writing && m.writing.title ? escapeHtml(m.writing.title) : (state.agm.preview ? '<span class="agm-stale">Nickname not set</span>' : '');
-    const why = m.writing && m.writing.text ? `<div class="agm-why">${escapeHtml(m.writing.text)}</div>` : (state.agm.preview ? '<div class="agm-why agm-stale">Why not written yet</div>' : '');
+    const autoWhy = d.auto.why[m.code];
+    const why = m.writing && m.writing.text ? `<div class="agm-why">${escapeHtml(m.writing.text)}</div>`
+      : autoWhy ? `<div class="agm-why">${agmAutoTag()}${escapeHtml(autoWhy)}</div>`
+      : (state.agm.preview ? '<div class="agm-why agm-stale">Why not written yet</div>' : '');
     return `<div class="agm-member">
       <div class="agm-m-top"><div class="agm-badge" style="color:${col};border-color:${col};background:${dark}">${m.code}</div>
         <div class="agm-m-name"><b>${escapeHtml(m.name)}</b><i>${nick}</i></div><span class="agm-m-pos">${m.pos}</span></div>
@@ -7164,7 +7363,7 @@ function agmSections() {
       <div class="agm-stat"><span class="k">YTD position</span><span class="v">${ytd >= 0 ? '+' : ''}${agmMoney(ytd)}</span><span class="c">MM winnings + fines − MM costs</span></div>
     </div>
     <div class="agm-split">${prizes.length ? `<div class="agm-tbl"><table><thead><tr><th>Prize (AGM-agreed rules)</th><th class="r">Cap</th></tr></thead><tbody>${prizes.map(p => `<tr><td>${escapeHtml(p.title)}</td><td class="r">${escapeHtml(p.text)}</td></tr>`).join('')}</tbody></table></div>` : ''}
-    ${(sec.finance_comment && sec.finance_comment.text) || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.finance_comment, 'finance_comment')}</div>` : ''}</div></section>`]);
+    ${(sec.finance_comment && sec.finance_comment.text) || d.auto.finance || state.agm.preview ? `<div class="agm-writing">${agmWriting(sec.finance_comment, 'finance_comment', d.auto.finance)}</div>` : ''}</div></section>`]);
 
   if (content.actions.length) {
     out.push(['Matters arising', `<section class="agm-sec"><span class="agm-src w">Your writing</span>${head('From the last AGM', 'Matters arising')}
