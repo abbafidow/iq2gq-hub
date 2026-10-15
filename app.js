@@ -2648,6 +2648,34 @@ function perfectRoundCount(data) {
   return count;
 }
 
+// Same Perfect Round test as perfectRoundCount, tallied per syndicate year
+// and returning the best year(s) - backs the Records page "any season"
+// face (Oct 2026), replacing the old "most involved" member line.
+function perfectRoundBestSeason(data) {
+  const rosterBySeason = {};
+  data.forEach(r => {
+    const season = normalisedSeason(r.year);
+    if (!rosterBySeason[season]) rosterBySeason[season] = new Set();
+    rosterBySeason[season].add(r.member);
+  });
+  const bySeason = {};
+  Object.values(groupBy(data, 'date')).forEach(picks => {
+    const resulted = picks.filter(p => p.win || p.loss);
+    if (!resulted.length) return;
+    const season = normalisedSeason(resulted[0].year);
+    const roster = rosterBySeason[season] || new Set();
+    const membersWithResult = uniq(resulted.map(p => p.member));
+    const allRosterPlayed = [...roster].every(m => membersWithResult.includes(m));
+    if (allRosterPlayed && resulted.every(p => p.win)) bySeason[season] = (bySeason[season] || 0) + 1;
+  });
+  const entries = Object.entries(bySeason);
+  if (!entries.length) return { count: 0, seasons: [] };
+  const best = Math.max(...entries.map(([, n]) => n));
+  const seasons = entries.filter(([, n]) => n === best).map(([s]) => s)
+    .sort((a, b) => seasonStart(a) - seasonStart(b));
+  return { count: best, seasons };
+}
+
 // Every Perfect Round, by definition, includes the entire active roster
 // that day - so within a single season everyone's tied and a breakdown
 // says nothing new. But the roster has grown from ~6 to 12 over time, so a
@@ -3189,6 +3217,9 @@ function recordFlipTilesHtml(seasonData, allTimeData, cy) {
     recordRibbonTile('good', 'Highest winning percentage', winPctText(bestWinPercentRecord(seasonData, 1)), bestSeasonWinPctText(bestAnnualWinPercentRecord(allTimeData, 10)), false, cy),
     recordRibbonTile('good', 'Most wins', mostWinsText(mostWinsRecord(seasonData)), mostWinsSeasonText(mostWinsInSeasonRecord(allTimeData)), false, cy),
     recordRibbonTile('good', 'Highest earning team', teamText(topTeamSeason, currentRoster), teamSeasonText(bestTeamEver), false, cy),
+    // Moved here from Dashboard (Oct 2026). Front = this season's count,
+    // back = the syndicate year with the most Perfect Rounds.
+    recordRibbonTile('good', 'Perfect Rounds', perfectRoundSeasonParts(perfectRoundCount(seasonData)), perfectRoundBestParts(perfectRoundBestSeason(allTimeData)), false, cy),
     // Static - IMs aren't tracked in the Sheet, so this is a manually
     // maintained figure rather than something computed from the data, and
     // it's inherently a one-off (there's no "this season's IM Winnings"
@@ -3318,6 +3349,17 @@ items.push(['Longest winning streak', winStreak.streak ? `${winStreak.streak} - 
   const scopeClass = scope === 'current' ? 'record-gold-current' : 'record-gold-alltime';
   return `<div class="panel"><h2>${escapeHtml(title)}</h2><div class="record-list">${items.map(([label, value]) => `<div class="record-shield ${scopeClass}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div></div>`;
 }
+function perfectRoundSeasonParts(count) {
+  return count
+    ? { main: `${count} Perfect Round${count === 1 ? '' : 's'}`, detail: 'Every member successful' }
+    : { main: 'None yet', detail: 'Every member successful in one round' };
+}
+function perfectRoundBestParts(best) {
+  return best.count
+    ? { main: `${best.count} Perfect Round${best.count === 1 ? '' : 's'}`, detail: best.seasons.join(', ') }
+    : { main: 'None yet', detail: null };
+}
+
 function records(data) {
   const cy = currentYear(state.raw);
   const seasonData = recordsPool(true);
@@ -3739,7 +3781,7 @@ function financialTilesStrip(data, previousSeasonRows) {
   const tkSeasonData = recordsPool(true);
   const tkAllTimeData = recordsPool(false);
   const tierKillersCountThisYear = tierCrasherCount(tkSeasonData);
-  const perfectRoundsCountThisYear = perfectRoundCount(tkSeasonData);
+  // (Perfect Rounds moved on to the Records page's Honour row, Oct 2026.)
   // Hidden entirely until the event has actually happened this current
   // syndicate year - showing a permanent "0" tile for something that may
   // not occur most seasons reads as clutter rather than useful status;
@@ -3751,14 +3793,8 @@ function financialTilesStrip(data, previousSeasonRows) {
         allTimeDetail: leaderDetail(memberFlagLeaderboard(tkAllTimeData, 'tierKiller')),
       })
     : '';
-  const perfectRoundsTile = perfectRoundsCountThisYear
-    ? recordPlaqueTile('Perfect Rounds', String(perfectRoundsCountThisYear), String(perfectRoundCount(tkAllTimeData)), {
-        seasonDetail: 'Everyone active that day - no split within one season',
-        allTimeDetail: leaderDetail(perfectRoundMemberLeaderboard(tkAllTimeData)),
-      })
-    : '';
-  const tierKillersPanel = (tierKillersTile || perfectRoundsTile)
-    ? `<div class="panel">${recordMedalDefs()}<div class="record-row">${tierKillersTile}${perfectRoundsTile}</div></div>`
+  const tierKillersPanel = tierKillersTile
+    ? `<div class="panel">${recordMedalDefs()}<div class="record-row">${tierKillersTile}</div></div>`
     : '';
 
   setTimeout(bindFlipTiles, 0);
@@ -6245,6 +6281,7 @@ function dropPickTeamStatusHtml(teamComplete, teamStatus) {
     return `<div class="drop-pick-team-complete-card">
       <p style="margin:0 0 4px; font-weight:600; color:#04210f;">Your team's complete - place the bet!</p>
       <p style="margin:0; font-size:13px; color:#0a3a1f;">${teamStatus.map(t => escapeHtml(t.member)).join(', ')} have all dropped a pick this round. Time to put the bet on with the bookmaker.</p>
+      <div id="dropPickTeamPicks" class="drop-pick-team-picks"><p class="drop-pick-team-picks-note">Loading your team's picks...</p></div>
     </div>`;
   }
   const waiting = teamStatus.filter(t => !t.hasPicked).map(t => t.member);
@@ -6366,6 +6403,47 @@ async function submitDropPick(confirmOverwrite) {
     body: JSON.stringify(body),
   });
   return res.json();
+}
+
+// Team-complete card (Oct 2026): lists all three picks so whoever places
+// the bet doesn't need the Spreadsheet. The submitter's pick comes from the
+// form just sent; teammates' picks are fetched live via checkPick (the
+// already-loaded state.raw can be stale for picks dropped since page load).
+async function loadDropPickTeamPicks(member, form, teamStatus) {
+  const el = () => document.getElementById('dropPickTeamPicks');
+  const members = teamStatus.map(t => t.member);
+  let rows;
+  try {
+    rows = await Promise.all(members.map(async m => {
+      if (m === member) return { member: m, ...form };
+      try {
+        const check = await checkDropPickExisting(m);
+        return check && check.hasExistingPick ? { member: m, ...check.existingPick } : { member: m, missing: true };
+      } catch (e) {
+        return { member: m, missing: true };
+      }
+    }));
+  } catch (e) {
+    rows = null;
+  }
+  const target = el();
+  if (!target) return;
+  target.innerHTML = dropPickTeamPicksHtml(rows);
+}
+
+function dropPickTeamPicksHtml(rows) {
+  if (!rows || !rows.length) {
+    return `<p class="drop-pick-team-picks-note">Couldn't load the picks - check the Spreadsheet for this round.</p>`;
+  }
+  const items = rows.map(r => r.missing
+    ? `<li><span class="dptp-member">${escapeHtml(r.member)}</span><span class="dptp-pick muted">Couldn't load this pick</span></li>`
+    : `<li><span class="dptp-member">${escapeHtml(r.member)}</span><span class="dptp-pick"><strong>${escapeHtml(r.option || '')}</strong>${r.betType ? ` <span class="dptp-sub">${escapeHtml(r.betType)}</span>` : ''}${r.sport ? ` <span class="dptp-sub">· ${escapeHtml(r.sport)}</span>` : ''}</span><span class="dptp-odds">${escapeHtml(String(r.odds || ''))}</span></li>`
+  ).join('');
+  const odds = rows.map(r => Number(r.odds));
+  const combined = !rows.some(r => r.missing) && odds.every(o => Number.isFinite(o) && o > 1)
+    ? odds.reduce((a, b) => a * b, 1)
+    : null;
+  return `<ul class="drop-pick-team-picks-list">${items}</ul>${combined ? `<p class="drop-pick-team-picks-note">Multi odds approx. <strong>${combined.toFixed(2)}</strong> - check against the TAB before placing.</p>` : ''}`;
 }
 
 function resetDropPick() {
@@ -6504,6 +6582,7 @@ function bindDropAPick() {
             if (el) el.textContent = `${dp.member} - ${dp.form.option} - ${dp.form.betType} - ${dp.form.odds} - ${dp.form.sport}`;
             const statusEl = document.getElementById('dropPickTeamStatus');
             if (statusEl) statusEl.innerHTML = dropPickTeamStatusHtml(result.teamComplete, result.teamStatus);
+            if (result.teamComplete && result.teamStatus) loadDropPickTeamPicks(dp.member, { ...dp.form }, result.teamStatus);
           }, 0);
         } else {
           state.dropPick.step = 'form';
