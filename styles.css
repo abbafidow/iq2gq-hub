@@ -1432,6 +1432,16 @@ border: 1px solid rgba(255,255,255,0.10);
 .drop-pick-team-complete-card {
   background: var(--good); border-radius: 10px; padding: 14px; margin-top: 14px; text-align: left;
 }
+/* Team's picks listed inside the "place the bet" card (Oct 2026) */
+.drop-pick-team-picks { margin-top: 12px; background: rgba(255,255,255,0.55); border-radius: 8px; padding: 8px 10px; color: #04210f; }
+.drop-pick-team-picks-list { list-style: none; margin: 0; padding: 0; }
+.drop-pick-team-picks-list li { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(4,33,15,0.15); font-size: 13.5px; }
+.drop-pick-team-picks-list li:last-child { border-bottom: none; }
+.dptp-member { font-weight: 700; min-width: 2.2em; }
+.dptp-pick { flex: 1; line-height: 1.35; }
+.dptp-sub { font-size: 12px; color: #0a3a1f; }
+.dptp-odds { font-weight: 700; font-variant-numeric: tabular-nums; }
+.drop-pick-team-picks-note { margin: 6px 0 0; font-size: 12.5px; color: #0a3a1f; }
 
 /* Reusable info-icon caption toggle - full methodology text hidden by
    default, expands on click. Used across several panels to keep the
