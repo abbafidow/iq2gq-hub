@@ -3,17 +3,17 @@
     "sport": "Rugby International",
     "source": "TheSportsDB API, via scripts/update-sports-data.js",
     "description": "Men's rugby union test matches between two full national sides only (TheSportsDB league 5479, which also carries Rugby Championship fixtures). Tour games against clubs, invitational and \"A\"/XV sides are filtered out. Team names are stored as the country only (TheSportsDB's \" Rugby\" suffix removed). No manually-curated history behind this file - it started empty on 2026-09-24 and is built entirely from TheSportsDB, backfilled on its first run.",
-    "row_count": 375,
-    "last_auto_update": "2026-10-11",
+    "row_count": 376,
+    "last_auto_update": "2026-10-17",
     "last_auto_update_source": "TheSportsDB API, via scripts/update-sports-data.js"
   },
   "games": [
     {
-      "date": "2026-10-10",
-      "home_team": "New Zealand",
-      "away_team": "Australia",
-      "home_score": 48,
-      "away_score": 19,
+      "date": "2026-10-17",
+      "home_team": "Australia",
+      "away_team": "New Zealand",
+      "home_score": 21,
+      "away_score": 43,
       "home_odds": null,
       "away_odds": null
     },
@@ -27,10 +27,19 @@
       "away_odds": null
     },
     {
+      "date": "2026-10-10",
+      "home_team": "New Zealand",
+      "away_team": "Australia",
+      "home_score": 48,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2026-09-27",
       "home_team": "Australia",
       "away_team": "South Africa",
-      "home_score": 47,
+      "home_score": 42,
       "away_score": 38,
       "home_odds": null,
       "away_odds": null
@@ -48,7 +57,7 @@
       "date": "2026-09-27",
       "home_team": "Australia",
       "away_team": "South Africa",
-      "home_score": 42,
+      "home_score": 47,
       "away_score": 38,
       "home_odds": null,
       "away_odds": null
@@ -64,10 +73,10 @@
     },
     {
       "date": "2026-09-05",
-      "home_team": "Argentina",
-      "away_team": "Australia",
-      "home_score": 28,
-      "away_score": 28,
+      "home_team": "Japan",
+      "away_team": "Canada",
+      "home_score": 57,
+      "away_score": 12,
       "home_odds": null,
       "away_odds": null
     },
@@ -82,19 +91,10 @@
     },
     {
       "date": "2026-09-05",
-      "home_team": "Japan",
-      "away_team": "Canada",
-      "home_score": 57,
-      "away_score": 12,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-29",
       "home_team": "Argentina",
       "away_team": "Australia",
-      "home_score": 21,
-      "away_score": 27,
+      "home_score": 28,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -104,6 +104,15 @@
       "away_team": "New Zealand",
       "home_score": 33,
       "away_score": 26,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-08-29",
+      "home_team": "Argentina",
+      "away_team": "Australia",
+      "home_score": 21,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -118,15 +127,6 @@
     },
     {
       "date": "2026-08-15",
-      "home_team": "USA",
-      "away_team": "Argentina",
-      "home_score": 25,
-      "away_score": 24,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-08-15",
       "home_team": "Australia",
       "away_team": "Japan",
       "home_score": 56,
@@ -135,11 +135,11 @@
       "away_odds": null
     },
     {
-      "date": "2026-08-08",
-      "home_team": "Argentina",
-      "away_team": "South Africa",
-      "home_score": 10,
-      "away_score": 17,
+      "date": "2026-08-15",
+      "home_team": "USA",
+      "away_team": "Argentina",
+      "home_score": 25,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -153,38 +153,20 @@
       "away_odds": null
     },
     {
-      "date": "2026-07-18",
-      "home_team": "Japan",
-      "away_team": "France",
-      "home_score": 15,
-      "away_score": 32,
+      "date": "2026-08-08",
+      "home_team": "Argentina",
+      "away_team": "South Africa",
+      "home_score": 10,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2026-07-18",
-      "home_team": "New Zealand",
-      "away_team": "Ireland",
-      "home_score": 40,
-      "away_score": 21,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-18",
-      "home_team": "Australia",
-      "away_team": "Italy",
-      "home_score": 57,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-18",
-      "home_team": "Fiji",
-      "away_team": "Scotland",
-      "home_score": 17,
-      "away_score": 33,
+      "home_team": "Argentina",
+      "away_team": "England",
+      "home_score": 24,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -199,46 +181,46 @@
     },
     {
       "date": "2026-07-18",
-      "home_team": "Argentina",
-      "away_team": "England",
-      "home_score": 24,
-      "away_score": 31,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-11",
-      "home_team": "Japan",
-      "away_team": "Ireland",
-      "home_score": 20,
-      "away_score": 36,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-11",
-      "home_team": "New Zealand",
-      "away_team": "Italy",
-      "home_score": 47,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-11",
-      "home_team": "Australia",
-      "away_team": "France",
-      "home_score": 26,
-      "away_score": 42,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-11",
       "home_team": "Fiji",
-      "away_team": "England",
-      "home_score": 8,
-      "away_score": 73,
+      "away_team": "Scotland",
+      "home_score": 17,
+      "away_score": 33,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-18",
+      "home_team": "Australia",
+      "away_team": "Italy",
+      "home_score": 57,
+      "away_score": 10,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-18",
+      "home_team": "New Zealand",
+      "away_team": "Ireland",
+      "home_score": 40,
+      "away_score": 21,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-18",
+      "home_team": "Japan",
+      "away_team": "France",
+      "home_score": 15,
+      "away_score": 32,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-11",
+      "home_team": "Argentina",
+      "away_team": "Wales",
+      "home_score": 35,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -253,46 +235,46 @@
     },
     {
       "date": "2026-07-11",
-      "home_team": "Argentina",
-      "away_team": "Wales",
-      "home_score": 35,
-      "away_score": 21,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-04",
-      "home_team": "Japan",
-      "away_team": "Italy",
-      "home_score": 27,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-04",
-      "home_team": "New Zealand",
-      "away_team": "France",
-      "home_score": 34,
-      "away_score": 32,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-04",
-      "home_team": "Australia",
-      "away_team": "Ireland",
-      "home_score": 31,
-      "away_score": 33,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-07-04",
       "home_team": "Fiji",
-      "away_team": "Wales",
-      "home_score": 24,
-      "away_score": 39,
+      "away_team": "England",
+      "home_score": 8,
+      "away_score": 73,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-11",
+      "home_team": "Australia",
+      "away_team": "France",
+      "home_score": 26,
+      "away_score": 42,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-11",
+      "home_team": "New Zealand",
+      "away_team": "Italy",
+      "home_score": 47,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-11",
+      "home_team": "Japan",
+      "away_team": "Ireland",
+      "home_score": 20,
+      "away_score": 36,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-04",
+      "home_team": "Argentina",
+      "away_team": "Scotland",
+      "home_score": 38,
+      "away_score": 47,
       "home_odds": null,
       "away_odds": null
     },
@@ -307,19 +289,46 @@
     },
     {
       "date": "2026-07-04",
-      "home_team": "Argentina",
-      "away_team": "Scotland",
-      "home_score": 38,
-      "away_score": 47,
+      "home_team": "Fiji",
+      "away_team": "Wales",
+      "home_score": 24,
+      "away_score": 39,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-04",
+      "home_team": "Australia",
+      "away_team": "Ireland",
+      "home_score": 31,
+      "away_score": 33,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-04",
+      "home_team": "New Zealand",
+      "away_team": "France",
+      "home_score": 34,
+      "away_score": 32,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-07-04",
+      "home_team": "Japan",
+      "away_team": "Italy",
+      "home_score": 27,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2026-03-14",
-      "home_team": "Ireland",
-      "away_team": "Scotland",
-      "home_score": 43,
-      "away_score": 21,
+      "home_team": "France",
+      "away_team": "England",
+      "home_score": 48,
+      "away_score": 46,
       "home_odds": null,
       "away_odds": null
     },
@@ -334,19 +343,10 @@
     },
     {
       "date": "2026-03-14",
-      "home_team": "France",
-      "away_team": "England",
-      "home_score": 48,
-      "away_score": 46,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-03-07",
-      "home_team": "Scotland",
-      "away_team": "France",
-      "home_score": 50,
-      "away_score": 40,
+      "home_team": "Ireland",
+      "away_team": "Scotland",
+      "home_score": 43,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -356,6 +356,15 @@
       "away_team": "England",
       "home_score": 23,
       "away_score": 18,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-03-07",
+      "home_team": "Scotland",
+      "away_team": "France",
+      "home_score": 50,
+      "away_score": 40,
       "home_odds": null,
       "away_odds": null
     },
@@ -379,19 +388,19 @@
     },
     {
       "date": "2026-02-21",
-      "home_team": "England",
-      "away_team": "Ireland",
-      "home_score": 21,
-      "away_score": 42,
+      "home_team": "Wales",
+      "away_team": "Scotland",
+      "home_score": 23,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2026-02-21",
-      "home_team": "Wales",
-      "away_team": "Scotland",
-      "home_score": 23,
-      "away_score": 26,
+      "home_team": "England",
+      "away_team": "Ireland",
+      "home_score": 21,
+      "away_score": 42,
       "home_odds": null,
       "away_odds": null
     },
@@ -406,15 +415,6 @@
     },
     {
       "date": "2026-02-14",
-      "home_team": "Ireland",
-      "away_team": "Italy",
-      "home_score": 20,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2026-02-14",
       "home_team": "Scotland",
       "away_team": "England",
       "home_score": 31,
@@ -423,11 +423,11 @@
       "away_odds": null
     },
     {
-      "date": "2026-02-07",
-      "home_team": "Italy",
-      "away_team": "Scotland",
-      "home_score": 18,
-      "away_score": 15,
+      "date": "2026-02-14",
+      "home_team": "Ireland",
+      "away_team": "Italy",
+      "home_score": 20,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -437,6 +437,15 @@
       "away_team": "Wales",
       "home_score": 48,
       "away_score": 7,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2026-02-07",
+      "home_team": "Italy",
+      "away_team": "Scotland",
+      "home_score": 18,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -460,15 +469,6 @@
     },
     {
       "date": "2025-11-23",
-      "home_team": "England",
-      "away_team": "Argentina",
-      "home_score": 27,
-      "away_score": 23,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-23",
       "home_team": "Scotland",
       "away_team": "Tonga",
       "home_score": 56,
@@ -477,38 +477,38 @@
       "away_odds": null
     },
     {
-      "date": "2025-11-22",
-      "home_team": "Spain",
-      "away_team": "Fiji",
-      "home_score": 33,
-      "away_score": 41,
+      "date": "2025-11-23",
+      "home_team": "England",
+      "away_team": "Argentina",
+      "home_score": 27,
+      "away_score": 23,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-22",
-      "home_team": "Portugal",
-      "away_team": "Canada",
-      "home_score": 33,
-      "away_score": 27,
+      "home_team": "Georgia",
+      "away_team": "Japan",
+      "home_score": 23,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-22",
-      "home_team": "Romania",
-      "away_team": "Uruguay",
-      "home_score": 21,
-      "away_score": 31,
+      "home_team": "Wales",
+      "away_team": "New Zealand",
+      "home_score": 26,
+      "away_score": 52,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-22",
-      "home_team": "Italy",
-      "away_team": "Samoa",
-      "home_score": 34,
-      "away_score": 19,
+      "home_team": "Ireland",
+      "away_team": "South Africa",
+      "home_score": 13,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -523,28 +523,37 @@
     },
     {
       "date": "2025-11-22",
-      "home_team": "Ireland",
-      "away_team": "South Africa",
-      "home_score": 13,
-      "away_score": 24,
+      "home_team": "Italy",
+      "away_team": "Samoa",
+      "home_score": 34,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-22",
-      "home_team": "Wales",
-      "away_team": "New Zealand",
-      "home_score": 26,
-      "away_score": 52,
+      "home_team": "Romania",
+      "away_team": "Uruguay",
+      "home_score": 21,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-22",
-      "home_team": "Georgia",
-      "away_team": "Japan",
-      "home_score": 23,
-      "away_score": 25,
+      "home_team": "Portugal",
+      "away_team": "Canada",
+      "home_score": 33,
+      "away_score": 27,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-22",
+      "home_team": "Spain",
+      "away_team": "Fiji",
+      "home_score": 33,
+      "away_score": 41,
       "home_odds": null,
       "away_odds": null
     },
@@ -559,55 +568,10 @@
     },
     {
       "date": "2025-11-15",
-      "home_team": "Romania",
-      "away_team": "USA",
-      "home_score": 18,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-15",
-      "home_team": "Portugal",
-      "away_team": "Hong Kong",
-      "home_score": 58,
-      "away_score": 12,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-15",
-      "home_team": "Georgia",
-      "away_team": "Canada",
-      "home_score": 38,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-15",
-      "home_team": "Ireland",
-      "away_team": "Australia",
-      "home_score": 46,
-      "away_score": 19,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-15",
-      "home_team": "France",
-      "away_team": "Fiji",
-      "home_score": 34,
-      "away_score": 21,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-15",
-      "home_team": "Wales",
-      "away_team": "Japan",
-      "home_score": 24,
-      "away_score": 23,
+      "home_team": "Italy",
+      "away_team": "South Africa",
+      "home_score": 14,
+      "away_score": 32,
       "home_odds": null,
       "away_odds": null
     },
@@ -622,10 +586,55 @@
     },
     {
       "date": "2025-11-15",
-      "home_team": "Italy",
-      "away_team": "South Africa",
-      "home_score": 14,
-      "away_score": 32,
+      "home_team": "Wales",
+      "away_team": "Japan",
+      "home_score": 24,
+      "away_score": 23,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-15",
+      "home_team": "France",
+      "away_team": "Fiji",
+      "home_score": 34,
+      "away_score": 21,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-15",
+      "home_team": "Ireland",
+      "away_team": "Australia",
+      "home_score": 46,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-15",
+      "home_team": "Georgia",
+      "away_team": "Canada",
+      "home_score": 38,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-15",
+      "home_team": "Portugal",
+      "away_team": "Hong Kong",
+      "home_score": 58,
+      "away_score": 12,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-15",
+      "home_team": "Romania",
+      "away_team": "USA",
+      "home_score": 18,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -640,46 +649,19 @@
     },
     {
       "date": "2025-11-08",
-      "home_team": "Romania",
-      "away_team": "Canada",
-      "home_score": 31,
-      "away_score": 21,
+      "home_team": "Ireland",
+      "away_team": "Japan",
+      "home_score": 41,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-08",
-      "home_team": "Georgia",
-      "away_team": "USA",
-      "home_score": 43,
-      "away_score": 30,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-08",
-      "home_team": "Portugal",
-      "away_team": "Uruguay",
-      "home_score": 8,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-08",
-      "home_team": "France",
-      "away_team": "South Africa",
+      "home_team": "Scotland",
+      "away_team": "New Zealand",
       "home_score": 17,
-      "away_score": 32,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-11-08",
-      "home_team": "Italy",
-      "away_team": "Australia",
-      "home_score": 26,
-      "away_score": 19,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -694,37 +676,55 @@
     },
     {
       "date": "2025-11-08",
-      "home_team": "Scotland",
-      "away_team": "New Zealand",
-      "home_score": 17,
-      "away_score": 25,
+      "home_team": "Italy",
+      "away_team": "Australia",
+      "home_score": 26,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-11-08",
-      "home_team": "Ireland",
-      "away_team": "Japan",
-      "home_score": 41,
-      "away_score": 10,
+      "home_team": "France",
+      "away_team": "South Africa",
+      "home_score": 17,
+      "away_score": 32,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2025-11-01",
-      "home_team": "Ireland",
-      "away_team": "New Zealand",
-      "home_score": 13,
+      "date": "2025-11-08",
+      "home_team": "Portugal",
+      "away_team": "Uruguay",
+      "home_score": 8,
       "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2025-11-01",
-      "home_team": "Scotland",
+      "date": "2025-11-08",
+      "home_team": "Georgia",
       "away_team": "USA",
-      "home_score": 85,
-      "away_score": 0,
+      "home_score": 43,
+      "away_score": 30,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-08",
+      "home_team": "Romania",
+      "away_team": "Canada",
+      "home_score": 31,
+      "away_score": 21,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-01",
+      "home_team": "England",
+      "away_team": "Australia",
+      "home_score": 25,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
@@ -739,10 +739,19 @@
     },
     {
       "date": "2025-11-01",
-      "home_team": "England",
-      "away_team": "Australia",
-      "home_score": 25,
-      "away_score": 7,
+      "home_team": "Scotland",
+      "away_team": "USA",
+      "home_score": 85,
+      "away_score": 0,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-11-01",
+      "home_team": "Ireland",
+      "away_team": "New Zealand",
+      "home_score": 13,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -757,19 +766,19 @@
     },
     {
       "date": "2025-07-19",
-      "home_team": "USA",
-      "away_team": "England",
-      "home_score": 5,
-      "away_score": 40,
+      "home_team": "Canada",
+      "away_team": "Spain",
+      "home_score": 23,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-07-19",
-      "home_team": "Argentina",
-      "away_team": "Uruguay",
-      "home_score": 52,
-      "away_score": 17,
+      "home_team": "New Zealand",
+      "away_team": "France",
+      "home_score": 29,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -784,19 +793,19 @@
     },
     {
       "date": "2025-07-19",
-      "home_team": "New Zealand",
-      "away_team": "France",
-      "home_score": 29,
-      "away_score": 19,
+      "home_team": "Argentina",
+      "away_team": "Uruguay",
+      "home_score": 52,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-07-19",
-      "home_team": "Canada",
-      "away_team": "Spain",
-      "home_score": 23,
-      "away_score": 24,
+      "home_team": "USA",
+      "away_team": "England",
+      "home_score": 5,
+      "away_score": 40,
       "home_odds": null,
       "away_odds": null
     },
@@ -811,64 +820,10 @@
     },
     {
       "date": "2025-07-12",
-      "home_team": "USA",
-      "away_team": "Spain",
-      "home_score": 20,
-      "away_score": 31,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "Canada",
-      "away_team": "Belgium",
-      "home_score": 18,
-      "away_score": 25,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "Argentina",
-      "away_team": "England",
-      "home_score": 17,
-      "away_score": 22,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "Uruguay",
-      "away_team": "Romania",
-      "home_score": 70,
-      "away_score": 8,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "Portugal",
-      "away_team": "Ireland",
-      "home_score": 7,
-      "away_score": 106,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "South Africa",
-      "away_team": "Italy",
-      "home_score": 45,
-      "away_score": 0,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-12",
-      "home_team": "New Zealand",
-      "away_team": "France",
-      "home_score": 43,
-      "away_score": 17,
+      "home_team": "Fiji",
+      "away_team": "Scotland",
+      "home_score": 29,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -883,10 +838,64 @@
     },
     {
       "date": "2025-07-12",
-      "home_team": "Fiji",
-      "away_team": "Scotland",
-      "home_score": 29,
-      "away_score": 14,
+      "home_team": "New Zealand",
+      "away_team": "France",
+      "home_score": 43,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "South Africa",
+      "away_team": "Italy",
+      "home_score": 45,
+      "away_score": 0,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "Portugal",
+      "away_team": "Ireland",
+      "home_score": 7,
+      "away_score": 106,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "Uruguay",
+      "away_team": "Romania",
+      "home_score": 70,
+      "away_score": 8,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "Argentina",
+      "away_team": "England",
+      "home_score": 17,
+      "away_score": 22,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "Canada",
+      "away_team": "Belgium",
+      "home_score": 18,
+      "away_score": 25,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-12",
+      "home_team": "USA",
+      "away_team": "Spain",
+      "home_score": 20,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -901,46 +910,10 @@
     },
     {
       "date": "2025-07-05",
-      "home_team": "USA",
-      "away_team": "Belgium",
-      "home_score": 36,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-05",
-      "home_team": "Argentina",
-      "away_team": "England",
-      "home_score": 12,
-      "away_score": 35,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-05",
-      "home_team": "Chile",
-      "away_team": "Romania",
-      "home_score": 40,
-      "away_score": 16,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-05",
-      "home_team": "Georgia",
-      "away_team": "Ireland",
-      "home_score": 5,
-      "away_score": 34,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-07-05",
-      "home_team": "South Africa",
-      "away_team": "Italy",
-      "home_score": 42,
-      "away_score": 24,
+      "home_team": "Japan",
+      "away_team": "Wales",
+      "home_score": 24,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -955,10 +928,46 @@
     },
     {
       "date": "2025-07-05",
-      "home_team": "Japan",
-      "away_team": "Wales",
-      "home_score": 24,
-      "away_score": 19,
+      "home_team": "South Africa",
+      "away_team": "Italy",
+      "home_score": 42,
+      "away_score": 24,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-05",
+      "home_team": "Georgia",
+      "away_team": "Ireland",
+      "home_score": 5,
+      "away_score": 34,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-05",
+      "home_team": "Chile",
+      "away_team": "Romania",
+      "home_score": 40,
+      "away_score": 16,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-05",
+      "home_team": "Argentina",
+      "away_team": "England",
+      "home_score": 12,
+      "away_score": 35,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-07-05",
+      "home_team": "USA",
+      "away_team": "Belgium",
+      "home_score": 36,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -982,10 +991,10 @@
     },
     {
       "date": "2025-03-15",
-      "home_team": "Italy",
-      "away_team": "Ireland",
-      "home_score": 17,
-      "away_score": 22,
+      "home_team": "France",
+      "away_team": "Scotland",
+      "home_score": 35,
+      "away_score": 16,
       "home_odds": null,
       "away_odds": null
     },
@@ -1000,10 +1009,10 @@
     },
     {
       "date": "2025-03-15",
-      "home_team": "France",
-      "away_team": "Scotland",
-      "home_score": 35,
-      "away_score": 16,
+      "home_team": "Italy",
+      "away_team": "Ireland",
+      "home_score": 17,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -1018,19 +1027,19 @@
     },
     {
       "date": "2025-03-08",
-      "home_team": "Ireland",
-      "away_team": "France",
-      "home_score": 27,
-      "away_score": 42,
+      "home_team": "Scotland",
+      "away_team": "Wales",
+      "home_score": 35,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-03-08",
-      "home_team": "Scotland",
-      "away_team": "Wales",
-      "home_score": 35,
-      "away_score": 29,
+      "home_team": "Ireland",
+      "away_team": "France",
+      "home_score": 27,
+      "away_score": 42,
       "home_odds": null,
       "away_odds": null
     },
@@ -1045,19 +1054,19 @@
     },
     {
       "date": "2025-02-22",
-      "home_team": "Wales",
-      "away_team": "Ireland",
-      "home_score": 18,
-      "away_score": 27,
+      "home_team": "England",
+      "away_team": "Scotland",
+      "home_score": 16,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2025-02-22",
-      "home_team": "England",
-      "away_team": "Scotland",
-      "home_score": 16,
-      "away_score": 15,
+      "home_team": "Wales",
+      "away_team": "Ireland",
+      "home_score": 18,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -1072,15 +1081,6 @@
     },
     {
       "date": "2025-02-08",
-      "home_team": "Italy",
-      "away_team": "Wales",
-      "home_score": 22,
-      "away_score": 15,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2025-02-08",
       "home_team": "England",
       "away_team": "France",
       "home_score": 26,
@@ -1089,11 +1089,11 @@
       "away_odds": null
     },
     {
-      "date": "2025-02-01",
-      "home_team": "Scotland",
-      "away_team": "Italy",
-      "home_score": 31,
-      "away_score": 19,
+      "date": "2025-02-08",
+      "home_team": "Italy",
+      "away_team": "Wales",
+      "home_score": 22,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -1103,6 +1103,15 @@
       "away_team": "England",
       "home_score": 27,
       "away_score": 22,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2025-02-01",
+      "home_team": "Scotland",
+      "away_team": "Italy",
+      "home_score": 31,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -1126,10 +1135,10 @@
     },
     {
       "date": "2024-11-24",
-      "home_team": "Georgia",
-      "away_team": "Tonga",
-      "home_score": 22,
-      "away_score": 7,
+      "home_team": "Scotland",
+      "away_team": "Australia",
+      "home_score": 27,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -1144,37 +1153,19 @@
     },
     {
       "date": "2024-11-24",
-      "home_team": "Scotland",
-      "away_team": "Australia",
-      "home_score": 27,
-      "away_score": 13,
+      "home_team": "Georgia",
+      "away_team": "Tonga",
+      "home_score": 22,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-11-23",
-      "home_team": "Wales",
-      "away_team": "South Africa",
-      "home_score": 12,
-      "away_score": 45,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-23",
-      "home_team": "Romania",
-      "away_team": "Uruguay",
-      "home_score": 21,
-      "away_score": 23,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-23",
-      "home_team": "Ireland",
-      "away_team": "Fiji",
-      "home_score": 52,
-      "away_score": 17,
+      "home_team": "Italy",
+      "away_team": "New Zealand",
+      "home_score": 11,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -1189,10 +1180,28 @@
     },
     {
       "date": "2024-11-23",
-      "home_team": "Italy",
-      "away_team": "New Zealand",
-      "home_score": 11,
-      "away_score": 29,
+      "home_team": "Ireland",
+      "away_team": "Fiji",
+      "home_score": 52,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-23",
+      "home_team": "Romania",
+      "away_team": "Uruguay",
+      "home_score": 21,
+      "away_score": 23,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-23",
+      "home_team": "Wales",
+      "away_team": "South Africa",
+      "home_score": 12,
+      "away_score": 45,
       "home_odds": null,
       "away_odds": null
     },
@@ -1207,15 +1216,6 @@
     },
     {
       "date": "2024-11-17",
-      "home_team": "Wales",
-      "away_team": "Australia",
-      "home_score": 20,
-      "away_score": 52,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-17",
       "home_team": "Italy",
       "away_team": "Georgia",
       "home_score": 20,
@@ -1224,19 +1224,82 @@
       "away_odds": null
     },
     {
+      "date": "2024-11-17",
+      "home_team": "Wales",
+      "away_team": "Australia",
+      "home_score": 20,
+      "away_score": 52,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2024-11-16",
-      "home_team": "Uganda",
-      "away_team": "Kenya",
-      "home_score": 5,
+      "home_team": "Scotland",
+      "away_team": "Portugal",
+      "home_score": 59,
       "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-11-16",
-      "home_team": "South Korea",
-      "away_team": "Zimbabwe",
-      "home_score": 22,
+      "home_team": "France",
+      "away_team": "New Zealand",
+      "home_score": 30,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "England",
+      "away_team": "South Africa",
+      "home_score": 20,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "USA",
+      "away_team": "Tonga",
+      "home_score": 36,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "Netherlands",
+      "away_team": "Chile",
+      "home_score": 20,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "Japan",
+      "away_team": "Uruguay",
+      "home_score": 36,
+      "away_score": 20,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "Spain",
+      "away_team": "Fiji",
+      "home_score": 19,
+      "away_score": 33,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-16",
+      "home_team": "Romania",
+      "away_team": "Canada",
+      "home_score": 35,
       "away_score": 27,
       "home_odds": null,
       "away_odds": null
@@ -1252,72 +1315,18 @@
     },
     {
       "date": "2024-11-16",
-      "home_team": "Romania",
-      "away_team": "Canada",
-      "home_score": 35,
+      "home_team": "South Korea",
+      "away_team": "Zimbabwe",
+      "home_score": 22,
       "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-11-16",
-      "home_team": "Spain",
-      "away_team": "Fiji",
-      "home_score": 19,
-      "away_score": 33,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "Japan",
-      "away_team": "Uruguay",
-      "home_score": 36,
-      "away_score": 20,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "Netherlands",
-      "away_team": "Chile",
-      "home_score": 20,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "USA",
-      "away_team": "Tonga",
-      "home_score": 36,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "England",
-      "away_team": "South Africa",
-      "home_score": 20,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "France",
-      "away_team": "New Zealand",
-      "home_score": 30,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-16",
-      "home_team": "Scotland",
-      "away_team": "Portugal",
-      "home_score": 59,
+      "home_team": "Uganda",
+      "away_team": "Kenya",
+      "home_score": 5,
       "away_score": 21,
       "home_odds": null,
       "away_odds": null
@@ -1333,15 +1342,6 @@
     },
     {
       "date": "2024-11-10",
-      "home_team": "Wales",
-      "away_team": "Fiji",
-      "home_score": 19,
-      "away_score": 24,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-10",
       "home_team": "Scotland",
       "away_team": "South Africa",
       "home_score": 15,
@@ -1350,65 +1350,20 @@
       "away_odds": null
     },
     {
-      "date": "2024-11-09",
-      "home_team": "Kenya",
-      "away_team": "Uganda",
-      "home_score": 27,
-      "away_score": 25,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-09",
-      "home_team": "Hong Kong",
-      "away_team": "Brazil",
-      "home_score": 10,
-      "away_score": 23,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-09",
-      "home_team": "Spain",
-      "away_team": "Uruguay",
-      "home_score": 33,
+      "date": "2024-11-10",
+      "home_team": "Wales",
+      "away_team": "Fiji",
+      "home_score": 19,
       "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-11-09",
-      "home_team": "France",
-      "away_team": "Japan",
-      "home_score": 52,
-      "away_score": 12,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-09",
-      "home_team": "Romania",
-      "away_team": "Tonga",
-      "home_score": 25,
-      "away_score": 15,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-09",
-      "home_team": "England",
-      "away_team": "Australia",
-      "home_score": 37,
-      "away_score": 42,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-11-09",
-      "home_team": "Portugal",
-      "away_team": "USA",
-      "home_score": 17,
-      "away_score": 21,
+      "home_team": "Italy",
+      "away_team": "Argentina",
+      "home_score": 18,
+      "away_score": 50,
       "home_odds": null,
       "away_odds": null
     },
@@ -1423,10 +1378,64 @@
     },
     {
       "date": "2024-11-09",
-      "home_team": "Italy",
-      "away_team": "Argentina",
-      "home_score": 18,
-      "away_score": 50,
+      "home_team": "Portugal",
+      "away_team": "USA",
+      "home_score": 17,
+      "away_score": 21,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "England",
+      "away_team": "Australia",
+      "home_score": 37,
+      "away_score": 42,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "Romania",
+      "away_team": "Tonga",
+      "home_score": 25,
+      "away_score": 15,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "France",
+      "away_team": "Japan",
+      "home_score": 52,
+      "away_score": 12,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "Spain",
+      "away_team": "Uruguay",
+      "home_score": 33,
+      "away_score": 24,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "Hong Kong",
+      "away_team": "Brazil",
+      "home_score": 10,
+      "away_score": 23,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-11-09",
+      "home_team": "Kenya",
+      "away_team": "Uganda",
+      "home_score": 27,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -1450,19 +1459,19 @@
     },
     {
       "date": "2024-11-02",
-      "home_team": "Scotland",
-      "away_team": "Fiji",
-      "home_score": 57,
-      "away_score": 17,
+      "home_team": "England",
+      "away_team": "New Zealand",
+      "home_score": 22,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-11-02",
-      "home_team": "England",
-      "away_team": "New Zealand",
-      "home_score": 22,
-      "away_score": 24,
+      "home_team": "Scotland",
+      "away_team": "Fiji",
+      "home_score": 57,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -1486,19 +1495,19 @@
     },
     {
       "date": "2024-07-27",
-      "home_team": "Brazil",
-      "away_team": "Belgium",
-      "home_score": 47,
-      "away_score": 25,
+      "home_team": "Uruguay",
+      "away_team": "Scotland",
+      "home_score": 19,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-07-27",
-      "home_team": "Uruguay",
-      "away_team": "Scotland",
-      "home_score": 19,
-      "away_score": 31,
+      "home_team": "Brazil",
+      "away_team": "Belgium",
+      "home_score": 47,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -1513,46 +1522,10 @@
     },
     {
       "date": "2024-07-20",
-      "home_team": "Brazil",
-      "away_team": "Hong Kong",
-      "home_score": 25,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-20",
-      "home_team": "Paraguay",
-      "away_team": "Belgium",
-      "home_score": 20,
-      "away_score": 45,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-20",
-      "home_team": "New Zealand",
-      "away_team": "Fiji",
-      "home_score": 47,
-      "away_score": 5,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-20",
-      "home_team": "Chile",
-      "away_team": "Scotland",
-      "home_score": 11,
-      "away_score": 52,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-20",
-      "home_team": "Uruguay",
-      "away_team": "Argentina",
-      "home_score": 5,
-      "away_score": 79,
+      "home_team": "Australia",
+      "away_team": "Georgia",
+      "home_score": 40,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -1567,10 +1540,46 @@
     },
     {
       "date": "2024-07-20",
-      "home_team": "Australia",
-      "away_team": "Georgia",
-      "home_score": 40,
-      "away_score": 29,
+      "home_team": "Uruguay",
+      "away_team": "Argentina",
+      "home_score": 5,
+      "away_score": 79,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-20",
+      "home_team": "Chile",
+      "away_team": "Scotland",
+      "home_score": 11,
+      "away_score": 52,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-20",
+      "home_team": "New Zealand",
+      "away_team": "Fiji",
+      "home_score": 47,
+      "away_score": 5,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-20",
+      "home_team": "Paraguay",
+      "away_team": "Belgium",
+      "home_score": 20,
+      "away_score": 45,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-20",
+      "home_team": "Brazil",
+      "away_team": "Hong Kong",
+      "home_score": 25,
+      "away_score": 26,
       "home_odds": null,
       "away_odds": null
     },
@@ -1594,27 +1603,36 @@
     },
     {
       "date": "2024-07-13",
-      "home_team": "Chile",
-      "away_team": "Belgium",
-      "home_score": 33,
-      "away_score": 5,
+      "home_team": "Samoa",
+      "away_team": "Spain",
+      "home_score": 34,
+      "away_score": 30,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-07-13",
-      "home_team": "Argentina",
-      "away_team": "France",
-      "home_score": 33,
-      "away_score": 25,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-13",
-      "home_team": "South Africa",
-      "away_team": "Ireland",
+      "home_team": "New Zealand",
+      "away_team": "England",
       "home_score": 24,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-13",
+      "home_team": "Australia",
+      "away_team": "Wales",
+      "home_score": 36,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-13",
+      "home_team": "Japan",
+      "away_team": "Georgia",
+      "home_score": 23,
       "away_score": 25,
       "home_odds": null,
       "away_odds": null
@@ -1630,46 +1648,37 @@
     },
     {
       "date": "2024-07-13",
-      "home_team": "Japan",
-      "away_team": "Georgia",
-      "home_score": 23,
+      "home_team": "South Africa",
+      "away_team": "Ireland",
+      "home_score": 24,
       "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-07-13",
-      "home_team": "Australia",
-      "away_team": "Wales",
-      "home_score": 36,
-      "away_score": 28,
+      "home_team": "Argentina",
+      "away_team": "France",
+      "home_score": 33,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-07-13",
-      "home_team": "New Zealand",
-      "away_team": "England",
-      "home_score": 24,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-13",
-      "home_team": "Samoa",
-      "away_team": "Spain",
-      "home_score": 34,
-      "away_score": 30,
+      "home_team": "Chile",
+      "away_team": "Belgium",
+      "home_score": 33,
+      "away_score": 5,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-07-12",
-      "home_team": "Canada",
-      "away_team": "Romania",
-      "home_score": 35,
-      "away_score": 22,
+      "home_team": "Tonga",
+      "away_team": "Italy",
+      "home_score": 14,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -1684,10 +1693,10 @@
     },
     {
       "date": "2024-07-12",
-      "home_team": "Tonga",
-      "away_team": "Italy",
-      "home_score": 14,
-      "away_score": 36,
+      "home_team": "Canada",
+      "away_team": "Romania",
+      "home_score": 35,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -1702,46 +1711,10 @@
     },
     {
       "date": "2024-07-06",
-      "home_team": "Chile",
-      "away_team": "Hong Kong",
-      "home_score": 22,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-06",
-      "home_team": "Canada",
-      "away_team": "Scotland",
-      "home_score": 12,
-      "away_score": 73,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-06",
-      "home_team": "Argentina",
-      "away_team": "France",
-      "home_score": 13,
-      "away_score": 28,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-06",
-      "home_team": "South Africa",
-      "away_team": "Ireland",
-      "home_score": 27,
-      "away_score": 20,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-07-06",
-      "home_team": "Australia",
-      "away_team": "Wales",
-      "home_score": 25,
-      "away_score": 16,
+      "home_team": "USA",
+      "away_team": "Romania",
+      "home_score": 20,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -1756,19 +1729,46 @@
     },
     {
       "date": "2024-07-06",
-      "home_team": "USA",
-      "away_team": "Romania",
-      "home_score": 20,
-      "away_score": 22,
+      "home_team": "Australia",
+      "away_team": "Wales",
+      "home_score": 25,
+      "away_score": 16,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2024-07-05",
-      "home_team": "Georgia",
-      "away_team": "Fiji",
+      "date": "2024-07-06",
+      "home_team": "South Africa",
+      "away_team": "Ireland",
+      "home_score": 27,
+      "away_score": 20,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-06",
+      "home_team": "Argentina",
+      "away_team": "France",
+      "home_score": 13,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-06",
+      "home_team": "Canada",
+      "away_team": "Scotland",
       "home_score": 12,
-      "away_score": 21,
+      "away_score": 73,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-07-06",
+      "home_team": "Chile",
+      "away_team": "Hong Kong",
+      "home_score": 22,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -1782,11 +1782,11 @@
       "away_odds": null
     },
     {
-      "date": "2024-06-22",
-      "home_team": "South Africa",
-      "away_team": "Wales",
-      "home_score": 41,
-      "away_score": 13,
+      "date": "2024-07-05",
+      "home_team": "Georgia",
+      "away_team": "Fiji",
+      "home_score": 12,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -1800,19 +1800,10 @@
       "away_odds": null
     },
     {
-      "date": "2024-03-16",
-      "home_team": "Wales",
-      "away_team": "Italy",
-      "home_score": 21,
-      "away_score": 24,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-03-16",
-      "home_team": "Ireland",
-      "away_team": "Scotland",
-      "home_score": 17,
+      "date": "2024-06-22",
+      "home_team": "South Africa",
+      "away_team": "Wales",
+      "home_score": 41,
       "away_score": 13,
       "home_odds": null,
       "away_odds": null
@@ -1827,6 +1818,24 @@
       "away_odds": null
     },
     {
+      "date": "2024-03-16",
+      "home_team": "Ireland",
+      "away_team": "Scotland",
+      "home_score": 17,
+      "away_score": 13,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-03-16",
+      "home_team": "Wales",
+      "away_team": "Italy",
+      "home_score": 21,
+      "away_score": 24,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2024-03-10",
       "home_team": "Wales",
       "away_team": "France",
@@ -1837,19 +1846,19 @@
     },
     {
       "date": "2024-03-09",
-      "home_team": "Italy",
-      "away_team": "Scotland",
-      "home_score": 31,
-      "away_score": 29,
+      "home_team": "England",
+      "away_team": "Ireland",
+      "home_score": 23,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-03-09",
-      "home_team": "England",
-      "away_team": "Ireland",
-      "home_score": 23,
-      "away_score": 22,
+      "home_team": "Italy",
+      "away_team": "Scotland",
+      "home_score": 31,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -1864,19 +1873,19 @@
     },
     {
       "date": "2024-02-24",
-      "home_team": "Ireland",
-      "away_team": "Wales",
-      "home_score": 31,
-      "away_score": 7,
+      "home_team": "Scotland",
+      "away_team": "England",
+      "home_score": 30,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2024-02-24",
-      "home_team": "Scotland",
-      "away_team": "England",
-      "home_score": 30,
-      "away_score": 21,
+      "home_team": "Ireland",
+      "away_team": "Wales",
+      "home_score": 31,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
@@ -1891,15 +1900,6 @@
     },
     {
       "date": "2024-02-10",
-      "home_team": "Scotland",
-      "away_team": "France",
-      "home_score": 16,
-      "away_score": 20,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2024-02-10",
       "home_team": "England",
       "away_team": "Wales",
       "home_score": 16,
@@ -1908,11 +1908,11 @@
       "away_odds": null
     },
     {
-      "date": "2024-02-03",
-      "home_team": "Italy",
-      "away_team": "England",
-      "home_score": 24,
-      "away_score": 27,
+      "date": "2024-02-10",
+      "home_team": "Scotland",
+      "away_team": "France",
+      "home_score": 16,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -1921,6 +1921,15 @@
       "home_team": "Wales",
       "away_team": "Scotland",
       "home_score": 26,
+      "away_score": 27,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2024-02-03",
+      "home_team": "Italy",
+      "away_team": "England",
+      "home_score": 24,
       "away_score": 27,
       "home_odds": null,
       "away_odds": null
@@ -1945,19 +1954,10 @@
     },
     {
       "date": "2023-08-26",
-      "home_team": "Ireland",
-      "away_team": "Samoa",
-      "home_score": 17,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-26",
-      "home_team": "Scotland",
-      "away_team": "Georgia",
-      "home_score": 33,
-      "away_score": 6,
+      "home_team": "England",
+      "away_team": "Fiji",
+      "home_score": 22,
+      "away_score": 30,
       "home_odds": null,
       "away_odds": null
     },
@@ -1972,10 +1972,19 @@
     },
     {
       "date": "2023-08-26",
-      "home_team": "England",
-      "away_team": "Fiji",
-      "home_score": 22,
-      "away_score": 30,
+      "home_team": "Scotland",
+      "away_team": "Georgia",
+      "home_score": 33,
+      "away_score": 6,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-26",
+      "home_team": "Ireland",
+      "away_team": "Samoa",
+      "home_score": 17,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -1990,18 +1999,9 @@
     },
     {
       "date": "2023-08-19",
-      "home_team": "France",
-      "away_team": "Fiji",
-      "home_score": 34,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-19",
-      "home_team": "Italy",
-      "away_team": "Romania",
-      "home_score": 57,
+      "home_team": "Georgia",
+      "away_team": "USA",
+      "home_score": 22,
       "away_score": 7,
       "home_odds": null,
       "away_odds": null
@@ -2017,10 +2017,19 @@
     },
     {
       "date": "2023-08-19",
-      "home_team": "Georgia",
-      "away_team": "USA",
-      "home_score": 22,
+      "home_team": "Italy",
+      "away_team": "Romania",
+      "home_score": 57,
       "away_score": 7,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-19",
+      "home_team": "France",
+      "away_team": "Fiji",
+      "home_score": 34,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -2044,10 +2053,28 @@
     },
     {
       "date": "2023-08-12",
-      "home_team": "Chile",
-      "away_team": "Namibia",
-      "home_score": 26,
-      "away_score": 28,
+      "home_team": "Georgia",
+      "away_team": "Romania",
+      "home_score": 56,
+      "away_score": 6,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-12",
+      "home_team": "England",
+      "away_team": "Wales",
+      "home_score": 19,
+      "away_score": 17,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-12",
+      "home_team": "France",
+      "away_team": "Scotland",
+      "home_score": 30,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -2062,28 +2089,10 @@
     },
     {
       "date": "2023-08-12",
-      "home_team": "France",
-      "away_team": "Scotland",
-      "home_score": 30,
-      "away_score": 27,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-12",
-      "home_team": "England",
-      "away_team": "Wales",
-      "home_score": 19,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-12",
-      "home_team": "Georgia",
-      "away_team": "Romania",
-      "home_score": 56,
-      "away_score": 6,
+      "home_team": "Chile",
+      "away_team": "Namibia",
+      "home_score": 26,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
@@ -2098,37 +2107,19 @@
     },
     {
       "date": "2023-08-05",
-      "home_team": "Uruguay",
-      "away_team": "Namibia",
-      "home_score": 26,
-      "away_score": 18,
+      "home_team": "New Zealand",
+      "away_team": "Australia",
+      "home_score": 23,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-08-05",
-      "home_team": "Argentina",
-      "away_team": "South Africa",
-      "home_score": 13,
-      "away_score": 24,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-05",
-      "home_team": "Ireland",
-      "away_team": "Italy",
-      "home_score": 33,
-      "away_score": 17,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-08-05",
-      "home_team": "Romania",
-      "away_team": "USA",
-      "home_score": 17,
-      "away_score": 31,
+      "home_team": "Scotland",
+      "away_team": "France",
+      "home_score": 25,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
@@ -2143,28 +2134,37 @@
     },
     {
       "date": "2023-08-05",
-      "home_team": "Scotland",
-      "away_team": "France",
-      "home_score": 25,
-      "away_score": 21,
+      "home_team": "Romania",
+      "away_team": "USA",
+      "home_score": 17,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-08-05",
-      "home_team": "New Zealand",
-      "away_team": "Australia",
-      "home_score": 23,
-      "away_score": 20,
+      "home_team": "Ireland",
+      "away_team": "Italy",
+      "home_score": 33,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2023-07-29",
+      "date": "2023-08-05",
+      "home_team": "Argentina",
+      "away_team": "South Africa",
+      "home_score": 13,
+      "away_score": 24,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-08-05",
       "home_team": "Uruguay",
-      "away_team": "Chile",
+      "away_team": "Namibia",
       "home_score": 26,
-      "away_score": 25,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -2178,11 +2178,20 @@
       "away_odds": null
     },
     {
-      "date": "2023-03-18",
-      "home_team": "Scotland",
-      "away_team": "Italy",
+      "date": "2023-07-29",
+      "home_team": "Uruguay",
+      "away_team": "Chile",
       "home_score": 26,
-      "away_score": 14,
+      "away_score": 25,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2023-03-18",
+      "home_team": "Ireland",
+      "away_team": "England",
+      "home_score": 29,
+      "away_score": 16,
       "home_odds": null,
       "away_odds": null
     },
@@ -2197,10 +2206,10 @@
     },
     {
       "date": "2023-03-18",
-      "home_team": "Ireland",
-      "away_team": "England",
-      "home_score": 29,
-      "away_score": 16,
+      "home_team": "Scotland",
+      "away_team": "Italy",
+      "home_score": 26,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -2215,19 +2224,19 @@
     },
     {
       "date": "2023-03-11",
-      "home_team": "Italy",
-      "away_team": "Wales",
-      "home_score": 17,
-      "away_score": 29,
+      "home_team": "England",
+      "away_team": "France",
+      "home_score": 10,
+      "away_score": 53,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-03-11",
-      "home_team": "England",
-      "away_team": "France",
-      "home_score": 10,
-      "away_score": 53,
+      "home_team": "Italy",
+      "away_team": "Wales",
+      "home_score": 17,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
@@ -2242,19 +2251,19 @@
     },
     {
       "date": "2023-02-25",
-      "home_team": "Italy",
-      "away_team": "Ireland",
-      "home_score": 20,
-      "away_score": 34,
+      "home_team": "Wales",
+      "away_team": "England",
+      "home_score": 10,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-02-25",
-      "home_team": "Wales",
-      "away_team": "England",
-      "home_score": 10,
-      "away_score": 20,
+      "home_team": "Italy",
+      "away_team": "Ireland",
+      "home_score": 20,
+      "away_score": 34,
       "home_odds": null,
       "away_odds": null
     },
@@ -2269,19 +2278,19 @@
     },
     {
       "date": "2023-02-11",
-      "home_team": "Ireland",
-      "away_team": "France",
-      "home_score": 32,
-      "away_score": 19,
+      "home_team": "Scotland",
+      "away_team": "Wales",
+      "home_score": 35,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2023-02-11",
-      "home_team": "Scotland",
-      "away_team": "Wales",
-      "home_score": 35,
-      "away_score": 7,
+      "home_team": "Ireland",
+      "away_team": "France",
+      "home_score": 32,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
@@ -2296,15 +2305,6 @@
     },
     {
       "date": "2023-02-04",
-      "home_team": "Wales",
-      "away_team": "Ireland",
-      "home_score": 10,
-      "away_score": 34,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2023-02-04",
       "home_team": "England",
       "away_team": "Scotland",
       "home_score": 23,
@@ -2313,11 +2313,11 @@
       "away_odds": null
     },
     {
-      "date": "2022-11-26",
-      "home_team": "England",
-      "away_team": "South Africa",
-      "home_score": 13,
-      "away_score": 27,
+      "date": "2023-02-04",
+      "home_team": "Wales",
+      "away_team": "Ireland",
+      "home_score": 10,
+      "away_score": 34,
       "home_odds": null,
       "away_odds": null
     },
@@ -2327,6 +2327,15 @@
       "away_team": "Australia",
       "home_score": 34,
       "away_score": 39,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-26",
+      "home_team": "England",
+      "away_team": "South Africa",
+      "home_score": 13,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -2341,55 +2350,10 @@
     },
     {
       "date": "2022-11-19",
-      "home_team": "Romania",
-      "away_team": "Samoa",
-      "home_score": 0,
-      "away_score": 22,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-19",
-      "home_team": "Canada",
-      "away_team": "Namibia",
-      "home_score": 37,
-      "away_score": 43,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-19",
-      "home_team": "Tonga",
-      "away_team": "Uruguay",
-      "home_score": 43,
-      "away_score": 19,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-19",
-      "home_team": "Ireland",
-      "away_team": "Australia",
-      "home_score": 13,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-19",
-      "home_team": "England",
-      "away_team": "New Zealand",
-      "home_score": 25,
-      "away_score": 25,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-19",
-      "home_team": "Scotland",
-      "away_team": "Argentina",
-      "home_score": 52,
-      "away_score": 29,
+      "home_team": "Italy",
+      "away_team": "South Africa",
+      "home_score": 21,
+      "away_score": 63,
       "home_odds": null,
       "away_odds": null
     },
@@ -2404,19 +2368,55 @@
     },
     {
       "date": "2022-11-19",
-      "home_team": "Italy",
-      "away_team": "South Africa",
-      "home_score": 21,
-      "away_score": 63,
+      "home_team": "Scotland",
+      "away_team": "Argentina",
+      "home_score": 52,
+      "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2022-11-13",
-      "home_team": "Romania",
+      "date": "2022-11-19",
+      "home_team": "England",
+      "away_team": "New Zealand",
+      "home_score": 25,
+      "away_score": 25,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-19",
+      "home_team": "Ireland",
+      "away_team": "Australia",
+      "home_score": 13,
+      "away_score": 10,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-19",
+      "home_team": "Tonga",
       "away_team": "Uruguay",
-      "home_score": 16,
-      "away_score": 21,
+      "home_score": 43,
+      "away_score": 19,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-19",
+      "home_team": "Canada",
+      "away_team": "Namibia",
+      "home_score": 37,
+      "away_score": 43,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-19",
+      "home_team": "Romania",
+      "away_team": "Samoa",
+      "home_score": 0,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -2430,56 +2430,20 @@
       "away_odds": null
     },
     {
-      "date": "2022-11-12",
-      "home_team": "Georgia",
-      "away_team": "Samoa",
-      "home_score": 19,
-      "away_score": 20,
+      "date": "2022-11-13",
+      "home_team": "Romania",
+      "away_team": "Uruguay",
+      "home_score": 16,
+      "away_score": 21,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-11-12",
-      "home_team": "Netherlands",
-      "away_team": "Canada",
-      "home_score": 25,
-      "away_score": 37,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-12",
-      "home_team": "Tonga",
-      "away_team": "Chile",
-      "home_score": 39,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-12",
-      "home_team": "France",
-      "away_team": "South Africa",
-      "home_score": 30,
-      "away_score": 26,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-12",
-      "home_team": "Wales",
-      "away_team": "Argentina",
-      "home_score": 20,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-12",
-      "home_team": "England",
-      "away_team": "Japan",
-      "home_score": 52,
-      "away_score": 13,
+      "home_team": "Italy",
+      "away_team": "Australia",
+      "home_score": 28,
+      "away_score": 27,
       "home_odds": null,
       "away_odds": null
     },
@@ -2494,19 +2458,55 @@
     },
     {
       "date": "2022-11-12",
-      "home_team": "Italy",
-      "away_team": "Australia",
-      "home_score": 28,
-      "away_score": 27,
+      "home_team": "England",
+      "away_team": "Japan",
+      "home_score": 52,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2022-11-06",
+      "date": "2022-11-12",
+      "home_team": "Wales",
+      "away_team": "Argentina",
+      "home_score": 20,
+      "away_score": 13,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-12",
+      "home_team": "France",
+      "away_team": "South Africa",
+      "home_score": 30,
+      "away_score": 26,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-12",
+      "home_team": "Tonga",
+      "away_team": "Chile",
+      "home_score": 39,
+      "away_score": 10,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-12",
+      "home_team": "Netherlands",
+      "away_team": "Canada",
+      "home_score": 25,
+      "away_score": 37,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-12",
       "home_team": "Georgia",
-      "away_team": "Uruguay",
-      "home_score": 34,
-      "away_score": 18,
+      "away_team": "Samoa",
+      "home_score": 19,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -2520,38 +2520,20 @@
       "away_odds": null
     },
     {
-      "date": "2022-11-05",
-      "home_team": "Romania",
-      "away_team": "Chile",
-      "home_score": 30,
-      "away_score": 23,
+      "date": "2022-11-06",
+      "home_team": "Georgia",
+      "away_team": "Uruguay",
+      "home_score": 34,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-11-05",
-      "home_team": "France",
-      "away_team": "Australia",
-      "home_score": 30,
-      "away_score": 29,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-05",
-      "home_team": "Ireland",
-      "away_team": "South Africa",
-      "home_score": 19,
-      "away_score": 16,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-11-05",
-      "home_team": "Wales",
-      "away_team": "New Zealand",
-      "home_score": 23,
-      "away_score": 55,
+      "home_team": "Italy",
+      "away_team": "Samoa",
+      "home_score": 49,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -2566,19 +2548,37 @@
     },
     {
       "date": "2022-11-05",
-      "home_team": "Italy",
-      "away_team": "Samoa",
-      "home_score": 49,
-      "away_score": 17,
+      "home_team": "Wales",
+      "away_team": "New Zealand",
+      "home_score": 23,
+      "away_score": 55,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2022-10-29",
-      "home_team": "Japan",
-      "away_team": "New Zealand",
-      "home_score": 31,
-      "away_score": 38,
+      "date": "2022-11-05",
+      "home_team": "Ireland",
+      "away_team": "South Africa",
+      "home_score": 19,
+      "away_score": 16,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-05",
+      "home_team": "France",
+      "away_team": "Australia",
+      "home_score": 30,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-11-05",
+      "home_team": "Romania",
+      "away_team": "Chile",
+      "home_score": 30,
+      "away_score": 23,
       "home_odds": null,
       "away_odds": null
     },
@@ -2588,6 +2588,15 @@
       "away_team": "Australia",
       "home_score": 15,
       "away_score": 16,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-10-29",
+      "home_team": "Japan",
+      "away_team": "New Zealand",
+      "home_score": 31,
+      "away_score": 38,
       "home_odds": null,
       "away_odds": null
     },
@@ -2602,28 +2611,10 @@
     },
     {
       "date": "2022-07-16",
-      "home_team": "Argentina",
-      "away_team": "Scotland",
-      "home_score": 34,
-      "away_score": 31,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-07-16",
-      "home_team": "South Africa",
-      "away_team": "Wales",
-      "home_score": 30,
-      "away_score": 14,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-07-16",
-      "home_team": "Georgia",
-      "away_team": "Portugal",
-      "home_score": 23,
-      "away_score": 14,
+      "home_team": "New Zealand",
+      "away_team": "Ireland",
+      "home_score": 22,
+      "away_score": 32,
       "home_odds": null,
       "away_odds": null
     },
@@ -2638,19 +2629,28 @@
     },
     {
       "date": "2022-07-16",
-      "home_team": "New Zealand",
-      "away_team": "Ireland",
-      "home_score": 22,
-      "away_score": 32,
+      "home_team": "Georgia",
+      "away_team": "Portugal",
+      "home_score": 23,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2022-07-10",
-      "home_team": "Uruguay",
-      "away_team": "Romania",
-      "home_score": 22,
-      "away_score": 30,
+      "date": "2022-07-16",
+      "home_team": "South Africa",
+      "away_team": "Wales",
+      "home_score": 30,
+      "away_score": 14,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-07-16",
+      "home_team": "Argentina",
+      "away_team": "Scotland",
+      "home_score": 34,
+      "away_score": 31,
       "home_odds": null,
       "away_odds": null
     },
@@ -2664,29 +2664,20 @@
       "away_odds": null
     },
     {
-      "date": "2022-07-09",
-      "home_team": "Argentina",
-      "away_team": "Scotland",
-      "home_score": 6,
-      "away_score": 29,
+      "date": "2022-07-10",
+      "home_team": "Uruguay",
+      "away_team": "Romania",
+      "home_score": 22,
+      "away_score": 30,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-07-09",
-      "home_team": "South Africa",
-      "away_team": "Wales",
-      "home_score": 12,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-07-09",
-      "home_team": "Australia",
-      "away_team": "England",
-      "home_score": 17,
-      "away_score": 25,
+      "home_team": "Japan",
+      "away_team": "France",
+      "home_score": 15,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -2701,37 +2692,37 @@
     },
     {
       "date": "2022-07-09",
-      "home_team": "Japan",
-      "away_team": "France",
-      "home_score": 15,
-      "away_score": 20,
+      "home_team": "Australia",
+      "away_team": "England",
+      "home_score": 17,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2022-07-02",
-      "home_team": "Argentina",
-      "away_team": "Scotland",
-      "home_score": 26,
-      "away_score": 18,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-07-02",
+      "date": "2022-07-09",
       "home_team": "South Africa",
       "away_team": "Wales",
-      "home_score": 32,
+      "home_score": 12,
+      "away_score": 13,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-07-09",
+      "home_team": "Argentina",
+      "away_team": "Scotland",
+      "home_score": 6,
       "away_score": 29,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-07-02",
-      "home_team": "Australia",
-      "away_team": "England",
-      "home_score": 30,
-      "away_score": 28,
+      "home_team": "Japan",
+      "away_team": "France",
+      "home_score": 23,
+      "away_score": 42,
       "home_odds": null,
       "away_odds": null
     },
@@ -2746,10 +2737,28 @@
     },
     {
       "date": "2022-07-02",
-      "home_team": "Japan",
-      "away_team": "France",
-      "home_score": 23,
-      "away_score": 42,
+      "home_team": "Australia",
+      "away_team": "England",
+      "home_score": 30,
+      "away_score": 28,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-07-02",
+      "home_team": "South Africa",
+      "away_team": "Wales",
+      "home_score": 32,
+      "away_score": 29,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-07-02",
+      "home_team": "Argentina",
+      "away_team": "Scotland",
+      "home_score": 26,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -2764,10 +2773,10 @@
     },
     {
       "date": "2022-06-25",
-      "home_team": "Portugal",
-      "away_team": "Italy",
-      "home_score": 31,
-      "away_score": 38,
+      "home_team": "Japan",
+      "away_team": "Uruguay",
+      "home_score": 43,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
@@ -2782,10 +2791,10 @@
     },
     {
       "date": "2022-06-25",
-      "home_team": "Japan",
-      "away_team": "Uruguay",
-      "home_score": 43,
-      "away_score": 7,
+      "home_team": "Portugal",
+      "away_team": "Italy",
+      "home_score": 31,
+      "away_score": 38,
       "home_odds": null,
       "away_odds": null
     },
@@ -2800,10 +2809,10 @@
     },
     {
       "date": "2022-03-19",
-      "home_team": "Wales",
-      "away_team": "Italy",
-      "home_score": 21,
-      "away_score": 22,
+      "home_team": "France",
+      "away_team": "England",
+      "home_score": 25,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -2818,19 +2827,10 @@
     },
     {
       "date": "2022-03-19",
-      "home_team": "France",
-      "away_team": "England",
-      "home_score": 25,
-      "away_score": 13,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-03-12",
-      "home_team": "Italy",
-      "away_team": "Scotland",
-      "home_score": 22,
-      "away_score": 33,
+      "home_team": "Wales",
+      "away_team": "Italy",
+      "home_score": 21,
+      "away_score": 22,
       "home_odds": null,
       "away_odds": null
     },
@@ -2840,6 +2840,15 @@
       "away_team": "Ireland",
       "home_score": 15,
       "away_score": 32,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2022-03-12",
+      "home_team": "Italy",
+      "away_team": "Scotland",
+      "home_score": 22,
+      "away_score": 33,
       "home_odds": null,
       "away_odds": null
     },
@@ -2863,19 +2872,19 @@
     },
     {
       "date": "2022-02-26",
-      "home_team": "Scotland",
-      "away_team": "France",
-      "home_score": 17,
-      "away_score": 36,
+      "home_team": "England",
+      "away_team": "Wales",
+      "home_score": 23,
+      "away_score": 19,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-02-26",
-      "home_team": "England",
-      "away_team": "Wales",
-      "home_score": 23,
-      "away_score": 19,
+      "home_team": "Scotland",
+      "away_team": "France",
+      "home_score": 17,
+      "away_score": 36,
       "home_odds": null,
       "away_odds": null
     },
@@ -2890,19 +2899,19 @@
     },
     {
       "date": "2022-02-12",
-      "home_team": "Wales",
-      "away_team": "Scotland",
-      "home_score": 20,
-      "away_score": 17,
+      "home_team": "France",
+      "away_team": "Ireland",
+      "home_score": 30,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2022-02-12",
-      "home_team": "France",
-      "away_team": "Ireland",
-      "home_score": 30,
-      "away_score": 24,
+      "home_team": "Wales",
+      "away_team": "Scotland",
+      "home_score": 20,
+      "away_score": 17,
       "home_odds": null,
       "away_odds": null
     },
@@ -2917,15 +2926,6 @@
     },
     {
       "date": "2022-02-05",
-      "home_team": "Ireland",
-      "away_team": "Wales",
-      "home_score": 29,
-      "away_score": 7,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2022-02-05",
       "home_team": "Scotland",
       "away_team": "England",
       "home_score": 20,
@@ -2934,20 +2934,29 @@
       "away_odds": null
     },
     {
-      "date": "2021-11-20",
-      "home_team": "France",
-      "away_team": "New Zealand",
-      "home_score": 40,
-      "away_score": 25,
+      "date": "2022-02-05",
+      "home_team": "Ireland",
+      "away_team": "Wales",
+      "home_score": 29,
+      "away_score": 7,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-11-20",
-      "home_team": "Wales",
-      "away_team": "Australia",
+      "home_team": "Italy",
+      "away_team": "Uruguay",
+      "home_score": 17,
+      "away_score": 10,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-11-20",
+      "home_team": "Scotland",
+      "away_team": "Japan",
       "home_score": 29,
-      "away_score": 28,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -2962,28 +2971,19 @@
     },
     {
       "date": "2021-11-20",
-      "home_team": "Scotland",
-      "away_team": "Japan",
+      "home_team": "Wales",
+      "away_team": "Australia",
       "home_score": 29,
-      "away_score": 20,
+      "away_score": 28,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-11-20",
-      "home_team": "Italy",
-      "away_team": "Uruguay",
-      "home_score": 17,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-11-14",
       "home_team": "France",
-      "away_team": "Georgia",
-      "home_score": 41,
-      "away_score": 15,
+      "away_team": "New Zealand",
+      "home_score": 40,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
@@ -2997,20 +2997,20 @@
       "away_odds": null
     },
     {
-      "date": "2021-11-13",
-      "home_team": "Ireland",
-      "away_team": "New Zealand",
-      "home_score": 29,
-      "away_score": 20,
+      "date": "2021-11-14",
+      "home_team": "France",
+      "away_team": "Georgia",
+      "home_score": 41,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-11-13",
-      "home_team": "Scotland",
-      "away_team": "South Africa",
-      "home_score": 15,
-      "away_score": 30,
+      "home_team": "England",
+      "away_team": "Australia",
+      "home_score": 32,
+      "away_score": 15,
       "home_odds": null,
       "away_odds": null
     },
@@ -3025,10 +3025,19 @@
     },
     {
       "date": "2021-11-13",
-      "home_team": "England",
-      "away_team": "Australia",
-      "home_score": 32,
-      "away_score": 15,
+      "home_team": "Scotland",
+      "away_team": "South Africa",
+      "home_score": 15,
+      "away_score": 30,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-11-13",
+      "home_team": "Ireland",
+      "away_team": "New Zealand",
+      "home_score": 29,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -3043,28 +3052,10 @@
     },
     {
       "date": "2021-11-06",
-      "home_team": "France",
-      "away_team": "Argentina",
-      "home_score": 29,
-      "away_score": 20,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-11-06",
-      "home_team": "Wales",
-      "away_team": "South Africa",
-      "home_score": 18,
-      "away_score": 23,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-11-06",
-      "home_team": "England",
-      "away_team": "Tonga",
-      "home_score": 69,
-      "away_score": 3,
+      "home_team": "Ireland",
+      "away_team": "Japan",
+      "home_score": 60,
+      "away_score": 5,
       "home_odds": null,
       "away_odds": null
     },
@@ -3079,19 +3070,28 @@
     },
     {
       "date": "2021-11-06",
-      "home_team": "Ireland",
-      "away_team": "Japan",
-      "home_score": 60,
-      "away_score": 5,
+      "home_team": "England",
+      "away_team": "Tonga",
+      "home_score": 69,
+      "away_score": 3,
       "home_odds": null,
       "away_odds": null
     },
     {
-      "date": "2021-10-30",
-      "home_team": "Scotland",
-      "away_team": "Tonga",
-      "home_score": 60,
-      "away_score": 14,
+      "date": "2021-11-06",
+      "home_team": "Wales",
+      "away_team": "South Africa",
+      "home_score": 18,
+      "away_score": 23,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-11-06",
+      "home_team": "France",
+      "away_team": "Argentina",
+      "home_score": 29,
+      "away_score": 20,
       "home_odds": null,
       "away_odds": null
     },
@@ -3101,6 +3101,15 @@
       "away_team": "New Zealand",
       "home_score": 16,
       "away_score": 54,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-10-30",
+      "home_team": "Scotland",
+      "away_team": "Tonga",
+      "home_score": 60,
+      "away_score": 14,
       "home_odds": null,
       "away_odds": null
     },
@@ -3115,10 +3124,10 @@
     },
     {
       "date": "2021-07-17",
-      "home_team": "Argentina",
-      "away_team": "Wales",
-      "home_score": 33,
-      "away_score": 11,
+      "home_team": "New Zealand",
+      "away_team": "Fiji",
+      "home_score": 60,
+      "away_score": 13,
       "home_odds": null,
       "away_odds": null
     },
@@ -3133,10 +3142,10 @@
     },
     {
       "date": "2021-07-17",
-      "home_team": "New Zealand",
-      "away_team": "Fiji",
-      "home_score": 60,
-      "away_score": 13,
+      "home_team": "Argentina",
+      "away_team": "Wales",
+      "home_score": 33,
+      "away_score": 11,
       "home_odds": null,
       "away_odds": null
     },
@@ -3151,19 +3160,10 @@
     },
     {
       "date": "2021-07-10",
-      "home_team": "Ireland",
-      "away_team": "USA",
-      "home_score": 71,
-      "away_score": 10,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-07-10",
-      "home_team": "England",
-      "away_team": "Canada",
-      "home_score": 70,
-      "away_score": 14,
+      "home_team": "New Zealand",
+      "away_team": "Fiji",
+      "home_score": 57,
+      "away_score": 23,
       "home_odds": null,
       "away_odds": null
     },
@@ -3178,10 +3178,19 @@
     },
     {
       "date": "2021-07-10",
-      "home_team": "New Zealand",
-      "away_team": "Fiji",
-      "home_score": 57,
-      "away_score": 23,
+      "home_team": "England",
+      "away_team": "Canada",
+      "home_score": 70,
+      "away_score": 14,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-07-10",
+      "home_team": "Ireland",
+      "away_team": "USA",
+      "home_score": 71,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
@@ -3205,19 +3214,10 @@
     },
     {
       "date": "2021-07-03",
-      "home_team": "Romania",
-      "away_team": "Argentina",
-      "home_score": 17,
-      "away_score": 24,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-07-03",
-      "home_team": "Wales",
-      "away_team": "Canada",
-      "home_score": 68,
-      "away_score": 12,
+      "home_team": "New Zealand",
+      "away_team": "Tonga",
+      "home_score": 102,
+      "away_score": 0,
       "home_odds": null,
       "away_odds": null
     },
@@ -3232,10 +3232,19 @@
     },
     {
       "date": "2021-07-03",
-      "home_team": "New Zealand",
-      "away_team": "Tonga",
-      "home_score": 102,
-      "away_score": 0,
+      "home_team": "Wales",
+      "away_team": "Canada",
+      "home_score": 68,
+      "away_score": 12,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
+      "date": "2021-07-03",
+      "home_team": "Romania",
+      "away_team": "Argentina",
+      "home_score": 17,
+      "away_score": 24,
       "home_odds": null,
       "away_odds": null
     },
@@ -3259,10 +3268,10 @@
     },
     {
       "date": "2021-03-20",
-      "home_team": "Scotland",
-      "away_team": "Italy",
-      "home_score": 52,
-      "away_score": 10,
+      "home_team": "France",
+      "away_team": "Wales",
+      "home_score": 32,
+      "away_score": 30,
       "home_odds": null,
       "away_odds": null
     },
@@ -3277,10 +3286,10 @@
     },
     {
       "date": "2021-03-20",
-      "home_team": "France",
-      "away_team": "Wales",
-      "home_score": 32,
-      "away_score": 30,
+      "home_team": "Scotland",
+      "away_team": "Italy",
+      "home_score": 52,
+      "away_score": 10,
       "home_odds": null,
       "away_odds": null
     },
@@ -3295,15 +3304,6 @@
     },
     {
       "date": "2021-03-13",
-      "home_team": "Italy",
-      "away_team": "Wales",
-      "home_score": 7,
-      "away_score": 48,
-      "home_odds": null,
-      "away_odds": null
-    },
-    {
-      "date": "2021-03-13",
       "home_team": "England",
       "away_team": "France",
       "home_score": 23,
@@ -3312,10 +3312,10 @@
       "away_odds": null
     },
     {
-      "date": "2021-02-27",
+      "date": "2021-03-13",
       "home_team": "Italy",
-      "away_team": "Ireland",
-      "home_score": 10,
+      "away_team": "Wales",
+      "home_score": 7,
       "away_score": 48,
       "home_odds": null,
       "away_odds": null
@@ -3330,6 +3330,15 @@
       "away_odds": null
     },
     {
+      "date": "2021-02-27",
+      "home_team": "Italy",
+      "away_team": "Ireland",
+      "home_score": 10,
+      "away_score": 48,
+      "home_odds": null,
+      "away_odds": null
+    },
+    {
       "date": "2021-02-14",
       "home_team": "Ireland",
       "away_team": "France",
@@ -3340,19 +3349,19 @@
     },
     {
       "date": "2021-02-13",
-      "home_team": "England",
-      "away_team": "Italy",
-      "home_score": 41,
-      "away_score": 18,
+      "home_team": "Scotland",
+      "away_team": "Wales",
+      "home_score": 24,
+      "away_score": 25,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-02-13",
-      "home_team": "Scotland",
-      "away_team": "Wales",
-      "home_score": 24,
-      "away_score": 25,
+      "home_team": "England",
+      "away_team": "Italy",
+      "home_score": 41,
+      "away_score": 18,
       "home_odds": null,
       "away_odds": null
     },
@@ -3367,19 +3376,19 @@
     },
     {
       "date": "2021-02-06",
-      "home_team": "Italy",
-      "away_team": "France",
-      "home_score": 10,
-      "away_score": 50,
+      "home_team": "England",
+      "away_team": "Scotland",
+      "home_score": 6,
+      "away_score": 11,
       "home_odds": null,
       "away_odds": null
     },
     {
       "date": "2021-02-06",
-      "home_team": "England",
-      "away_team": "Scotland",
-      "home_score": 6,
-      "away_score": 11,
+      "home_team": "Italy",
+      "away_team": "France",
+      "home_score": 10,
+      "away_score": 50,
       "home_odds": null,
       "away_odds": null
     }
