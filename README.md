@@ -6,6 +6,8 @@
 - **Team payout box** appears when a team's MM wins. Entirely manual: type in the amount from the TAB slip (no estimate is calculated). The payout is saved on the captain's row (first-named member), and any copy on the other two rows for that round is cleared so it's never counted twice.
 - **Bet slips:** upload is built but switched off (SHOW_BET_SLIPS in app.js) - slips are handled separately and the Sheet needs no new column.
 - **Team MM returns table** under the round: each team's payouts for the chosen round, its syndicate quarter and the season.
+- **Round outcome:** once every pick is resulted, a banner shows a Perfect Round or names the Lonesome Loser (only losing pick in the syndicate), and the Lonesome Loser's pick gets a red badge. Saving the round also writes the Lonesome Loser's code into the Sheet's "Lonesome Loser?" column on their own row (previously typed by hand), so Records and the AGM report count it.
+- **48-hour lock:** once the last result for a round is in (entered in the Hub or the Sheet), anyone can correct it for 48 hours - the screen shows when corrections close. After that the round's results, and any payout already entered, are locked in the Hub (Results.gs refuses changes). An empty payout can still be added later. The Sheet itself is never locked.
 - Drop a pick has a "Round finished? Enter results" link to the new tab.
 
 **$2+ winners get special recognition**
