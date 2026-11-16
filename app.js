@@ -849,7 +849,8 @@ function liveStatusText() {
 function renderIfSafe() {
   const busy = (state.page === 'droppick' && state.dropPick.step !== 'grid')
     || (state.page === 'fineack' && state.fineAck.step !== 'grid')
-    || state.page === 'search';
+    || state.page === 'search'
+    || (state.page === 'results' && resultsHasChanges());
   if (!busy) render();
 }
 
@@ -1202,7 +1203,13 @@ function bind() {
       // Record this navigation so the phone/browser back button returns
       // here instead of exiting the Hub entirely - see popstate below.
       history.pushState({ page }, '');
-      if (page === 'droppick') {
+      if (page === 'results') {
+        // Always load the round fresh from the Sheet when (re-)entering.
+        state.results.data = null;
+        state.results.error = null;
+        state.results.message = null;
+        render();
+      } else if (page === 'droppick') {
         // Always land on the tile grid when (re-)entering this tab, not
         // wherever the member last left it - fixes returning to the tab
         // (e.g. after switching away and back) showing a stale pick screen.
@@ -1732,10 +1739,14 @@ function sortableMiniTable(tableId, rows, columns) {
 }
 
 function presidentialTeamsSection(currentSeasonRows) {
-  const presidentialRows = presidentialRace(currentSeasonRows);
+  // Team column (Nov 2026): attached here rather than inside
+  // presidentialRace() so the scoring function stays untouched. Reads
+  // TEAM_MAP, so it follows the AGM reshuffle with no extra upkeep.
+  const presidentialRows = presidentialRace(currentSeasonRows).map(r => ({ ...r, team: TEAM_MAP[r.name] || '' }));
   const presTable = sortableMiniTable('presRace', presidentialRows, [
     { key: 'rank', label: 'Rank', render: r => `<td>${r.rank}</td>` },
     { key: 'name', label: 'Member', render: r => `<td>${escapeHtml(r.name)}${r.title ? ` <span class="muted small">(${escapeHtml(r.title)})</span>` : ''}${r.needsCoinFlip ? ' <span class="muted small" title="Tied on every tiebreaker - needs a coin flip / wheel spin to resolve">\u00b9</span>' : ''}</td>` },
+    { key: 'team', label: 'Team', render: r => `<td>${escapeHtml(r.team || '\u2013')}</td>` },
     { key: 'points', label: 'Pts', numeric: true, render: r => `<td class="num">${r.points.toFixed(1)}</td>` },
   ]);
 
@@ -1834,6 +1845,7 @@ function render() {
   if (page === 'search') app.innerHTML = search(data);
   if (page === 'pickassistant') app.innerHTML = pickAssistant(data);
   if (page === 'droppick') app.innerHTML = dropAPickPage(data);
+  if (page === 'results') app.innerHTML = resultsPage();
   if (page === 'fineack') app.innerHTML = fineAckPage();
   if (page === 'agmreport') app.innerHTML = agmReportPage();
   setTimeout(applyPhoneLayout, 0);
@@ -1855,7 +1867,7 @@ function dashboard(data) {
     rank: i + 1, name: r.member, bet: r.name, betType: r.betType, sport: r.sport, odds: r.odds, result: r.result, year: r.year
   }));
   setTimeout(() => { const b = document.getElementById('agmBanner'); if (b) b.onclick = openAgmReport; }, 0);
-  return `${pageHeader}${agmBannerHtml()}${seasonHeading}
+  return `${pageHeader}${agmBannerHtml()}${twoPlusBannerHtml()}${seasonHeading}
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
 ${yearInsightStrip(currentSeasonRows)}
@@ -3476,7 +3488,7 @@ function records(data) {
 
   setTimeout(bindPresidentDial, 0);
 
-  return `<div class="page-header"><h1>Records of Honour and Shame</h1></div>${officialRecords}${presidentDialHtml()}<section class="two standings-row">${oddsSection}${streaksSection}</section><section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
+  return `<div class="page-header"><h1>Records of Honour and Shame</h1></div>${officialRecords}${presidentDialHtml()}<section class="two standings-row">${oddsSection}${streaksSection}</section>${twoPlusClubSectionHtml(seasonData, allTimeData, cy)}<section class="two standings-row">${winningsSection}${teamRoiSection}</section>`;
 }
 
 function monthYearLabel(date) {
@@ -6202,7 +6214,9 @@ function dropPickGridHtml() {
     </div>
   `;
   }).join('');
-  return `<p class="drop-pick-prompt">Who's dropping a pick for ${escapeHtml(roundDateLabel)}?</p>${groups}`;
+  setTimeout(() => { const l = document.getElementById('dropPickToResults'); if (l) l.onclick = goToResults; }, 0);
+  return `<p class="drop-pick-prompt">Who's dropping a pick for ${escapeHtml(roundDateLabel)}?</p>${groups}
+    <button type="button" class="drop-pick-btn drop-pick-results-link" id="dropPickToResults">Round finished? Enter results &rarr;</button>`;
 }
 
 function dropPickHeaderHtml() {
@@ -6859,6 +6873,478 @@ function bindFineAck() {
 }
 
 // ---------- Phone layout clean-up (v7.3 proposal) ----------
+// ==========================================================================
+// Results tab (v8.0, Nov 2026)
+// Members enter each round's results (Win / Loss / N/A per pick) and their
+// team's MM payout, and can attach the TAB bet slip screenshot. Reads and
+// writes Raw_Live directly through the Drop a Pick Web App (Results.gs) -
+// the same live-from-the-Sheet approach as Drop a Pick, so it never works
+// from a stale copy. Anyone can save (trust-based, like Drop a Pick).
+//
+// Payouts go on the team CAPTAIN's row (first-named member in TEAM_MAP),
+// matching how they're entered in the Sheet by hand; Results.gs clears the
+// other two rows for that round so a payout is never counted twice.
+// ==========================================================================
+
+const TWO_PLUS_ODDS = 2; // $2.00 and above - same line as the +3 Presidency points
+const DEFAULT_MM_STAKE = 25;
+// Bet slip upload is built but switched off (Nov 2026): Abba handles slips
+// separately and doesn't want the Sheet changed. Set to true (and add an
+// "MM Slip" column to Raw_Live + the uploadSlip code back into Results.gs)
+// to turn it on.
+const SHOW_BET_SLIPS = false;
+
+state.results = {
+  loading: false,
+  data: null, // { date, rounds, members: [...], slipColumn }
+  error: null,
+  draft: null, // { results: {code: 'Win'|'Loss'|'NA'|''}, payouts: {team: '187.40'}, stakes: {team: 25}, stakeOpen: {team: bool} }
+  saving: false,
+  message: null, // { text, tone }
+  slipBusy: {}, // team -> true while uploading
+};
+
+function resultsHasChanges() {
+  const rs = state.results;
+  if (!rs.data || !rs.draft) return false;
+  const p = resultsSavePayload();
+  return Object.keys(p.results).length > 0 || Object.keys(p.payouts).length > 0;
+}
+
+function resetResultsDraft() {
+  const rs = state.results;
+  const members = (rs.data && rs.data.members) || [];
+  const draft = { results: {}, payouts: {}, stakes: {}, stakeOpen: {} };
+  members.forEach(m => { draft.results[m.member] = m.result || ''; });
+  DROP_PICK_TEAMS.forEach(team => {
+    const loaded = resultsLoadedPayout(team.name);
+    draft.payouts[team.name] = loaded > 0 ? loaded.toFixed(2) : '';
+    draft.stakes[team.name] = DEFAULT_MM_STAKE;
+  });
+  rs.draft = draft;
+}
+
+function resultsMember(code) {
+  const rs = state.results;
+  return rs.data && rs.data.members ? rs.data.members.find(m => m.member === code) : null;
+}
+
+// MM Return already in the Sheet for this team and round - summed across
+// all three rows, in case one was typed on a non-captain row by hand.
+function resultsLoadedPayout(teamName) {
+  const rs = state.results;
+  if (!rs.data) return 0;
+  return rs.data.members
+    .filter(m => m.team === teamName)
+    .reduce((sum, m) => sum + (Number(String(m.mmReturn ?? '').replace(/[^0-9.]/g, '')) || 0), 0);
+}
+
+function resultsCaptainSlip(teamName) {
+  const rs = state.results;
+  if (!rs.data) return '';
+  const withSlip = rs.data.members.find(m => m.team === teamName && m.mmSlip);
+  return withSlip ? withSlip.mmSlip : '';
+}
+
+// Team status from the draft (what's on screen, saved or not).
+function resultsTeamStatus(team) {
+  const draft = state.results.draft;
+  const picks = team.members.map(code => ({ code, member: resultsMember(code), result: draft.results[code] || '' }));
+  const losses = picks.filter(p => p.result === 'Loss');
+  const pending = picks.filter(p => !p.result);
+  const won = losses.length === 0 && pending.length === 0;
+  let label, tone;
+  if (losses.length === 1 && pending.length === 0) { label = `MM lost · ${losses[0].code} MM Killer`; tone = 'bad'; }
+  else if (losses.length) { label = losses.length === 3 ? 'MM lost · Tier Crasher' : 'MM lost'; tone = 'bad'; }
+  else if (pending.length) { label = `Waiting on ${pending.length}`; tone = 'muted'; }
+  else { label = 'MM won'; tone = 'good'; }
+  const legOdds = picks.filter(p => p.result === 'Win').map(p => Number(p.member && p.member.odds));
+  const combined = legOdds.length && legOdds.every(o => Number.isFinite(o) && o > 1) ? legOdds.reduce((a, b) => a * b, 1) : null;
+  return { picks, won, label, tone, combined, legOdds };
+}
+
+function resultsSavePayload() {
+  const rs = state.results;
+  const out = { results: {}, payouts: {} };
+  if (!rs.data || !rs.draft) return out;
+  rs.data.members.forEach(m => {
+    if (!m.found) return;
+    const now = rs.draft.results[m.member] || '';
+    if (now !== (m.result || '')) out.results[m.member] = now;
+  });
+  DROP_PICK_TEAMS.forEach(team => {
+    const status = resultsTeamStatus(team);
+    const loaded = resultsLoadedPayout(team.name);
+    const captain = team.members[0];
+    const captainLoaded = Number(String((resultsMember(captain) || {}).mmReturn ?? '').replace(/[^0-9.]/g, '')) || 0;
+    if (status.won) {
+      const typed = String(rs.draft.payouts[team.name] ?? '').trim();
+      if (typed === '') return; // not entered yet - leave the Sheet alone
+      const amount = Number(typed.replace(/[^0-9.]/g, ''));
+      if (!Number.isFinite(amount)) return;
+      // Also re-save when the right total is sitting on a non-captain row,
+      // so it moves to the captain's row.
+      if (Math.abs(amount - loaded) > 0.004 || Math.abs(captainLoaded - loaded) > 0.004) out.payouts[team.name] = Math.round(amount * 100) / 100;
+    } else if (loaded > 0 && !status.picks.some(p => !p.result)) {
+      // MM now shows as lost but a payout is still recorded - clear it.
+      out.payouts[team.name] = '';
+    }
+  });
+  return out;
+}
+
+function resultsPayoutError() {
+  const rs = state.results;
+  for (const team of DROP_PICK_TEAMS) {
+    if (!resultsTeamStatus(team).won) continue;
+    const typed = String(rs.draft.payouts[team.name] ?? '').trim();
+    if (typed && !(Number(typed.replace(/[^0-9.]/g, '')) >= 0 && /\d/.test(typed))) return `${team.name}'s payout isn't a number.`;
+  }
+  return null;
+}
+
+async function fetchRoundResults(date) {
+  const rs = state.results;
+  rs.loading = true;
+  rs.error = null;
+  render();
+  try {
+    const url = `${PICK_ENTRY_API_URL}?action=roundResults${date ? `&date=${encodeURIComponent(date)}` : ''}&v=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    rs.data = json;
+    resetResultsDraft();
+  } catch (err) {
+    rs.error = `Couldn't load the round from the Sheet: ${err.message}`;
+  } finally {
+    rs.loading = false;
+    render();
+  }
+}
+
+async function saveRoundResults() {
+  const rs = state.results;
+  const payoutError = resultsPayoutError();
+  if (payoutError) { rs.message = { text: payoutError, tone: 'bad' }; render(); return; }
+  const payload = resultsSavePayload();
+  if (!Object.keys(payload.results).length && !Object.keys(payload.payouts).length) {
+    rs.message = { text: 'Nothing has changed since the last save.', tone: 'muted' };
+    render();
+    return;
+  }
+  rs.saving = true;
+  rs.message = null;
+  render();
+  try {
+    // postFineAction is just the shared "POST JSON to the Web App" helper.
+    const result = await postFineAction({ action: 'saveRound', date: rs.data.date, results: payload.results, payouts: payload.payouts });
+    if (!result || !result.success) throw new Error((result && result.error) || 'No response');
+    const n = result.resultsSaved, p = result.payoutsSaved;
+    const parts = [];
+    if (n) parts.push(`${n} result${n === 1 ? '' : 's'}`);
+    if (p) parts.push(`${p} payout${p === 1 ? '' : 's'}`);
+    rs.message = result.missing && result.missing.length
+      ? { text: `Saved, but no Sheet row was found for ${result.missing.join(', ')} on ${rs.data.date}.`, tone: 'bad' }
+      : { text: `${parts.join(' and ')} saved to the Sheet.`, tone: 'good' };
+    rs.saving = false;
+    const keepMessage = rs.message;
+    await fetchRoundResults(rs.data.date);
+    rs.message = keepMessage;
+    render();
+    refreshFeedQuietly(true); // Dashboard, Stats and Records pick it up
+  } catch (err) {
+    rs.saving = false;
+    rs.message = { text: `Couldn't save: ${err.message}. Nothing was lost - try again.`, tone: 'bad' };
+    render();
+  }
+}
+
+// Screenshots can be several MB - shrink to a JPEG (max 1600px on the long
+// side) before sending, which keeps uploads quick on mobile data.
+function shrinkImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read the image'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('That file is not an image'));
+      img.onload = () => {
+        const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82).split(',')[1]);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadResultsSlip(teamName, file) {
+  const rs = state.results;
+  rs.slipBusy[teamName] = true;
+  rs.message = null;
+  render();
+  try {
+    const data = await shrinkImageToBase64(file);
+    const result = await postFineAction({ action: 'uploadSlip', date: rs.data.date, team: teamName, mimeType: 'image/jpeg', data });
+    if (!result || !result.success) throw new Error((result && result.error) || 'No response');
+    const captain = resultsMember(DROP_PICK_TEAMS.find(t => t.name === teamName).members[0]);
+    if (captain) captain.mmSlip = result.url;
+    rs.message = { text: `${teamName}'s bet slip saved.`, tone: 'good' };
+  } catch (err) {
+    rs.message = { text: `Couldn't save the slip: ${err.message}`, tone: 'bad' };
+  } finally {
+    rs.slipBusy[teamName] = false;
+    render();
+  }
+}
+
+function driveFileId(url) {
+  const m = String(url || '').match(/\/d\/([A-Za-z0-9_-]+)/) || String(url || '').match(/[?&]id=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+function resultsPickRowHtml(code, team) {
+  const rs = state.results;
+  const m = resultsMember(code);
+  const current = rs.draft.results[code] || '';
+  const odds = m ? Number(m.odds) : NaN;
+  const twoPlus = current === 'Win' && Number.isFinite(odds) && odds >= TWO_PLUS_ODDS;
+  let pickText;
+  if (!m || !m.found) pickText = `<span class="muted">No Sheet row for this round</span>`;
+  else if (!m.option) pickText = `<span class="muted">No pick dropped</span>`;
+  else pickText = `${escapeHtml(m.option)}${m.betType ? ` <span class="muted small">${escapeHtml(m.betType)}</span>` : ''} <span class="${Number.isFinite(odds) && odds >= TWO_PLUS_ODDS ? 'results-odds-gold' : 'muted'} small">@${Number.isFinite(odds) ? odds.toFixed(2) : escapeHtml(m.odds || '?')}</span>`;
+  const buttons = (m && m.found) ? [['Win', 'Win'], ['Loss', 'Loss'], ['NA', 'N/A']].map(([value, label]) =>
+    `<button type="button" class="results-btn${current === value ? ` is-${value.toLowerCase()}` : ''}" data-results-member="${code}" data-results-value="${value}">${label}</button>`
+  ).join('') : '';
+  return `<div class="results-pick${twoPlus ? ' is-two-plus' : ''}">
+    <div class="results-pick-text">
+      <p><strong>${escapeHtml(code)}</strong>${code === team.members[0] ? '<span class="muted small"> (c)</span>' : ''} · ${pickText}</p>
+      ${twoPlus ? `<p><span class="results-two-plus-badge">★ $2+ winner</span></p>` : ''}
+    </div>
+    <div class="results-btns">${buttons}</div>
+  </div>`;
+}
+
+function resultsPayoutBoxHtml(team, status) {
+  // Fully manual (Nov 2026): no estimate or stake - the amount comes from
+  // the TAB slip screenshot the member shares separately.
+  const rs = state.results;
+  const typed = rs.draft.payouts[team.name] ?? '';
+  const slip = resultsCaptainSlip(team.name);
+  const slipId = driveFileId(slip);
+  const busy = rs.slipBusy[team.name];
+  const slipHtml = !SHOW_BET_SLIPS ? ''
+    : !rs.data.slipColumn
+    ? `<p class="muted small">Bet slips switch on once the MM Slip column is added to Raw_Live.</p>`
+    : slip
+      ? `<div class="results-slip-row">${slipId ? `<a href="${escapeHtml(slip)}" target="_blank" rel="noopener"><img class="results-slip-thumb" src="https://drive.google.com/thumbnail?id=${escapeHtml(slipId)}&sz=w200" alt="${escapeHtml(team.name)} bet slip"></a>` : ''}<span class="good small">\u2713 Slip saved \u00b7 <a href="${escapeHtml(slip)}" target="_blank" rel="noopener">view</a></span><button type="button" class="results-link" data-results-slip="${escapeHtml(team.name)}">replace</button></div>`
+      : `<div class="results-slip-row"><button type="button" class="drop-pick-btn" data-results-slip="${escapeHtml(team.name)}"${busy ? ' disabled' : ''}>${busy ? 'Saving slip...' : '+ Add bet slip'}</button>${busy ? '' : '<span class="results-slip-missing small">\u26a0 Slip missing</span>'}</div>`;
+  return `<div class="results-payout">
+    <p class="results-payout-title">Team payout <span class="muted small">\u00b7 goes on ${escapeHtml(team.members[0])}'s row</span></p>
+    <div class="results-payout-input">$<input type="text" inputmode="decimal" placeholder="0.00" value="${escapeHtml(typed)}" data-results-payout="${escapeHtml(team.name)}"></div>
+    <p class="muted small results-payout-est">Enter the payout shown on the TAB slip.</p>
+    ${slipHtml}
+  </div>`;
+}
+
+function resultsTeamCardHtml(team) {
+  const status = resultsTeamStatus(team);
+  const toneColor = status.tone === 'good' ? 'var(--good)' : status.tone === 'bad' ? 'var(--bad)' : 'var(--muted)';
+  return `<div class="results-team" style="border-top-color:${team.color};">
+    <div class="results-team-head"><p style="color:${team.color};">${escapeHtml(team.name)}</p><span class="results-pill" style="color:${toneColor}; border-color:${toneColor};">${escapeHtml(status.label)}</span></div>
+    ${team.members.map(code => resultsPickRowHtml(code, team)).join('')}
+    ${status.won ? resultsPayoutBoxHtml(team, status) : ''}
+  </div>`;
+}
+
+// ---------- Team MM returns: this round, this quarter, this season ----------
+// From the main Sheet feed (state.raw), so it includes every payout ever
+// entered, by the Hub or by hand. Each MM counts once per team, because the
+// payout sits on one row only.
+function teamMMReturnsRows(roundDate) {
+  const cy = currentYear(state.raw);
+  // Syndicate quarters (Q1 Aug-Oct, Q2 Nov-Jan, Q3 Feb-Apr, Q4 May-Jul),
+  // from the Sheet's Quarter column - the quarter the chosen round is in.
+  const quarter = agmQuarterOf({ date: roundDate, row: {} });
+  const season = state.raw.filter(r => seasonEqual(r.year, cy));
+  const sum = rows => rows.reduce((s, r) => s + (r.mmReturn || 0), 0);
+  const rows = TEAM_ORDER.map(team => {
+    const teamRows = season.filter(r => teamOf(r.member) === team);
+    const quarterRows = quarter ? teamRows.filter(r => agmQuarterOf(r) === quarter) : [];
+    return {
+      team,
+      week: sum(teamRows.filter(r => r.date === roundDate)),
+      quarter: sum(quarterRows),
+      season: sum(teamRows),
+    };
+  });
+  const total = key => rows.reduce((s, r) => s + r[key], 0);
+  rows.push({ team: 'Syndicate', isTotal: true, week: total('week'), quarter: total('quarter'), season: total('season') });
+  return rows;
+}
+
+function teamMMReturnsPanelHtml(roundDate) {
+  const cy = currentYear(state.raw);
+  const rows = teamMMReturnsRows(roundDate);
+  const teamColor = name => (DROP_PICK_TEAMS.find(t => t.name === name) || {}).color || 'var(--muted)';
+  const cell = v => `<td class="num${v > 0 ? ' good' : ''}">${v > 0 ? fmtMoney(v) : '–'}</td>`;
+  const body = rows.map(r => `<tr${r.isTotal ? ' class="results-total-row"' : ''}><td>${r.isTotal ? '' : `<span class="results-dot" style="background:${teamColor(r.team)};"></span>`}${escapeHtml(r.team)}</td>${cell(r.week)}${cell(r.quarter)}${cell(r.season)}</tr>`).join('');
+  return `<div class="panel standings-panel">
+    <h3>Team MM returns</h3>
+    <p class="muted small">Gross payouts from the Sheet, for the chosen round, its syndicate quarter and the season. Updates a few seconds after each save.</p>
+    <div class="mini-table-wrap"><table class="mini-table"><thead><tr><th>Team</th><th class="num">${escapeHtml(roundDate || 'This round')}</th><th class="num">${escapeHtml(agmQuarterOf({ date: roundDate, row: {} }) || 'Quarter')}</th><th class="num">${escapeHtml(cy || 'Season')}</th></tr></thead><tbody>${body}</tbody></table></div>
+  </div>`;
+}
+
+function resultsPage() {
+  const rs = state.results;
+  setTimeout(bindResults, 0);
+  if (!rs.data && !rs.loading && !rs.error) setTimeout(() => fetchRoundResults(null), 0);
+
+  const header = `<div class="page-header"><h1>Results</h1></div>`;
+  if (rs.loading && !rs.data) return `${header}<div class="panel results-panel"><p class="muted">Loading the round from the Sheet...</p></div>`;
+  if (rs.error && !rs.data) return `${header}<div class="panel results-panel"><p style="color:var(--bad);">${escapeHtml(rs.error)}</p><button type="button" class="drop-pick-btn" id="resultsRetry">Try again</button></div>`;
+  if (!rs.data) return `${header}<div class="panel results-panel"><p class="muted">Loading...</p></div>`;
+
+  const resulted = rs.data.members.filter(m => m.found && rs.draft.results[m.member]).length;
+  const total = rs.data.members.filter(m => m.found).length;
+  const rounds = rs.data.rounds && rs.data.rounds.length ? rs.data.rounds : [rs.data.date];
+  const picker = `<select id="resultsRound" class="results-round-select"${rs.loading || rs.saving ? ' disabled' : ''}>${rounds.map(d => `<option value="${escapeHtml(d)}"${d === rs.data.date ? ' selected' : ''}>Round: ${escapeHtml(d)}</option>`).join('')}</select>`;
+  const msg = rs.message ? `<p class="results-message" style="color:${rs.message.tone === 'good' ? 'var(--good)' : rs.message.tone === 'bad' ? 'var(--bad)' : 'var(--muted)'};">${escapeHtml(rs.message.text)}</p>` : '';
+  const changes = resultsHasChanges();
+
+  return `${header}
+    <div class="panel results-panel">
+      <div class="results-top">${picker}<span class="muted small">${resulted} of ${total} picks resulted</span></div>
+      ${rs.loading ? '<p class="muted small">Loading...</p>' : ''}
+      ${DROP_PICK_TEAMS.map(resultsTeamCardHtml).join('')}
+      <button type="button" class="results-save" id="resultsSave"${rs.saving ? ' disabled' : ''}>${rs.saving ? 'Saving...' : changes ? 'Save round' : 'Saved'}</button>
+      ${msg}
+    </div>
+    ${teamMMReturnsPanelHtml(rs.data.date)}`;
+}
+
+function bindResults() {
+  const rs = state.results;
+  const retry = document.getElementById('resultsRetry');
+  if (retry) retry.onclick = () => fetchRoundResults(null);
+  if (!rs.data || !rs.draft) return;
+
+  const round = document.getElementById('resultsRound');
+  if (round) round.onchange = () => {
+    if (resultsHasChanges() && !window.confirm('You have unsaved results for this round. Switch round and lose them?')) {
+      round.value = rs.data.date;
+      return;
+    }
+    rs.message = null;
+    fetchRoundResults(round.value);
+  };
+
+  document.querySelectorAll('[data-results-member]').forEach(btn => {
+    btn.onclick = () => {
+      const code = btn.dataset.resultsMember;
+      const value = btn.dataset.resultsValue;
+      rs.draft.results[code] = rs.draft.results[code] === value ? '' : value; // tap again to clear
+      rs.message = null;
+      render();
+    };
+  });
+
+  document.querySelectorAll('[data-results-payout]').forEach(input => {
+    input.oninput = () => {
+      rs.draft.payouts[input.dataset.resultsPayout] = input.value;
+      const save = document.getElementById('resultsSave');
+      if (save && !rs.saving) save.textContent = resultsHasChanges() ? 'Save round' : 'Saved';
+    };
+  });
+
+  document.querySelectorAll('[data-results-slip]').forEach(btn => {
+    btn.onclick = () => {
+      const picker = document.createElement('input');
+      picker.type = 'file';
+      picker.accept = 'image/*';
+      picker.onchange = () => { if (picker.files && picker.files[0]) uploadResultsSlip(btn.dataset.resultsSlip, picker.files[0]); };
+      picker.click();
+    };
+  });
+
+  const save = document.getElementById('resultsSave');
+  if (save) save.onclick = saveRoundResults;
+}
+
+function goToResults() {
+  state.page = 'results';
+  state.results.data = null;
+  state.results.error = null;
+  state.results.message = null;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.page === 'results'));
+  history.pushState({ page: 'results' }, '');
+  render();
+}
+
+// ---------- $2+ winners: Dashboard banner and Records "$2+ Club" ----------
+
+function twoPlusWins(rows) {
+  return rows.filter(r => r.win && isRealPick(r) && Number.isFinite(r.odds) && r.odds >= TWO_PLUS_ODDS);
+}
+
+// The most recent round with any result in it; the banner stays up until a
+// later round starts being resulted.
+function twoPlusBannerHtml() {
+  const dates = roundDatesSorted(state.raw);
+  const latest = dates[dates.length - 1];
+  if (!latest) return '';
+  const wins = twoPlusWins(state.raw.filter(r => r.date === latest)).sort((a, b) => b.odds - a.odds);
+  if (!wins.length) return '';
+  const cy = currentYear(state.raw);
+  const seasonWins = twoPlusWins(state.raw.filter(r => seasonEqual(r.year, cy))).sort(comparePickOrder);
+  const nthThisSeason = r => seasonWins.filter(x => x.member === r.member && comparePickOrder(x, r) <= 0).length;
+  const list = wins.map(r => `${escapeHtml(r.member)} landed ${escapeHtml(r.name)} @${r.odds.toFixed(2)}`).join(' · ');
+  const notes = wins.map(r => `${escapeHtml(r.member)}'s ${ordinal(nthThisSeason(r))} this season`).join(', ');
+  return `<div class="two-plus-banner">
+    <span class="two-plus-banner-icon" aria-hidden="true">🏆</span>
+    <div><b>$2+ winner${wins.length === 1 ? '' : 's'} · round of ${escapeHtml(latest)}</b><span>${list}</span><small>+3 Presidency points each · ${notes}</small></div>
+  </div>`;
+}
+
+function twoPlusClubRows(seasonData, allTimeData) {
+  const season = twoPlusWins(seasonData);
+  const all = twoPlusWins(allTimeData);
+  const rows = Object.keys(TEAM_MAP).map(code => {
+    const mine = all.filter(r => r.member === code);
+    return {
+      member: code,
+      season: season.filter(r => r.member === code).length,
+      allTime: mine.length,
+      best: mine.length ? Math.max(...mine.map(r => r.odds)) : null,
+    };
+  });
+  const top = Math.max(0, ...rows.map(r => r.season));
+  rows.forEach(r => { r.leader = top > 0 && r.season === top; });
+  return rows.sort((a, b) => (b.season - a.season) || (b.allTime - a.allTime) || a.member.localeCompare(b.member));
+}
+
+function twoPlusClubSectionHtml(seasonData, allTimeData, cy) {
+  const rows = twoPlusClubRows(seasonData, allTimeData);
+  const tableHtml = sortableMiniTable('twoPlusClub', rows, [
+    { key: 'member', label: 'Member', render: r => `<td>${r.leader ? '<span class="two-plus-crown" title="Season leader">👑</span> ' : ''}${escapeHtml(r.member)}</td>` },
+    { key: 'season', label: escapeHtml(cy || 'This season'), numeric: true, render: r => `<td class="num">${r.season}</td>` },
+    { key: 'allTime', label: 'All-time', numeric: true, render: r => `<td class="num">${r.allTime}</td>` },
+    { key: 'best', label: 'Best odds', numeric: true, render: r => `<td class="num">${r.best ? `$${r.best.toFixed(2)}` : '–'}</td>` },
+  ]);
+  return `<div class="panel standings-panel two-plus-club">
+    <h3>$2+ Club</h3>
+    <p class="muted small">Winning picks at odds of $2.00 or more - each one is worth +3 Presidency points.</p>
+    <div class="mini-table-wrap">${tableHtml}</div>
+  </div>`;
+}
+
+
 // Two light touches on top of the phone-only CSS: icons on the bottom nav
 // tabs, and tap-to-fold section headers. Desktop is unaffected (the fold
 // header only becomes clickable/visible as such under the phone CSS, and
@@ -6866,12 +7352,13 @@ function bindFineAck() {
 const TAB_ICONS = {
   dashboard: '<path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z"/>',
   droppick: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  results: '<path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>',
   pickassistant: '<path d="M12 3l2.5 5.5L20 9.5l-4 4 1 5.5-5-2.7-5 2.7 1-5.5-4-4 5.5-1z"/>',
   stats: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   records: '<circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
 };
-const TAB_SHORT = { dashboard: 'Home', droppick: 'Drop pick', pickassistant: 'Assistant', stats: 'Stats', records: 'Records', search: 'Search' };
+const TAB_SHORT = { dashboard: 'Home', droppick: 'Drop pick', results: 'Results', pickassistant: 'Assistant', stats: 'Stats', records: 'Records', search: 'Search' };
 state.foldedPanels = state.foldedPanels || {};
 
 function isPhoneWidth() { return window.matchMedia('(max-width: 640px)').matches; }
