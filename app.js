@@ -6963,6 +6963,35 @@ function resultsTeamStatus(team) {
   return { picks, won, label, tone, combined, legOdds };
 }
 
+// Round-wide outcome from what's on screen: Perfect Round (every pick won)
+// or Lonesome Loser (the only losing pick in the whole syndicate). Only
+// decided once every real pick has a result; N/A and Stand Downs don't
+// count as losses. Saving the round writes it into the Sheet's "Lonesome
+// Loser?" column (Results.gs), which Records and the AGM report count.
+// Results lock (48h after a round's last result - enforced by Results.gs;
+// the Hub just reflects it). Returns the lock object from the Web App.
+function resultsLock() {
+  const rs = state.results;
+  return (rs.data && rs.data.lock) || { complete: false, locked: false };
+}
+
+function resultsLockTimeLabel(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-NZ', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+}
+
+function resultsRoundSummary() {
+  const rs = state.results;
+  if (!rs.data || !rs.draft) return null;
+  const real = rs.data.members.filter(m => m.found && m.option && lower(m.option) !== 'stand down' && lower(m.betType) !== 'stand down');
+  if (!real.length || real.some(m => !rs.draft.results[m.member])) return null;
+  const losers = real.filter(m => rs.draft.results[m.member] === 'Loss').map(m => m.member);
+  if (losers.length === 0) return { type: 'perfect' };
+  if (losers.length === 1) return { type: 'lonesome', member: losers[0] };
+  return null;
+}
+
 function resultsSavePayload() {
   const rs = state.results;
   const out = { results: {}, payouts: {} };
@@ -7039,6 +7068,13 @@ async function saveRoundResults() {
   try {
     // postFineAction is just the shared "POST JSON to the Web App" helper.
     const result = await postFineAction({ action: 'saveRound', date: rs.data.date, results: payload.results, payouts: payload.payouts });
+    if (result && result.locked) {
+      rs.saving = false;
+      await fetchRoundResults(rs.data.date);
+      rs.message = { text: result.error, tone: 'bad' };
+      render();
+      return;
+    }
     if (!result || !result.success) throw new Error((result && result.error) || 'No response');
     const n = result.resultsSaved, p = result.payoutsSaved;
     const parts = [];
@@ -7046,7 +7082,7 @@ async function saveRoundResults() {
     if (p) parts.push(`${p} payout${p === 1 ? '' : 's'}`);
     rs.message = result.missing && result.missing.length
       ? { text: `Saved, but no Sheet row was found for ${result.missing.join(', ')} on ${rs.data.date}.`, tone: 'bad' }
-      : { text: `${parts.join(' and ')} saved to the Sheet.`, tone: 'good' };
+      : { text: `${parts.join(' and ')} saved to the Sheet.${result.lonesomeLoser ? ` ${result.lonesomeLoser} recorded as Lonesome Loser.` : ''}`, tone: 'good' };
     rs.saving = false;
     const keepMessage = rs.message;
     await fetchRoundResults(rs.data.date);
@@ -7119,12 +7155,13 @@ function resultsPickRowHtml(code, team) {
   else if (!m.option) pickText = `<span class="muted">No pick dropped</span>`;
   else pickText = `${escapeHtml(m.option)}${m.betType ? ` <span class="muted small">${escapeHtml(m.betType)}</span>` : ''} <span class="${Number.isFinite(odds) && odds >= TWO_PLUS_ODDS ? 'results-odds-gold' : 'muted'} small">@${Number.isFinite(odds) ? odds.toFixed(2) : escapeHtml(m.odds || '?')}</span>`;
   const buttons = (m && m.found) ? [['Win', 'Win'], ['Loss', 'Loss'], ['NA', 'N/A']].map(([value, label]) =>
-    `<button type="button" class="results-btn${current === value ? ` is-${value.toLowerCase()}` : ''}" data-results-member="${code}" data-results-value="${value}">${label}</button>`
+    `<button type="button" class="results-btn${current === value ? ` is-${value.toLowerCase()}` : ''}" data-results-member="${code}" data-results-value="${value}"${resultsLock().locked ? ' disabled' : ''}>${label}</button>`
   ).join('') : '';
   return `<div class="results-pick${twoPlus ? ' is-two-plus' : ''}">
     <div class="results-pick-text">
       <p><strong>${escapeHtml(code)}</strong>${code === team.members[0] ? '<span class="muted small"> (c)</span>' : ''} · ${pickText}</p>
       ${twoPlus ? `<p><span class="results-two-plus-badge">★ $2+ winner</span></p>` : ''}
+      ${(() => { const sum = resultsRoundSummary(); return sum && sum.type === 'lonesome' && sum.member === code ? `<p><span class="results-lonesome-badge">Lonesome Loser</span></p>` : ''; })()}
     </div>
     <div class="results-btns">${buttons}</div>
   </div>`;
@@ -7135,6 +7172,7 @@ function resultsPayoutBoxHtml(team, status) {
   // the TAB slip screenshot the member shares separately.
   const rs = state.results;
   const typed = rs.draft.payouts[team.name] ?? '';
+  const payoutLocked = resultsLock().locked && resultsLoadedPayout(team.name) > 0;
   const slip = resultsCaptainSlip(team.name);
   const slipId = driveFileId(slip);
   const busy = rs.slipBusy[team.name];
@@ -7146,8 +7184,8 @@ function resultsPayoutBoxHtml(team, status) {
       : `<div class="results-slip-row"><button type="button" class="drop-pick-btn" data-results-slip="${escapeHtml(team.name)}"${busy ? ' disabled' : ''}>${busy ? 'Saving slip...' : '+ Add bet slip'}</button>${busy ? '' : '<span class="results-slip-missing small">\u26a0 Slip missing</span>'}</div>`;
   return `<div class="results-payout">
     <p class="results-payout-title">Team payout <span class="muted small">\u00b7 goes on ${escapeHtml(team.members[0])}'s row</span></p>
-    <div class="results-payout-input">$<input type="text" inputmode="decimal" placeholder="0.00" value="${escapeHtml(typed)}" data-results-payout="${escapeHtml(team.name)}"></div>
-    <p class="muted small results-payout-est">Enter the payout shown on the TAB slip.</p>
+    <div class="results-payout-input">$<input type="text" inputmode="decimal" placeholder="0.00" value="${escapeHtml(typed)}" data-results-payout="${escapeHtml(team.name)}"${payoutLocked ? ' disabled' : ''}></div>
+    <p class="muted small results-payout-est">${payoutLocked ? 'Locked - the round was completed more than 48 hours ago.' : 'Enter the payout shown on the TAB slip.'}</p>
     ${slipHtml}
   </div>`;
 }
@@ -7222,6 +7260,15 @@ function resultsPage() {
     <div class="panel results-panel">
       <div class="results-top">${picker}<span class="muted small">${resulted} of ${total} picks resulted</span></div>
       ${rs.loading ? '<p class="muted small">Loading...</p>' : ''}
+      ${(() => { const lock = resultsLock();
+        if (lock.locked) return `<div class="results-lock is-locked">\ud83d\udd12 Locked \u00b7 this round's results can no longer be changed in the Hub</div>`;
+        if (lock.complete && lock.lockAt) return `<div class="results-lock">All results in \u00b7 corrections close ${escapeHtml(resultsLockTimeLabel(lock.lockAt))}</div>`;
+        return ''; })()}
+      ${(() => { const sum = resultsRoundSummary();
+        if (!sum) return '';
+        return sum.type === 'perfect'
+          ? `<div class="results-round-summary is-perfect">Perfect Round · every pick won</div>`
+          : `<div class="results-round-summary is-lonesome">Lonesome Loser · ${escapeHtml(sum.member)} was the only losing pick this round</div>`; })()}
       ${DROP_PICK_TEAMS.map(resultsTeamCardHtml).join('')}
       <button type="button" class="results-save" id="resultsSave"${rs.saving ? ' disabled' : ''}>${rs.saving ? 'Saving...' : changes ? 'Save round' : 'Saved'}</button>
       ${msg}
