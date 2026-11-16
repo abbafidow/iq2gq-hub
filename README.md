@@ -1,3 +1,27 @@
+## v8.0 changes
+
+**New Results tab (between Drop a pick and Pick Assistant)**
+- **Enter each round's results in the Hub.** Pick a round (defaults to the latest), tap Win / Loss / N/A for each member, then Save round. Results go straight into Raw_Live's Result column. Anyone can save, same as Drop a Pick.
+- **Each team card shows its MM status** as you go: MM won, MM lost (naming the MM Killer when only one pick lost, or Tier Crasher when all three did) or how many picks are still waiting.
+- **Team payout box** appears when a team's MM wins. Entirely manual: type in the amount from the TAB slip (no estimate is calculated). The payout is saved on the captain's row (first-named member), and any copy on the other two rows for that round is cleared so it's never counted twice.
+- **Bet slips:** upload is built but switched off (SHOW_BET_SLIPS in app.js) - slips are handled separately and the Sheet needs no new column.
+- **Team MM returns table** under the round: each team's payouts for the chosen round, its syndicate quarter and the season.
+- Drop a pick has a "Round finished? Enter results" link to the new tab.
+
+**$2+ winners get special recognition**
+- Gold badge on any $2.00+ pick marked Win on the Results tab.
+- Dashboard banner listing the latest round's $2+ winners, with each member's running count for the season. Shows until the next round starts being resulted.
+- New "$2+ Club" table on Records: this season, all-time and best odds per member, with a crown for the season leader.
+
+**Dashboard**
+- Presidential race table has a new Team column between Member and Pts.
+
+**Backend**
+- New Results.gs file in the Drop a Pick Apps Script project, plus two hook lines in PickEntry.gs. Code.gs untouched. Needs a new deployment version.
+
+**Housekeeping**
+- Phone bottom bar now fits 7 tabs. Footer version updated to v8.0.
+
 ## v7.7 changes
 
 **Fines - the Hub now follows the Spreadsheet's own rule**
