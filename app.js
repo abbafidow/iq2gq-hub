@@ -87,7 +87,8 @@ const state = {
   sort: {},
   tableExpanded: {}, // { tableId: true } once a folded table's "show more" has been clicked
   sportDrilldown: false,
-  statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds'
+  statsTab: null, // null (shows ball selector) | 'members' | 'sports' | 'bettypes' | 'odds' | 'trends' | 'reference'
+  trends: null, // Trends what-if controls: { scope: 'cur' | 'five', minOdds }
   selectedMember: null, // shared "who am I" selection for Pick Assistant / Stats -> Members / Records
   dropPick: {
     step: 'grid', // 'grid' | 'checking' | 'existing' | 'confirmOverwrite' | 'form' | 'submitting' | 'done' | 'error'
@@ -1905,6 +1906,7 @@ function statsBallSelector() {
       <text x="85" y="130" text-anchor="middle" class="stats-ball-label">Bet types</text>
       <text x="85" y="50" text-anchor="middle" class="stats-ball-label">Odds</text>
     </svg>
+    <button type="button" class="stats-ball-extra" data-stats-tab="trends">Trends - how we're tracking</button>
   </div>`;
 }
 
@@ -1914,11 +1916,12 @@ function statsPage(data) {
     { key: 'sports', label: 'Sports' },
     { key: 'bettypes', label: 'Bet types' },
     { key: 'odds', label: 'Odds' },
+    { key: 'trends', label: 'Trends' },
     { key: 'reference', label: 'Reference' },
   ];
   if (!state.statsTab) {
     setTimeout(() => {
-      document.querySelectorAll('#statsBall path[data-stats-tab]').forEach(p => {
+      document.querySelectorAll('#statsBall path[data-stats-tab], .stats-ball-extra[data-stats-tab]').forEach(p => {
         p.onclick = () => {
           state.statsTab = p.dataset.statsTab;
           render();
@@ -1935,6 +1938,7 @@ function statsPage(data) {
     : active === 'sports' ? sports(data)
     : active === 'bettypes' ? betTypes(data)
     : active === 'odds' ? odds(data)
+    : active === 'trends' ? trendsPage(data)
     : statsReference();
   setTimeout(() => {
     document.querySelectorAll('.stats-tab').forEach(btn => {
@@ -7435,6 +7439,556 @@ function applyPhoneLayout() {
   });
 }
 
+
+// ==========================================================================
+// Trends (v8.1, Nov 2026)
+// A Stats sub-tab answering four member questions:
+//   1. How is this season tracking against the last five?
+//   2. Fewer winning MMs - but is the money better or worse?
+//   3. Who is above or below their own history?
+//   4. What if every pick had to be at least $X? (this season / last five)
+// Every comparison is cut at the same number of completed rounds, and MMs
+// are scored against the roster each team actually had that season
+// (TEAM_ROSTERS_BY_SEASON, plus TEAM_MAP for the current season) - so only
+// seasons with a known roster (2021/22 onwards) take part. Add each new
+// season's roster to TEAM_ROSTERS_BY_SEASON at the AGM and it rolls in.
+// Styled like the AGM report page on a light purple background; charts are
+// plain SVG drawn to fit the screen (no chart library).
+// ==========================================================================
+
+const TRENDS_STAKE = 25;
+const TRENDS_PRIOR_SEASONS = 5;
+const TRENDS_FINE = 10; // minimum fine per loss, used for the "at least" extra fines figure
+const TRENDS_MIN_ODDS_STEPS = Array.from({ length: 17 }, (_, i) => +(1.2 + i * 0.05).toFixed(2)); // $1.20 - $2.00
+const TRENDS_PRESETS = [1.3, 1.4, 1.5, 1.6, 1.8, 2];
+let trendsCache = null;
+
+// A real, resulted pick (excludes blank pre-filled rows and Stand Downs).
+function trendsIsPick(r) {
+  return clean(r.name) !== '' && isRealPick(r) && (r.win || r.loss);
+}
+
+// Seasons that take part, oldest first: up to TRENDS_PRIOR_SEASONS completed
+// seasons with a known roster, plus the current season (scored on TEAM_MAP).
+function trendsRosters(data) {
+  const cy = currentYear(data);
+  const prior = Object.keys(TEAM_ROSTERS_BY_SEASON)
+    .filter(s => seasonStart(s) < seasonStart(cy) && data.some(r => seasonEqual(r.year, s)))
+    .sort((a, b) => seasonStart(a) - seasonStart(b))
+    .slice(-TRENDS_PRIOR_SEASONS);
+  const rosters = {};
+  prior.forEach(s => { rosters[s] = TEAM_ROSTERS_BY_SEASON[s]; });
+  rosters[cy] = TEAM_MAP_AS_ROSTER();
+  return { current: cy, prior, rosters };
+}
+
+// Every team MM where all three legs are real, resulted picks.
+function trendsTeamMMs(rows, roster) {
+  return [...computeTeamMMForRoster(rows, roster).values()]
+    .filter(e => e.memberRows.every(r => clean(r.name) !== '' && (r.win || r.loss)))
+    .map(e => ({ date: e.date, team: e.team, legs: e.memberRows, won: e.successful }));
+}
+
+function trendsSeasonMetrics(rows, roster) {
+  const picks = rows.filter(trendsIsPick);
+  const wins = picks.filter(r => r.win).length;
+  const priced = picks.filter(r => Number.isFinite(r.odds) && r.odds > 1);
+  const mms = trendsTeamMMs(rows, roster);
+  const winningMMs = mms.filter(m => m.won).length;
+  const winnings = rows.reduce((s, r) => s + (r.mmReturn || 0), 0);
+  return {
+    picks: picks.length,
+    winRate: picks.length ? wins / picks.length : null,
+    mmsDropped: mms.length,
+    winningMMs,
+    winnings,
+    avgOdds: priced.length ? priced.reduce((s, r) => s + r.odds, 0) / priced.length : null,
+  };
+}
+
+// Panels 1 and 2: every season cut at the current season's completed round
+// count, plus cumulative MM winnings by round for the line chart.
+function trendsSeasonComparison(data, setup) {
+  const seasons = [...setup.prior, setup.current];
+  const roundN = roundDatesSorted(data.filter(r => seasonEqual(r.year, setup.current))).length;
+  const bySeason = seasons.map(season => {
+    const rows = data.filter(r => seasonEqual(r.year, season));
+    const dates = roundDatesSorted(rows).slice(0, roundN);
+    const keep = new Set(dates);
+    const cut = rows.filter(r => keep.has(r.date));
+    let run = 0;
+    const cumulative = dates.map(d => (run += cut.filter(r => r.date === d).reduce((s, r) => s + (r.mmReturn || 0), 0)));
+    return { season, rounds: dates.length, cumulative, ...trendsSeasonMetrics(cut, setup.rosters[season]) };
+  });
+  const current = bySeason[bySeason.length - 1];
+  const prior = bySeason.slice(0, -1);
+  const mean = vals => { const v = vals.filter(Number.isFinite); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const priorWinnings = prior.reduce((s, x) => s + x.winnings, 0);
+  const priorWinningMMs = prior.reduce((s, x) => s + x.winningMMs, 0);
+  return {
+    roundN, bySeason, current, prior,
+    average: {
+      winRate: mean(prior.map(s => s.winRate)),
+      winningMMs: mean(prior.map(s => s.winningMMs)),
+      winnings: mean(prior.map(s => s.winnings)),
+      avgOdds: mean(prior.map(s => s.avgOdds)),
+      perWinningMM: priorWinningMMs ? priorWinnings / priorWinningMMs : null,
+    },
+    avgCumulative: Array.from({ length: roundN }, (_, i) => mean(prior.map(s => s.cumulative[i]))),
+  };
+}
+
+// Panel 3: this season's win rate vs each member's own career rate before
+// this season, best to worst. `swing` is one standard deviation for that
+// member's number of picks - the normal ups and downs from luck alone.
+function trendsMemberForm(data, currentSeason) {
+  return Object.keys(TEAM_MAP).map(m => {
+    const mine = data.filter(r => r.member === m && trendsIsPick(r));
+    const now = mine.filter(r => seasonEqual(r.year, currentSeason));
+    const before = mine.filter(r => !seasonEqual(r.year, currentSeason));
+    const rate = rs => rs.length ? rs.filter(r => r.win).length / rs.length : null;
+    return { member: m, careerPicks: before.length, careerRate: rate(before), seasonPicks: now.length, seasonRate: rate(now) };
+  })
+    .filter(x => x.careerRate !== null && x.seasonRate !== null)
+    .map(x => ({ ...x, change: x.seasonRate - x.careerRate, swing: Math.sqrt(x.careerRate * (1 - x.careerRate) / x.seasonPicks) }))
+    .sort((a, b) => b.change - a.change);
+}
+
+// Win chance at a given price, two ways (the what-if shows the range between):
+// - "smooth": logistic fit of win/loss on ln(odds) over priced picks up to $3
+// - "record": the syndicate's actual record by 5c price band, made to fall
+//   as odds rise (pool-adjacent-violators), so thin bands can't jump upward
+function trendsFitWinCurve(priced) {
+  const pts = priced.filter(r => r.odds <= 3);
+  let a = 0, b = 0;
+  for (let it = 0; it < 50; it++) {
+    let g0 = 0, g1 = 0, h00 = 0, h01 = 0, h11 = 0;
+    pts.forEach(r => {
+      const x = Math.log(r.odds), p = 1 / (1 + Math.exp(-(a + b * x))), y = r.win ? 1 : 0, w = p * (1 - p);
+      g0 += y - p; g1 += (y - p) * x; h00 += w; h01 += w * x; h11 += w * x * x;
+    });
+    const det = h00 * h11 - h01 * h01;
+    if (!det) break;
+    const da = (h11 * g0 - h01 * g1) / det, db = (h00 * g1 - h01 * g0) / det;
+    a += da; b += db;
+    if (Math.abs(da) + Math.abs(db) < 1e-9) break;
+  }
+  return odds => 1 / (1 + Math.exp(-(a + b * Math.log(odds))));
+}
+
+function trendsRecordCurve(priced) {
+  const band = o => Math.floor(o / 0.05 + 1e-9);
+  const buckets = new Map();
+  priced.forEach(r => {
+    const k = band(r.odds);
+    const e = buckets.get(k) || { lo: k, hi: k, n: 0, w: 0 };
+    e.n++; if (r.win) e.w++;
+    buckets.set(k, e);
+  });
+  const blocks = [...buckets.values()].sort((x, y) => x.lo - y.lo);
+  for (let i = 0; i < blocks.length - 1;) {
+    if (blocks[i].w / blocks[i].n < blocks[i + 1].w / blocks[i + 1].n) {
+      const m = blocks[i + 1];
+      blocks[i] = { lo: blocks[i].lo, hi: m.hi, n: blocks[i].n + m.n, w: blocks[i].w + m.w };
+      blocks.splice(i + 1, 1);
+      if (i > 0) i--;
+    } else i++;
+  }
+  return odds => {
+    const k = band(odds);
+    const blk = blocks.find(x => k >= x.lo && k <= x.hi)
+      || (k < blocks[0].lo ? blocks[0] : blocks[blocks.length - 1]);
+    return blk.w / blk.n;
+  };
+}
+
+// Replays every MM in `rows`: legs priced below minOdds become a leg at
+// minOdds with win chance winAt(minOdds); other legs keep their real result.
+function trendsReplay(mms, minOdds, winAt) {
+  const q = winAt(minOdds);
+  let baseline = 0, modelled = 0, modelWins = 0, legsChanged = 0, legsTotal = 0, extraLosses = 0;
+  mms.forEach(mm => {
+    let price = TRENDS_STAKE, newPrice = TRENDS_STAKE, pWin = 1;
+    mm.legs.forEach(l => {
+      legsTotal++;
+      price *= l.odds;
+      if (l.odds < minOdds) {
+        legsChanged++;
+        newPrice *= minOdds;
+        pWin *= q;
+        extraLosses += (1 - q) - (l.loss ? 1 : 0);
+      } else {
+        newPrice *= l.odds;
+        if (!l.win) pWin = 0;
+      }
+    });
+    if (mm.won) baseline += price;
+    modelled += newPrice * pWin;
+    modelWins += pWin;
+  });
+  return { baseline, modelled, modelWins, legsChanged, legsTotal, extraLosses };
+}
+
+// Panel 4: both scopes, every step on the slider, worked out once.
+// Estimates are scaled by recorded / calculated payouts for that scope, so
+// they line up with the real MM Returns in the Sheet (boosts, odd stakes).
+function trendsWhatIf(data, setup) {
+  const inScope = seasons => data.filter(r => seasons.some(s => seasonEqual(r.year, s)));
+  const allSeasons = [...setup.prior, setup.current];
+  const priced = inScope(allSeasons).filter(r => trendsIsPick(r) && Number.isFinite(r.odds) && r.odds > 1);
+  const smooth = trendsFitWinCurve(priced);
+  const record = trendsRecordCurve(priced);
+  const scope = (seasons, label) => {
+    const rows = inScope(seasons);
+    const mms = seasons.flatMap(s => trendsTeamMMs(rows.filter(r => seasonEqual(r.year, s)), setup.rosters[s]))
+      .filter(mm => mm.legs.every(l => Number.isFinite(l.odds) && l.odds > 1));
+    const recorded = rows.reduce((s, r) => s + (r.mmReturn || 0), 0);
+    const steps = TRENDS_MIN_ODDS_STEPS.map(m => {
+      const s = trendsReplay(mms, m, smooth), r = trendsReplay(mms, m, record);
+      const k = s.baseline ? recorded / s.baseline : 1;
+      return {
+        m,
+        pctChanged: s.legsTotal ? s.legsChanged / s.legsTotal : 0,
+        winsLo: Math.min(s.modelWins, r.modelWins), winsHi: Math.max(s.modelWins, r.modelWins),
+        lo: Math.min(s.modelled, r.modelled) * k, hi: Math.max(s.modelled, r.modelled) * k,
+        finesLo: Math.max(0, Math.min(s.extraLosses, r.extraLosses)) * TRENDS_FINE,
+        finesHi: Math.max(0, Math.max(s.extraLosses, r.extraLosses)) * TRENDS_FINE,
+      };
+    });
+    return { label, mmCount: mms.length, actual: recorded, actualWins: mms.filter(m => m.won).length, steps };
+  };
+  const first = setup.prior[0], last = setup.prior[setup.prior.length - 1];
+  return {
+    cur: scope([setup.current], `${setup.current} so far`),
+    five: setup.prior.length ? scope(setup.prior, first === last ? first : `${first} to ${last}`) : null,
+    pricedCount: priced.length,
+  };
+}
+
+function trendsData(data) {
+  const key = `${data.length}|${data.reduce((s, r) => s + (r.win ? 1 : 0) + (r.loss ? 2 : 0) + (r.mmReturn || 0), 0)}`;
+  if (trendsCache && trendsCache.key === key) return trendsCache;
+  const setup = trendsRosters(data);
+  trendsCache = {
+    key, setup,
+    comparison: trendsSeasonComparison(data, setup),
+    form: trendsMemberForm(data, setup.current),
+    whatIf: trendsWhatIf(data, setup),
+  };
+  if (!state.trends) state.trends = { scope: 'cur', minOdds: 1.5 };
+  return trendsCache;
+}
+
+// ---------- rendering ----------
+// Styled like the AGM report page (Poppins headings, deep panels, gold
+// accents, "From the sheet" tags, auto-written findings) on a light purple
+// background. Charts are plain SVG drawn at the panel's real width, and
+// redrawn when the screen size changes - no chart library needed.
+
+const trendsMoney = v => `${v < 0 ? '-' : ''}$${Math.round(Math.abs(v)).toLocaleString('en-NZ')}`;
+const trendsPct = v => `${(v * 100).toFixed(1)}%`;
+const TR = { gold: '#ffc20e', bar: '#a993f0', muted: '#e3dafb', grid: 'rgba(255,255,255,0.22)', good: '#8ef0b3', bad: '#ffb0a8', panel: '#2a1b5e' };
+
+function trendsNiceMax(v) {
+  if (!(v > 0)) return 1;
+  const step = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * step >= v) return m * step;
+  return 10 * step;
+}
+
+// Longest run of 2+ completed rounds where the season's MM winnings didn't move.
+function trendsFlatSpot(cumulative) {
+  let best = null, start = null;
+  for (let i = 1; i <= cumulative.length; i++) {
+    const flat = i < cumulative.length && cumulative[i] === cumulative[i - 1];
+    if (flat && start === null) start = i;
+    if (!flat && start !== null) {
+      const len = i - start;
+      if (len >= 2 && (!best || len > best.len)) best = { from: start, to: i - 1, len };
+      start = null;
+    }
+  }
+  return best; // indexes into cumulative (round = index + 1)
+}
+
+function trendsFindings(t) {
+  const c = t.comparison, cur = c.current, avg = c.average, k = c.prior.length;
+  const seasons = k === 1 ? 'last season' : `the last ${k} seasons`;
+  const wrDiff = cur.winRate - avg.winRate;
+  const winCmp = Math.abs(wrDiff) <= 0.01 ? 'as often as' : wrDiff > 0 ? 'more often than' : 'less often than';
+  const moneyDiff = cur.winnings - avg.winnings;
+  const level = Math.abs(moneyDiff) <= Math.max(25, avg.winnings * 0.05);
+  let pace = `We're winning picks ${winCmp} ${seasons}, and MM winnings are ${level ? 'level with the average' : `${trendsMoney(Math.abs(moneyDiff))} ${moneyDiff < 0 ? 'behind' : 'ahead of'} the average`} at this point.`;
+  const flat = trendsFlatSpot(cur.cumulative);
+  if (flat && moneyDiff < 0 && !level) pace += ` ${flat.len} rounds without a payout (rounds ${flat.from + 1}–${flat.to + 1}) opened the gap.`;
+
+  const perMM = cur.winningMMs ? cur.winnings / cur.winningMMs : null;
+  const mmDiff = cur.winningMMs - avg.winningMMs;
+  const mmPart = Math.abs(mmDiff) < 2 ? `${cur.winningMMs} winning MMs is on par` : `${cur.winningMMs} winning MMs is ${mmDiff > 0 ? 'above' : 'below'} the ${avg.winningMMs.toFixed(1)} average`;
+  let size = '';
+  if (Number.isFinite(perMM) && Number.isFinite(avg.perWinningMM)) {
+    const ratio = perMM / avg.perWinningMM;
+    const shorter = cur.avgOdds < avg.avgOdds - 0.02, longer = cur.avgOdds > avg.avgOdds + 0.02;
+    if (ratio < 0.9) size = `Smaller ones. ${mmPart}, but each is paying ${trendsMoney(perMM)} against ${trendsMoney(avg.perWinningMM)}${shorter ? ', because picks are at shorter odds' : ''}.`;
+    else if (ratio > 1.1) size = `Bigger ones. ${mmPart}, and each is paying ${trendsMoney(perMM)} against ${trendsMoney(avg.perWinningMM)}${longer ? ', because picks are at longer odds' : ''}.`;
+    else size = `About the same size. ${mmPart}, and each is paying ${trendsMoney(perMM)} against ${trendsMoney(avg.perWinningMM)}.`;
+  }
+
+  const above = t.form.filter(x => x.change > x.swing).map(x => x.member);
+  const below = t.form.filter(x => x.change < -x.swing).map(x => x.member);
+  const list = a => a.length === 1 ? a[0] : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`;
+  let form = 'Everyone is within normal week-to-week luck of their career rate.';
+  if (above.length || below.length) {
+    form = [above.length ? `Above the band: ${list(above)}.` : '', below.length ? `Below it: ${list(below)}.` : '', 'Everyone else is within normal luck.'].filter(Boolean).join(' ');
+  }
+  return { pace, size, form };
+}
+
+function trendsStat(label, value, note, cls = '') {
+  return `<div class="tr-stat"><div class="k">${label}</div><div class="v">${value}</div><div class="c ${cls}">${note}</div></div>`;
+}
+
+function trendsCmp(cur, avg, fmt, sameWithin, worseWhenDown = true) {
+  if (!Number.isFinite(cur) || !Number.isFinite(avg)) return { note: '-', cls: '' };
+  if (Math.abs(cur - avg) <= sameWithin) return { note: `${fmt(avg)} average · on par`, cls: '' };
+  const down = cur < avg;
+  return { note: `${down ? '▼' : '▲'} ${fmt(avg)} average`, cls: down === worseWhenDown ? 'tr-down' : 'tr-up' };
+}
+
+function trendsPage(data) {
+  const t = trendsData(data);
+  const c = t.comparison, cur = c.current, avg = c.average, n = c.roundN;
+  if (!n || !c.prior.length) {
+    return `<div class="tr-page"><section class="tr-sec"><h2>Trends</h2><p class="tr-note">Trends appear once the season has at least one completed round.</p></section></div>`;
+  }
+  const k = c.prior.length;
+  const lastK = k === 1 ? 'last season' : `last ${k} seasons`;
+  const f = trendsFindings(t);
+  const wr = trendsCmp(cur.winRate, avg.winRate, trendsPct, 0.01);
+  const mm = trendsCmp(cur.winningMMs, avg.winningMMs, v => v.toFixed(1), 1);
+  const money = trendsCmp(cur.winnings, avg.winnings, trendsMoney, Math.max(25, avg.winnings * 0.05));
+  const oddsC = trendsCmp(cur.avgOdds, avg.avgOdds, v => `$${v.toFixed(2)}`, 0.02);
+  const ws = state.trends;
+  setTimeout(() => trendsMount(t), 0);
+
+  return `<div class="tr-page"><div class="tr-report">
+<section class="tr-sec tr-cover">
+  <div class="tr-eyebrow">${escapeHtml(t.setup.current)} · As at round ${n}</div>
+  <h2>Trends</h2>
+  <div class="tr-sub">How this season compares with the ${lastK}, at the same point</div>
+  <div class="tr-cover-stats">
+    <div><b>${trendsMoney(cur.winnings)}</b><small>MM winnings</small></div>
+    <div><b>${trendsPct(cur.winRate)}</b><small>picks won</small></div>
+    <div><b>${cur.winningMMs}</b><small>winning MMs</small></div>
+  </div>
+</section>
+
+<section class="tr-sec">
+  <div class="tr-head"><div class="tr-eyebrow">Same point · ${lastK}</div><h2>This season vs the ${lastK}</h2></div>
+  <span class="tr-src">From the sheet</span>
+  <div class="tr-stats">
+    ${trendsStat('Pick win rate', trendsPct(cur.winRate), wr.note, wr.cls)}
+    ${trendsStat('Winning MMs', cur.winningMMs, mm.note, mm.cls)}
+    ${trendsStat('MM winnings', trendsMoney(cur.winnings), money.note, money.cls)}
+    ${trendsStat('Average pick odds', Number.isFinite(cur.avgOdds) ? `$${cur.avgOdds.toFixed(2)}` : '-', oddsC.note, oddsC.cls)}
+  </div>
+  <div class="tr-writing"><span class="tr-tag">Auto-written</span><p>${f.pace}</p></div>
+  <div class="tr-chart" id="trChartPace"></div>
+  <p class="tr-note">MM winnings by round. Gold: ${escapeHtml(t.setup.current)} · dashed: ${k}-season average.</p>
+</section>
+
+<section class="tr-sec">
+  <div class="tr-head"><div class="tr-eyebrow">After ${n} rounds each season</div><h2>Fewer MMs, or smaller ones?</h2></div>
+  <span class="tr-src">From the sheet</span>
+  ${f.size ? `<div class="tr-writing"><span class="tr-tag">Auto-written</span><p>${f.size}</p></div>` : ''}
+  <div class="tr-chart" id="trChartSeasons"></div>
+  <p class="tr-note">Bars: winning MMs · figure above each bar: payout per winning MM.</p>
+</section>
+
+<section class="tr-sec">
+  <div class="tr-head"><div class="tr-eyebrow">This season vs career</div><h2>Who's above or below their history</h2></div>
+  <span class="tr-src">From the sheet</span>
+  <div class="tr-writing"><span class="tr-tag">Auto-written</span><p>${f.form}</p></div>
+  <div class="tr-chart" id="trChartForm"></div>
+  <p class="tr-note">This season's win rate minus each member's career rate before this season. The shaded band is the normal swing for each member's number of picks - anything inside it could just be luck.</p>
+</section>
+
+<section class="tr-sec" id="trendsWhatIf">
+  <div class="tr-head"><div class="tr-eyebrow">What if · estimate</div><h2>Every pick at least…</h2></div>
+  <span class="tr-src tr-src-est">Estimate</span>
+  <div class="tr-btns" id="trendsScope">
+    <button data-scope="cur" class="${ws.scope === 'cur' ? 'on' : ''}">This season</button>
+    ${t.whatIf.five ? `<button data-scope="five" class="${ws.scope === 'five' ? 'on' : ''}">Last ${k} season${k === 1 ? '' : 's'}</button>` : ''}
+  </div>
+  <div class="tr-btns" id="trendsPresets">
+    ${TRENDS_PRESETS.map(p => `<button data-odds="${p}">$${p.toFixed(2)}</button>`).join('')}
+  </div>
+  <div class="tr-min">Minimum price <b id="trendsMinOddsOut"></b></div>
+  <input type="range" class="tr-range" id="trendsMinOdds" min="${TRENDS_MIN_ODDS_STEPS[0]}" max="${TRENDS_MIN_ODDS_STEPS[TRENDS_MIN_ODDS_STEPS.length - 1]}" step="0.05" value="${ws.minOdds}" aria-label="Minimum odds">
+  <div class="tr-stats">
+    <div class="tr-stat"><div class="k">Estimated MM winnings</div><div class="v tr-v-sm" id="twMoney"></div><div class="c" id="twMoneyDelta"></div></div>
+    <div class="tr-stat"><div class="k">Winning MMs</div><div class="v tr-v-sm" id="twWins"></div><div class="c" id="twWinsAct"></div></div>
+    <div class="tr-stat"><div class="k">Picks that change</div><div class="v tr-v-sm" id="twPct"></div><div class="c">priced below the minimum</div></div>
+    <div class="tr-stat"><div class="k">Extra fines, at least</div><div class="v tr-v-sm" id="twFines"></div><div class="c">from extra losses</div></div>
+  </div>
+  <div class="tr-chart" id="trChartWhatIf"></div>
+  <p class="tr-note" id="trendsWhatIfFoot"></p>
+  <details class="tr-how">
+    <summary>How is this worked out?</summary>
+    <p>An MM only pays if all three legs win. Legs already at or above the minimum keep their real price and result. Each leg below it is swapped for a leg at the minimum price, with a chance of winning taken from the syndicate's own picks at that price since ${escapeHtml(c.bySeason[0].season)}. Each MM's estimate is its payout × its chance of winning - so higher odds lift payouts, but also add crashes.</p>
+    <p>Example: legs of $1.25, $1.80 and $1.60 all won and paid $90. With a $1.50 minimum the payout becomes $108, but if $1.50 picks win 62% of the time, the estimate is $108 × 0.62 = $67.</p>
+    <p>The range comes from two ways of reading that chance of winning: the syndicate's actual record at each price, and a smoothed curve across all ${t.whatIf.pricedCount.toLocaleString('en-NZ')} priced picks. Where few picks were made at a price, the two disagree, so the range widens. Extra fines assume $10 a loss - escalating fines would make it more. It can't know what members would really have picked instead.</p>
+  </details>
+</section>
+</div></div>`;
+}
+
+// ---- SVG charts (drawn at the container's real width) ----
+
+function trendsSvg(w, h, inner, label) {
+  return `<svg class="tr-svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${escapeHtml(label)}">${inner}</svg>`;
+}
+const trTxt = (x, y, s, o = {}) => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${o.size || 11}" fill="${o.fill || TR.muted}"${o.anchor ? ` text-anchor="${o.anchor}"` : ''}${o.weight ? ` font-weight="${o.weight}"` : ''}>${escapeHtml(s)}</text>`;
+const trPath = pts => 'M' + pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('L');
+
+function trendsChartPace(t, w) {
+  const c = t.comparison, cur = c.current.cumulative, avg = c.avgCumulative, n = c.roundN;
+  const h = w < 500 ? 170 : 220, l = 46, r = 8, top = 10, b = 20;
+  const max = trendsNiceMax(Math.max(...cur, ...avg.filter(Number.isFinite), 1));
+  const y = v => top + (h - top - b) * (1 - v / max);
+  const x = i => n === 1 ? (l + w - r) / 2 : l + (w - l - r) * i / (n - 1);
+  let s = '';
+  [0, max / 2, max].forEach(v => { s += `<line x1="${l}" x2="${w - r}" y1="${y(v)}" y2="${y(v)}" stroke="${TR.grid}"/>` + trTxt(l - 5, y(v) + 3, trendsMoney(v), { anchor: 'end', size: 10 }); });
+  const flat = trendsFlatSpot(cur);
+  if (flat) s += `<rect x="${x(flat.from - 1)}" y="${top}" width="${x(flat.to) - x(flat.from - 1)}" height="${h - top - b}" fill="rgba(255,176,168,0.14)"/>`;
+  s += `<path d="${trPath(avg.map((v, i) => [x(i), y(v)]))}" fill="none" stroke="${TR.muted}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  s += `<path d="${trPath(cur.map((v, i) => [x(i), y(v)]))}" fill="none" stroke="${TR.gold}" stroke-width="3" stroke-linejoin="round"/>`;
+  const last = n - 1, gap = y(cur[last]) > y(avg[last]);
+  s += `<circle cx="${x(last)}" cy="${y(cur[last])}" r="4" fill="${TR.gold}"/>`;
+  s += trTxt(x(last) - 6, y(cur[last]) + (gap ? 15 : -7), trendsMoney(cur[last]), { anchor: 'end', fill: TR.gold, weight: 600 });
+  if (Number.isFinite(avg[last])) s += trTxt(x(last) - 6, y(avg[last]) + (gap ? -7 : 15), trendsMoney(avg[last]), { anchor: 'end' });
+  const every = Math.max(1, Math.ceil(n / (w < 500 ? 5 : 10)));
+  for (let i = 0; i < n; i += every) s += trTxt(x(i), h - 5, `R${i + 1}`, { anchor: 'middle', size: 10 });
+  return trendsSvg(w, h, s, 'MM winnings by round, this season vs the average');
+}
+
+function trendsChartSeasons(t, w) {
+  const seasons = t.comparison.bySeason, n = seasons.length, h = w < 500 ? 190 : 220;
+  const maxMM = Math.max(...seasons.map(s => s.winningMMs), 1);
+  const bw = Math.min(70, (w - 20) / n * 0.62), gap = (w - n * bw) / (n + 1);
+  let s = '';
+  seasons.forEach((ss, i) => {
+    const x = gap + i * (bw + gap), bh = (h - 64) * ss.winningMMs / maxMM, isCur = i === n - 1;
+    const per = ss.winningMMs ? ss.winnings / ss.winningMMs : 0;
+    s += `<rect x="${x}" y="${h - 20 - bh}" width="${bw}" height="${bh}" rx="3" fill="${isCur ? TR.gold : TR.bar}"/>`;
+    s += trTxt(x + bw / 2, h - 20 - bh - 18, trendsMoney(per), { anchor: 'middle', size: 12, weight: 600, fill: isCur ? TR.gold : '#fff' });
+    s += trTxt(x + bw / 2, h - 20 - bh - 5, String(ss.winningMMs), { anchor: 'middle', size: 10 });
+    s += trTxt(x + bw / 2, h - 5, w < 500 ? ss.season.slice(2) : ss.season, { anchor: 'middle', size: 10 });
+  });
+  return trendsSvg(w, h, s, 'Winning MMs and payout per winning MM by season');
+}
+
+function trendsChartForm(t, w) {
+  const f = t.form, n = f.length;
+  if (!n) return '';
+  const h = w < 500 ? 210 : 240, l = 36, r = 12, top = 16, b = 20;
+  const vals = f.flatMap(m => [m.change, m.swing, -m.swing]).map(v => v * 100);
+  const lo = Math.floor(Math.min(...vals, 0) / 5) * 5 - 5, hi = Math.ceil(Math.max(...vals, 0) / 5) * 5 + 5;
+  const y = v => top + (h - top - b) * (1 - (v - lo) / (hi - lo));
+  const x = i => n === 1 ? (l + w - r) / 2 : l + (w - l - r) * i / (n - 1);
+  let s = '';
+  const band = f.map((m, i) => [x(i), y(m.swing * 100)]).concat(f.map((m, i) => [x(i), y(-m.swing * 100)]).reverse());
+  s += `<path d="${trPath(band)}Z" fill="rgba(255,255,255,0.09)"/>`;
+  const step = (hi - lo) > 40 ? 10 : 5;
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) if (v % (step * 2) === 0 || v === 0) s += trTxt(l - 5, y(v) + 3, `${v > 0 ? '+' : ''}${v}`, { anchor: 'end', size: 10 });
+  s += `<line x1="${l}" x2="${w - r}" y1="${y(0)}" y2="${y(0)}" stroke="${TR.muted}"/>`;
+  s += `<path d="${trPath(f.map((m, i) => [x(i), y(m.change * 100)]))}" fill="none" stroke="${TR.gold}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  f.forEach((m, i) => {
+    const v = m.change * 100, col = v >= 0 ? TR.good : TR.bad;
+    s += `<circle cx="${x(i)}" cy="${y(v)}" r="5" fill="${col}" stroke="${TR.panel}" stroke-width="1.5"><title>${escapeHtml(m.member)}: ${trendsPct(m.seasonRate)} this season (${m.seasonPicks} picks) vs ${trendsPct(m.careerRate)} career</title></circle>`;
+    if (w >= 500 || i === 0 || i === n - 1) s += trTxt(x(i) + (i === n - 1 && w < 500 ? -9 : 0), y(v) + (v >= 0 ? -9 : 17), `${v > 0 ? '+' : '−'}${Math.abs(Math.round(v))}`, { anchor: i === n - 1 && w < 500 ? 'end' : 'middle', size: 11, weight: 600, fill: col });
+    s += trTxt(x(i), h - 5, m.member, { anchor: 'middle', size: 10.5, fill: '#fff' });
+  });
+  return trendsSvg(w, h, s, "Each member's change in win rate vs their career");
+}
+
+function trendsChartWhatIf(view, idx, w) {
+  const steps = view.steps, n = steps.length, h = w < 500 ? 150 : 190, l = 52, r = 8, top = 8, b = 20;
+  const all = steps.flatMap(s => [s.lo, s.hi]).concat(view.actual);
+  const mx = Math.max(...all) * 1.05, mn = Math.min(...all) * 0.9;
+  const y = v => top + (h - top - b) * (1 - (v - mn) / (mx - mn || 1));
+  const x = i => l + (w - l - r) * i / (n - 1);
+  let s = '';
+  [mn, (mn + mx) / 2, mx].forEach(v => { s += `<line x1="${l}" x2="${w - r}" y1="${y(v)}" y2="${y(v)}" stroke="${TR.grid}"/>` + trTxt(l - 5, y(v) + 3, trendsMoney(v), { anchor: 'end', size: 10 }); });
+  const area = steps.map((st, i) => [x(i), y(st.hi)]).concat(steps.map((st, i) => [x(i), y(st.lo)]).reverse());
+  s += `<path d="${trPath(area)}Z" fill="rgba(169,147,240,0.45)"/>`;
+  s += `<line x1="${l}" x2="${w - r}" y1="${y(view.actual)}" y2="${y(view.actual)}" stroke="${TR.muted}" stroke-dasharray="4 3"/>`;
+  s += `<line x1="${x(idx)}" x2="${x(idx)}" y1="${y(steps[idx].hi)}" y2="${y(steps[idx].lo)}" stroke="${TR.gold}" stroke-width="5" stroke-linecap="round"/>`;
+  const every = w < 500 ? 8 : 4;
+  for (let i = 0; i < n; i += every) s += trTxt(x(i), h - 5, `$${steps[i].m.toFixed(2)}`, { anchor: i === n - 1 ? 'end' : 'middle', size: 10 });
+  return trendsSvg(w, h, s, 'Estimated MM winnings by minimum odds');
+}
+
+function trendsChartWidth(id) {
+  const el = $(id);
+  return el ? Math.max(260, Math.floor(el.clientWidth)) : 320;
+}
+
+function trendsUpdateWhatIf(t) {
+  const ws = state.trends;
+  const view = (ws.scope === 'five' && t.whatIf.five) ? t.whatIf.five : t.whatIf.cur;
+  const i = Math.max(0, TRENDS_MIN_ODDS_STEPS.findIndex(m => Math.abs(m - ws.minOdds) < 1e-6));
+  const s = view.steps[i];
+  const set = (id, text, cls) => { const el = $(id); if (!el) return; el.textContent = text; if (cls !== undefined) el.className = cls; };
+  const range = (lo, hi, fmt) => Math.round(lo) === Math.round(hi) ? fmt(lo) : `${fmt(lo)}–${fmt(hi).replace('$', '')}`;
+  set('trendsMinOddsOut', `$${ws.minOdds.toFixed(2)}`);
+  set('twPct', `${Math.round(s.pctChanged * 100)}%`);
+  set('twWins', range(s.winsLo, s.winsHi, v => String(Math.round(v))));
+  set('twWinsAct', `actual ${view.actualWins}`);
+  set('twMoney', range(s.lo, s.hi, trendsMoney));
+  const dl = view.actual ? Math.round((s.lo - view.actual) / view.actual * 100) : 0;
+  const dh = view.actual ? Math.round((s.hi - view.actual) / view.actual * 100) : 0;
+  const sign = v => `${v > 0 ? '+' : ''}${v}%`;
+  set('twMoneyDelta', dl === dh ? `${sign(dl)} vs actual` : `${sign(dl)} to ${sign(dh)} vs actual`, `c${dh < 0 ? ' tr-down' : dl > 0 ? ' tr-up' : ''}`);
+  set('twFines', range(s.finesLo, s.finesHi, trendsMoney));
+  set('trendsWhatIfFoot', `Estimate only, at a $${ws.minOdds.toFixed(2)} minimum. Shaded = range of estimates · dashed = actual (${view.label}, ${view.mmCount} MMs, ${view.actualWins} winning, ${trendsMoney(view.actual)}).`);
+  document.querySelectorAll('#trendsPresets button').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.odds - ws.minOdds) < 1e-6));
+  document.querySelectorAll('#trendsScope button').forEach(b => b.classList.toggle('on', b.dataset.scope === ws.scope));
+  const slider = $('trendsMinOdds'); if (slider) slider.value = ws.minOdds;
+  const box = $('trChartWhatIf'); if (box) box.innerHTML = trendsChartWhatIf(view, i, trendsChartWidth('trChartWhatIf'));
+}
+
+let trendsResizeTimer = null;
+let trendsLastWidth = 0;
+let trendsResizeBound = false;
+function trendsDrawCharts(t) {
+  const put = (id, fn) => { const el = $(id); if (el) el.innerHTML = fn(t, trendsChartWidth(id)); };
+  put('trChartPace', trendsChartPace);
+  put('trChartSeasons', trendsChartSeasons);
+  put('trChartForm', trendsChartForm);
+  trendsUpdateWhatIf(t);
+  trendsLastWidth = window.innerWidth;
+}
+
+function trendsMount(t) {
+  if (!$('trendsWhatIf')) return; // navigated away before mounting
+  const setOdds = v => { state.trends.minOdds = +(+v).toFixed(2); trendsUpdateWhatIf(t); };
+  const slider = $('trendsMinOdds');
+  if (slider) slider.oninput = () => setOdds(slider.value);
+  document.querySelectorAll('#trendsPresets button').forEach(b => { b.onclick = () => setOdds(b.dataset.odds); });
+  document.querySelectorAll('#trendsScope button').forEach(b => { b.onclick = () => { state.trends.scope = b.dataset.scope; trendsUpdateWhatIf(t); }; });
+  trendsDrawCharts(t);
+  if (!trendsResizeBound) {
+    trendsResizeBound = true;
+    window.addEventListener('resize', () => {
+      clearTimeout(trendsResizeTimer);
+      trendsResizeTimer = setTimeout(() => {
+        if (!$('trendsWhatIf') || !trendsCache || window.innerWidth === trendsLastWidth) return;
+        trendsDrawCharts(trendsCache);
+      }, 150);
+    });
+  }
+}
 
 // ==========================================================================
 // AGM Report (v7.5, Oct 2026)
