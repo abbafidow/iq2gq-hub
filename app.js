@@ -6906,6 +6906,7 @@ state.results = {
   saving: false,
   message: null, // { text, tone }
   slipBusy: {}, // team -> true while uploading
+  earlyRound: null, // this week's round, when it opened early (7+ of 12 picks in)
 };
 
 function resultsHasChanges() {
@@ -7036,17 +7037,59 @@ function resultsPayoutError() {
   return null;
 }
 
-async function fetchRoundResults(date) {
+async function resultsFetch(date) {
+  const url = `${PICK_ENTRY_API_URL}?action=roundResults${date ? `&date=${encodeURIComponent(date)}` : ''}&v=${Date.now()}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json;
+}
+
+// This week's round opens on the Results tab as soon as a majority of
+// members (7 of 12) have dropped their pick - before Friday arrives. Results.gs
+// only lists rounds dated today or earlier, but returns any round asked for
+// by date, so the Hub asks for this week's round itself and checks the live
+// pick count. The Hub's own copy of the data is only used to skip that extra
+// request when this week has no picks at all yet (e.g. every weekend).
+function resultsMajorityIn(json) {
+  const found = (json.members || []).filter(m => m.found);
+  const picked = found.filter(m => clean(m.option) !== '').length;
+  return found.length > 0 && picked >= Math.floor(found.length / 2) + 1;
+}
+
+async function openResultsDefault() {
   const rs = state.results;
   rs.loading = true;
   rs.error = null;
   render();
   try {
-    const url = `${PICK_ENTRY_API_URL}?action=roundResults${date ? `&date=${encodeURIComponent(date)}` : ''}&v=${Date.now()}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
+    const week = currentRoundDateLabel();
+    const anyPicks = state.raw.some(r => r.date === week && clean(r.name) !== '' && isRealPick(r));
+    let json = null;
+    rs.earlyRound = null;
+    if (anyPicks) {
+      const early = await resultsFetch(week);
+      if (resultsMajorityIn(early)) { json = early; rs.earlyRound = week; }
+    }
+    if (!json) json = await resultsFetch(null);
     rs.data = json;
+    resetResultsDraft();
+  } catch (err) {
+    rs.error = `Couldn't load the round from the Sheet: ${err.message}`;
+  } finally {
+    rs.loading = false;
+    render();
+  }
+}
+
+async function fetchRoundResults(date) {
+  if (!date) return openResultsDefault();
+  const rs = state.results;
+  rs.loading = true;
+  rs.error = null;
+  render();
+  try {
+    rs.data = await resultsFetch(date);
     resetResultsDraft();
   } catch (err) {
     rs.error = `Couldn't load the round from the Sheet: ${err.message}`;
@@ -7255,7 +7298,9 @@ function resultsPage() {
 
   const resulted = rs.data.members.filter(m => m.found && rs.draft.results[m.member]).length;
   const total = rs.data.members.filter(m => m.found).length;
-  const rounds = rs.data.rounds && rs.data.rounds.length ? rs.data.rounds : [rs.data.date];
+  const serverRounds = rs.data.rounds && rs.data.rounds.length ? rs.data.rounds : [];
+  const rounds = [...new Set([rs.earlyRound, rs.data.date, ...serverRounds].filter(Boolean))]
+    .sort((a, b) => (parseDMY(b) || 0) - (parseDMY(a) || 0));
   const picker = `<select id="resultsRound" class="results-round-select"${rs.loading || rs.saving ? ' disabled' : ''}>${rounds.map(d => `<option value="${escapeHtml(d)}"${d === rs.data.date ? ' selected' : ''}>Round: ${escapeHtml(d)}</option>`).join('')}</select>`;
   const msg = rs.message ? `<p class="results-message" style="color:${rs.message.tone === 'good' ? 'var(--good)' : rs.message.tone === 'bad' ? 'var(--bad)' : 'var(--muted)'};">${escapeHtml(rs.message.text)}</p>` : '';
   const changes = resultsHasChanges();
