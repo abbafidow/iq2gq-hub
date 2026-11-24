@@ -1,3 +1,11 @@
+## v8.3 changes
+
+**Dashboard**
+- Current streaks and Did you know? now sit on a charcoal background, so the row stands apart from the navy panels around it. Streak colours and the IR / SR highlights are unchanged.
+
+**Housekeeping**
+- Footer version updated to v8.3.
+
 ## v8.2 changes
 
 **Dashboard - Current streaks and Did you know? (side by side above Insights this year; stacked on phones)**
