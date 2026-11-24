@@ -1857,3 +1857,64 @@ body.agm-presenting { overflow: hidden; }
   .tr-stat .v { font-size: 19px; }
   .tr-stat .v.tr-v-sm { font-size: 16px; }
 }
+
+/* ---------- Dashboard: Current streaks + Did you know? (Nov 2026) ---------- */
+.streaks-facts-row .panel { margin-bottom: 0; }
+.panel-sub { margin: -6px 0 12px; }
+.streak-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.streak-chip { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 6px 6px; min-width: 0; text-align: center; }
+.streak-chip b { font-weight: 600; }
+.streak-val { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.streak-when { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.streak-chip.is-win { border-color: rgba(121, 242, 163, 0.45); }
+.streak-chip.is-win .streak-val { color: var(--good); }
+.streak-chip.is-hot { background: rgba(121, 242, 163, 0.1); }
+.streak-chip.is-loss { border-color: rgba(255, 146, 146, 0.45); }
+.streak-chip.is-loss .streak-val { color: var(--bad); }
+.fact-card { background: var(--panel2); border-left: 3px solid var(--accent); padding: 8px 12px; margin-bottom: 8px; }
+.fact-card p { margin: 2px 0 0; font-size: 14px; line-height: 1.45; }
+.fact-tag { color: var(--accent); font-size: 12px; letter-spacing: 0.3px; }
+.fact-card.fact-mm { border-left-color: var(--warn); }
+.fact-card.fact-mm .fact-tag { color: var(--warn); }
+.fact-card.fact-member { border-left-color: var(--good); }
+.fact-card.fact-member .fact-tag { color: var(--good); }
+.facts-more { margin-top: 4px; background: transparent; border: 1px solid var(--line); color: var(--accent); border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.facts-more:hover { border-color: var(--accent); }
+@media (max-width: 900px) {
+  .streaks-facts-row .panel { margin-bottom: 0; }
+}
+@media (max-width: 520px) {
+  .streak-grid { gap: 4px; }
+  .streak-chip { padding: 5px 2px; border-radius: 8px; }
+  .streak-val { font-size: 16px; }
+  .streak-when { font-size: 10px; }
+}
+.fact-card.fact-week { border-left-color: var(--accent); }
+.fact-card.fact-warn { border-left-color: var(--bad); }
+.fact-card.fact-warn .fact-tag { color: var(--bad); }
+.fact-card.fact-trend { border-left-color: #c9a8ff; }
+.fact-card.fact-trend .fact-tag { color: #c9a8ff; }
+.fact-card.fact-streak .fact-tag { color: var(--good); }
+.fact-card.fact-streak { border-left-color: var(--good); }
+.streak-chip.is-ir { border-color: var(--warn); background: rgba(255, 213, 107, 0.16); }
+.streak-chip.is-ir .streak-val { color: var(--warn); }
+.streak-chip.is-sr { border: 2px solid #e58cff; background: rgba(229, 140, 255, 0.2); box-shadow: 0 0 10px rgba(229, 140, 255, 0.55); }
+.streak-chip.is-sr .streak-val { color: #f3c4ff; }
+.streak-badge { display: inline-block; font-size: 9px; font-weight: 700; border-radius: 4px; padding: 0 3px; vertical-align: 1px; }
+.streak-badge.ir { background: var(--warn); color: #3a2a00; }
+.streak-badge.sr { background: #e58cff; color: #3b0a47; }
+.streak-banner { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+.streak-banner b { display: block; font-size: 14px; }
+.streak-banner-icon { font-size: 22px; }
+.streak-banner.ir { border: 1px solid var(--warn); background: rgba(255, 213, 107, 0.12); }
+.streak-banner.ir b { color: var(--warn); }
+.streak-banner.sr { border: 2px solid #e58cff; background: rgba(229, 140, 255, 0.16); }
+.streak-banner.sr b { color: #f3c4ff; }
+.streak-holders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 13px; }
+.streak-holders > div { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.streak-holders span { display: block; color: var(--muted); font-size: 11px; }
+@media (max-width: 520px) { .streak-holders { grid-template-columns: 1fr; gap: 6px; } }
+.fact-card.fact-record { border-left-color: var(--warn); background: rgba(255, 213, 107, 0.1); }
+.fact-card.fact-record .fact-tag { color: var(--warn); font-weight: 700; }
+.fact-card.fact-sr { border-left-color: #e58cff; background: rgba(229, 140, 255, 0.14); }
+.fact-card.fact-sr .fact-tag { color: #f3c4ff; font-weight: 700; }
