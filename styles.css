@@ -1918,3 +1918,9 @@ body.agm-presenting { overflow: hidden; }
 .fact-card.fact-record .fact-tag { color: var(--warn); font-weight: 700; }
 .fact-card.fact-sr { border-left-color: #e58cff; background: rgba(229, 140, 255, 0.14); }
 .fact-card.fact-sr .fact-tag { color: #f3c4ff; font-weight: 700; }
+
+/* v8.3: charcoal background so the streaks / Did you know? row reads as its
+   own section. Re-scoping the colour variables keeps every tile, card and
+   IR/SR highlight working unchanged. */
+.streaks-facts-row { --panel: #1b1f27; --panel2: #13161c; --line: #3a414f; }
+.streaks-facts-row > .panel { background: var(--panel); border-color: var(--line); }
