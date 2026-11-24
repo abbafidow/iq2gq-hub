@@ -1871,6 +1871,7 @@ function dashboard(data) {
   return `${pageHeader}${agmBannerHtml()}${twoPlusBannerHtml()}${seasonHeading}
 ${dashboardTiles(currentSeasonRows, previousSeasonToDateRows, roundCount)}
 ${presidentialTeamsSection(currentSeasonRows)}
+${streaksAndFactsSection(state.raw)}
 ${yearInsightStrip(currentSeasonRows)}
 ${financialTilesStrip(data, previousSeasonToDateRows)}
 <div class="panel"><h2>Recent picks</h2>${table(recent, 'recentPicks', [
@@ -8681,3 +8682,409 @@ window.addEventListener('hashchange', () => {
 });
 
 init();
+
+// ---------- Dashboard: Current streaks + Did you know? (Nov 2026) ----------
+//
+// Two side-by-side Dashboard panels (stacking on phones via .two):
+//   - Current streaks: every current member's live W/L run, carried across
+//     seasons, with their best-ever winning run alongside.
+//   - Did you know?: facts generated from the full history each time the
+//     feed loads, so the "$1.09 picks are X from Y" style posts that used
+//     to go to WhatsApp live in the Hub instead. Nothing is hand-entered.
+// Streak rules: picks with no result yet (and N/A results) are skipped
+// without breaking a run; a Stand Down row ends a losing run, matching the
+// fine rule (the member forfeits the week and the loss count resets).
+
+function shortDateLabel(dateStr, withYear) {
+  const d = parseDMY(dateStr);
+  if (!d) return dateStr || '';
+  const opts = withYear ? { month: 'short', year: 'numeric', timeZone: 'UTC' } : { day: 'numeric', month: 'short', timeZone: 'UTC' };
+  return d.toLocaleDateString('en-NZ', opts);
+}
+
+// A new individual record only counts once the run is a real one - stops
+// a newer member's first 2-3 wins being celebrated as a "record".
+const IR_MIN = 5;
+
+function memberStreakRows(all) {
+  const grouped = groupBy(all, 'member');
+  const runs = allWinRuns(all);
+  return Object.keys(TEAM_MAP).map(member => {
+    const picks = (grouped[member] || []).slice().sort(comparePickOrder);
+    let type = '', count = 0, since = '';
+    for (let i = picks.length - 1; i >= 0; i--) {
+      const p = picks[i];
+      if (!isRealPick(p)) { if (type === 'L') break; continue; }
+      const res = p.win ? 'W' : p.loss ? 'L' : '';
+      if (!res) continue;
+      if (!type) type = res;
+      if (res !== type) break;
+      count += 1;
+      since = p.date;
+    }
+    let best = 0, run = 0, priorBest = 0;
+    picks.forEach(p => {
+      if (!isRealPick(p)) return;
+      if (p.win) { run += 1; best = Math.max(best, run); }
+      else if (p.loss) { priorBest = Math.max(priorBest, run); run = 0; }
+    });
+    // priorBest: best COMPLETED run, so a live run can be compared with it.
+    if (type !== 'W') priorBest = best;
+    return { member, type, count, since, best, priorBest };
+  }).map(r => {
+    // IR: live run beats the member's own previous best. SR: live run beats
+    // every other run in syndicate history (all members, past and present).
+    const others = runs.filter(x => !(x.live && x.member === r.member));
+    const syndicateBest = Math.max(0, ...others.map(x => x.length));
+    const isWin = r.type === 'W';
+    return { ...r, syndicateBest,
+      sr: isWin && r.count > syndicateBest,
+      ir: isWin && r.count > r.priorBest && r.count >= IR_MIN };
+  }).sort((a, b) => {
+    const score = r => r.type === 'W' ? r.count : r.type === 'L' ? -r.count : 0;
+    return score(b) - score(a) || a.member.localeCompare(b.member);
+  });
+}
+
+function streaksPanelHtml(all) {
+  const rows = memberStreakRows(all);
+  const chips = rows.map(r => {
+    const cls = r.type === 'W' ? 'is-win' : r.type === 'L' ? 'is-loss' : '';
+    const hot = r.type === 'W' && r.count >= 5 ? ' is-hot' : '';
+    const badge = r.sr ? ' <span class="streak-badge sr" title="Syndicate record">SR</span>'
+      : r.ir ? ' <span class="streak-badge ir" title="Individual record">IR</span>' : '';
+    const best = badge;
+    const when = !r.count ? '\u2013' : shortDateLabel(r.since);
+    return `<div class="streak-chip ${cls}${hot}${r.sr ? ' is-sr' : r.ir ? ' is-ir' : ''}"><div><b>${escapeHtml(r.member)}</b>${best}</div><div class="streak-val">${r.count ? r.type + r.count : '–'}</div><div class="streak-when">${escapeHtml(when)}</div></div>`;
+  }).join('');
+  const banners = rows.filter(r => r.sr || r.ir).map(r => r.sr
+    ? `<div class="streak-banner sr"><span class="streak-banner-icon" aria-hidden="true">\u{1F451}</span><div><b>Syndicate record!</b> ${escapeHtml(fullName(r.member))} has won ${r.count} straight, the longest winning run in IQ2GQ history (previous record ${r.syndicateBest}).</div></div>`
+    : `<div class="streak-banner ir"><span class="streak-banner-icon" aria-hidden="true">\u2B50</span><div><b>Individual record!</b> ${escapeHtml(fullName(r.member))} has won ${r.count} straight, beating their previous best of ${r.priorBest}.</div></div>`).join('');
+  const win = longestStreakRecord(all, true);
+  const loss = longestStreakRecord(all, false);
+  const holder = rec => rec.streak ? `<strong>${rec.streak}</strong> \u2013 ${escapeHtml(rec.ranges.join(', '))}` : '\u2013';
+  return `<div class="panel streaks-panel"><h2>Current streaks</h2>
+    <p class="muted small panel-sub">Live run and the date it started. IR = new individual record, SR = new syndicate record.</p>
+    ${banners}<div class="streak-grid">${chips}</div>
+    <div class="streak-holders"><div><span>Winning streak (longest)</span>${holder(win)}</div><div><span>Losing streak (longest)</span>${holder(loss)}</div></div></div>`;
+}
+
+// ----- Fact generators. Each returns [{ cat, tag, text, score }] -----
+// Two kinds only, both forward-looking (Nov 2026 decision - commentary on
+// last week's results is a waste):
+//   1. This week: picks already dropped for a round that hasn't started
+//      yet (round date today or later, no result), so members can still
+//      change them. They appear the moment a pick is dropped and drop off
+//      once the round date passes.
+//   2. Trends: patterns that should shape the next pick - form, sports and
+//      bet types running hot or cold, price ranges, MM conversion, streaks
+//      and milestones in reach.
+// Recomputed from the live feed on every page load, so nothing is stored.
+
+function todayUtcMidnight(now = new Date()) {
+  // Round dates are NZ calendar dates; compare in NZ time.
+  const nz = new Date(now.toLocaleString('en-US', { timeZone: 'Pacific/Auckland' }));
+  return new Date(Date.UTC(nz.getFullYear(), nz.getMonth(), nz.getDate()));
+}
+
+function upcomingRoundRows(all, now = new Date()) {
+  const today = todayUtcMidnight(now);
+  const open = all.filter(r => {
+    if (!isRealPick(r) || r.win || r.loss) return false;
+    const d = parseDMY(r.date);
+    return d && d >= today;
+  });
+  if (!open.length) return { date: '', rows: [] };
+  const first = open.slice().sort(comparePickOrder)[0].date;
+  return { date: first, rows: open.filter(r => r.date === first).sort((x, y) => x.member.localeCompare(y.member)) };
+}
+
+function recordOf(rows) {
+  const wins = rows.filter(r => r.win).length;
+  const losses = rows.filter(r => r.loss).length;
+  return { wins, losses, total: wins + losses, rate: wins + losses ? wins / (wins + losses) : 0 };
+}
+
+function resultedPicks(all) {
+  return all.filter(r => isRealPick(r) && (r.win || r.loss));
+}
+
+// One fact per dropped pick, combining what matters for that decision:
+// the exact price's history (the old "$1.09 picks" WhatsApp post), the
+// pick's own syndicate history, and the member's record at that price
+// range. Flagged "Heads up" when the history is weak.
+function thisWeekFacts(all, round) {
+  const resulted = resultedPicks(all);
+  return round.rows.map(r => {
+    const bits = [];
+    let weak = false, strong = 0;
+    if (Number.isFinite(r.odds)) {
+      const same = resulted.filter(x => Number.isFinite(x.odds) && Math.abs(x.odds - r.odds) < 0.001);
+      const rec = recordOf(same);
+      if (rec.total >= 8) {
+        const crashes = same.filter(x => x.loss).sort(comparePickOrder);
+        const last = crashes[crashes.length - 1];
+        bits.push(`Picks at $${oddsFmt(r.odds)} are ${rec.wins} from ${rec.total} all-time (${pct(rec.rate)})${last ? `, last crash ${last.member}'s ${last.name}, ${shortDateLabel(last.date, true)}` : ', never crashed'}.`);
+        if (rec.rate < 0.65) weak = true; else if (rec.rate >= 0.85) strong += 1;
+      }
+      const band = ODDS.find(b => r.odds >= b[2] && r.odds <= b[3]);
+      if (band) {
+        const mine = recordOf(resulted.filter(x => x.member === r.member && x.odds >= band[2] && x.odds <= band[3]));
+        if (mine.total >= 8) {
+          bits.push(`${r.member} is ${mine.wins} from ${mine.total} in the ${band[1]} range.`);
+          if (mine.rate < 0.6) weak = true;
+        }
+      }
+    }
+    const opt = resulted.filter(x => lower(x.name) === lower(r.name));
+    const orec = recordOf(opt);
+    if (orec.total >= 5) {
+      const mrec = recordOf(opt.filter(x => x.member === r.member));
+      bits.push(`${r.name} have gone ${orec.wins} from ${orec.total} for the syndicate${mrec.total >= 2 ? ` (${r.member} ${mrec.wins} from ${mrec.total})` : ''}.`);
+      if (orec.rate < 0.6) weak = true; else if (orec.rate >= 0.85) strong += 1;
+    } else {
+      bits.push(`${r.name} ${orec.total ? `has only ${orec.total} previous syndicate pick${orec.total === 1 ? '' : 's'}` : 'is a first-time pick for the syndicate'}.`);
+    }
+    const head = `${r.member}: ${r.name}${r.betType ? ` (${r.betType})` : ''}${Number.isFinite(r.odds) ? ` at $${oddsFmt(r.odds)}` : ''}.`;
+    return {
+      cat: weak ? 'warn' : 'week',
+      tag: `${weak ? 'Heads up' : strong >= 2 ? 'Looks solid' : 'This week'} · ${r.member}`,
+      text: `${head} ${bits.join(' ')}`,
+      score: weak ? 2 : 1,
+    };
+  }).sort((x, y) => y.score - x.score);
+}
+
+// Recent window used for "running hot/cold" trends: the last N rounds.
+function recentRoundRows(all, rounds = 8) {
+  const real = resultedPicks(all);
+  const dates = uniq(real.map(r => r.date)).sort((x, y) => (parseDMY(x) || 0) - (parseDMY(y) || 0)).slice(-rounds);
+  const keep = new Set(dates);
+  return { rows: real.filter(r => keep.has(r.date)), from: dates[0] };
+}
+
+function formTrendFacts(all, cy) {
+  const out = [];
+  const real = resultedPicks(all);
+  const season = real.filter(r => seasonEqual(r.year, cy));
+  Object.keys(TEAM_MAP).forEach(m => {
+    const career = recordOf(real.filter(r => r.member === m));
+    const now = recordOf(season.filter(r => r.member === m));
+    if (now.total >= 10 && career.total >= 50 && now.rate - career.rate >= 0.08) {
+      out.push({ cat: 'member', tag: `Form · ${m}`, text: `${m} is hitting ${pct(now.rate)} this season (${now.wins} from ${now.total}), well up on a career rate of ${pct(career.rate)}.`, score: now.rate - career.rate });
+    }
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
+
+// Sports and bet types running hot or cold over the last 8 rounds,
+// compared with their own all-time rate.
+function hotColdFacts(all) {
+  const out = [];
+  const real = resultedPicks(all);
+  const recent = recentRoundRows(all, 8);
+  [['group', 'Sport'], ['betTypeGroup', 'Bet type']].forEach(([field, label]) => {
+    const recentBy = groupBy(recent.rows.filter(r => r[field]), field);
+    Object.entries(recentBy).forEach(([name, rows]) => {
+      if (name === 'Unknown') return;
+      const now = recordOf(rows);
+      const ever = recordOf(real.filter(r => r[field] === name));
+      if (now.total < 6 || ever.total < 30) return;
+      const diff = now.rate - ever.rate;
+      if (Math.abs(diff) < 0.12) return;
+      const hot = diff > 0;
+      out.push({
+        cat: hot ? 'trend' : 'warn',
+        tag: `${hot ? 'Running hot' : 'Running cold'} · ${label}`,
+        text: `${name} picks are ${now.wins} from ${now.total} over the last 8 rounds (${pct(now.rate)}), against ${pct(ever.rate)} all-time.`,
+        score: Math.abs(diff) + (hot ? 0 : 0.1),
+      });
+    });
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
+
+// Price ranges doing better or worse this season than their long-run rate.
+function priceTrendFacts(all, cy) {
+  const out = [];
+  const real = resultedPicks(all).filter(r => Number.isFinite(r.odds));
+  const season = real.filter(r => seasonEqual(r.year, cy));
+  ODDS.forEach(band => {
+    const inBand = r => r.odds >= band[2] && r.odds <= band[3];
+    const now = recordOf(season.filter(inBand));
+    const ever = recordOf(real.filter(inBand));
+    if (now.total < 8 || ever.total < 30) return;
+    const diff = now.rate - ever.rate;
+    if (Math.abs(diff) < 0.08) return;
+    out.push({
+      cat: diff > 0 ? 'trend' : 'warn', tag: `Price range · ${band[1]}`,
+      text: `Picks in the ${band[1]} range are ${now.wins} from ${now.total} this season (${pct(now.rate)}), ${diff > 0 ? 'up on' : 'down on'} ${pct(ever.rate)} all-time.`,
+      score: Math.abs(diff),
+    });
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
+
+function mmTrendFacts(all, cy) {
+  const out = [];
+  const season = all.filter(r => seasonEqual(r.year, cy));
+  const mms = [...computeTeamMM(season).values()]
+    .filter(e => e.memberRows.every(r => r.win || r.loss))
+    .sort((a, b) => (parseDMY(a.date) || 0) - (parseDMY(b.date) || 0));
+  if (mms.length < 4) return out;
+  const landed = mms.filter(e => e.successful).length;
+  const oneAway = mms.filter(e => !e.successful && e.memberRows.filter(r => r.loss).length === 1).length;
+  out.push({ cat: 'mm', tag: 'MM conversion', text: `${landed} of ${mms.length} team MMs have landed this season (${pct(landed / mms.length)}). Another ${oneAway} (${pct(oneAway / mms.length)}) were lost by a single pick.`, score: 0.6 });
+  TEAM_ORDER.forEach(team => {
+    const tm = mms.filter(e => e.team === team);
+    let run = 0;
+    for (let i = tm.length - 1; i >= 0 && !tm[i].successful; i--) run += 1;
+    if (run >= 4) {
+      const lastWin = [...tm].reverse().find(e => e.successful);
+      out.push({ cat: 'mm', tag: `MM drought · ${team}`, text: `${team} have missed their last ${run} MMs${lastWin ? ` (last landed ${shortDateLabel(lastWin.date)})` : ' and are yet to land one this season'}.`, score: run / 10 });
+    }
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
+
+// Long winning runs (13+). Every run in syndicate history, all members
+// past and present, as { member, length, start, end, live }.
+const STREAK_RECORD_MIN = 13;
+
+function allWinRuns(all) {
+  const runs = [];
+  Object.entries(groupBy(all.filter(isRealPick), 'member')).forEach(([member, picks]) => {
+    picks.sort(comparePickOrder);
+    let len = 0, start = '';
+    picks.forEach(p => {
+      if (p.win) { if (!len) start = p.date; len += 1; }
+      else if (p.loss) { if (len) runs.push({ member, length: len, start, live: false }); len = 0; }
+    });
+    if (len) runs.push({ member, length: len, start, live: true });
+  });
+  return runs;
+}
+
+function streakRecordFacts(all) {
+  const out = [];
+  const runs = allWinRuns(all);
+  const streaks = memberStreakRows(all);
+  const fmtRun = r => `${r.member}'s ${r.length} (${shortDateLabel(r.start, true)})`;
+  streaks.filter(s => s.type === 'W' && (s.count >= STREAK_RECORD_MIN || s.ir)).forEach(s => {
+    const n = s.count;
+    const others = runs.filter(r => !(r.live && r.member === s.member));
+    const syndicateBest = s.syndicateBest;
+    // SR and IR are the headlines - pinned to the top of the facts.
+    if (s.sr) {
+      out.push({ cat: 'sr', tag: `Syndicate record (SR) \u00b7 ${s.member}`, text: `${s.member} is on ${n} straight wins, the longest run in IQ2GQ history. The previous syndicate record was ${syndicateBest}. Every win from here extends it.`, score: 20 });
+    } else if (s.ir) {
+      out.push({ cat: 'record', tag: `Individual record (IR) \u00b7 ${s.member}`, text: `${s.member} is on ${n} straight wins, beating their previous best of ${s.priorBest}. Every win from here extends a new personal record.${n === syndicateBest ? ' One more win breaks the syndicate record.' : ''}`, score: 10 });
+    } else if (n === syndicateBest) {
+      out.push({ cat: 'record', tag: `Syndicate record watch \u00b7 ${s.member}`, text: `${s.member} is on ${n} straight wins, equal to the syndicate record. One more win sets a new one.`, score: 9.8 });
+    } else if (n === s.priorBest) {
+      out.push({ cat: 'record', tag: `Record watch \u00b7 ${s.member}`, text: `${s.member} is on ${n} straight wins, equal to their individual record. One more win sets a new one.`, score: 9 });
+    }
+    if (n < STREAK_RECORD_MIN) return;
+    // What happened next, every other time a member got to n straight.
+    const reached = others.filter(r => r.length >= n);
+    const nextWon = reached.filter(r => r.length > n).length;
+    const nextLost = reached.filter(r => r.length === n).length;
+    if (reached.length) {
+      out.push({ cat: 'streak', tag: `Streak history \u00b7 ${n} straight`, text: `${s.member} is on ${n} straight wins. Members have reached ${n} straight ${reached.length} time${reached.length === 1 ? '' : 's'} before, and the next pick won ${nextWon} and lost ${nextLost}.`, score: 3 });
+    } else if (!s.sr) {
+      out.push({ cat: 'record', tag: `Uncharted \u00b7 ${n} straight`, text: `No member has ever won ${n} picks in a row before ${s.member}.`, score: 9.5 });
+    }
+    // What's on the line: their own best, then the longest runs ever.
+    const top3 = runs.filter(r => r.length > n).sort((x, y) => y.length - x.length).slice(0, 3);
+    if (n < s.priorBest) {
+      const toMatch = s.priorBest - n;
+      out.push({ cat: 'streak', tag: `Record watch \u00b7 ${s.member}`, text: `${s.member}'s individual record is ${s.priorBest}: ${toMatch} more win${toMatch === 1 ? '' : 's'} to match it, ${toMatch + 1} to beat it.${top3.length ? ` Longest runs on record: ${top3.map(fmtRun).join(', ')}.` : ''}`, score: 2.5 });
+    }
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
+
+function streakAndMilestoneFacts(all, cy) {
+  const out = [];
+  const real = all.filter(isRealPick);
+  Object.keys(TEAM_MAP).forEach(m => {
+    const wins = real.filter(r => r.member === m && r.win).length;
+    const next = Math.ceil((wins + 1) / 50) * 50;
+    if (next - wins <= 3) out.push({ cat: 'streak', tag: `Milestone · ${m}`, text: `${m} is on ${wins} career wins, ${next - wins} away from ${next}.`, score: 1 + (next % 100 === 0 ? 0.5 : 0) });
+  });
+  const season = all.filter(r => isRealPick(r) && seasonEqual(r.year, cy));
+  const counts = Object.entries(groupBy(season, 'name')).sort((a, b) => b[1].length - a[1].length);
+  if (counts.length && counts[0][1].length >= 4) {
+    const rec = recordOf(counts[0][1]);
+    out.push({ cat: 'trend', tag: 'Most backed', text: `${counts[0][0]} is the syndicate's most-backed pick this season: ${rec.wins} from ${rec.total} so far.`, score: 0.4 });
+  }
+  return out.sort((a, b) => b.score - a.score);
+}
+
+function dashboardFacts(all, now = new Date()) {
+  const cy = currentYear(all);
+  const round = upcomingRoundRows(all, now);
+  const week = thisWeekFacts(all, round);
+  const buckets = [hotColdFacts(all), mmTrendFacts(all, cy), formTrendFacts(all, cy), priceTrendFacts(all, cy), streakAndMilestoneFacts(all, cy)];
+  // Trends round-robin across categories so every batch is a mix.
+  const trends = [];
+  for (let i = 0; buckets.some(b => i < b.length); i++) buckets.forEach(b => { if (b[i]) trends.push(b[i]); });
+  // Alternate this week's picks with trends, so each pair of facts shown
+  // is one pick plus one trend (falling back to whichever is left).
+  const out = [];
+  let w = 0, t = 0;
+  while (w < week.length || t < trends.length) {
+    if (w < week.length) out.push(week[w++]);
+    if (t < trends.length) out.push(trends[t++]);
+  }
+  // Streak records (13+): a personal best, record-equalling or
+  // never-before-seen run is pinned first - it's the headline of the week.
+  const streakRecs = streakRecordFacts(all);
+  const pinned = streakRecs.filter(f => f.cat === 'record' || f.cat === 'sr');
+  // Other 13+ streak facts are slotted in as the first trends.
+  const rest = streakRecs.filter(f => f.cat !== 'record' && f.cat !== 'sr');
+  const merged = [];
+  let w2 = 0, t2 = 0;
+  const trendQ = rest.concat(trends);
+  while (w2 < week.length || t2 < trendQ.length) {
+    if (w2 < week.length) merged.push(week[w2++]);
+    if (t2 < trendQ.length) merged.push(trendQ[t2++]);
+  }
+  return { facts: pinned.concat(merged), round, weekCount: week.length };
+}
+
+const FACTS_PER_PAGE = 2;
+
+function factsListHtml(facts, page) {
+  if (!facts.length) return '<p class="muted">Facts will appear once this season has a few results in.</p>';
+  const start = (page * FACTS_PER_PAGE) % facts.length;
+  const shown = [];
+  for (let i = 0; i < Math.min(FACTS_PER_PAGE, facts.length); i++) shown.push(facts[(start + i) % facts.length]);
+  return shown.map(f => `<div class="fact-card fact-${f.cat}"><div class="fact-tag">${escapeHtml(f.tag)}</div><p>${escapeHtml(f.text)}</p></div>`).join('');
+}
+
+function factsPanelHtml(all) {
+  const { facts, round, weekCount } = dashboardFacts(all);
+  state.factsPage = state.factsPage || 0;
+  setTimeout(() => {
+    const btn = document.getElementById('factsMore');
+    if (!btn) return;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      state.factsPage += 1;
+      const list = document.getElementById('factsList');
+      if (list) list.innerHTML = factsListHtml(facts, state.factsPage);
+    };
+  }, 0);
+  const sub = weekCount
+    ? `${weekCount} pick${weekCount === 1 ? '' : 's'} dropped for ${shortDateLabel(round.date)} so far, plus trends. Updates as picks are dropped or changed.`
+    : 'No picks dropped for this week yet. Facts on each pick appear here as soon as it\u2019s dropped. Trends in the meantime:';
+  const more = facts.length > FACTS_PER_PAGE ? `<button type="button" class="facts-more" id="factsMore">Show other insights</button>` : '';
+  return `<div class="panel facts-panel"><h2>Did you know?</h2>
+    <p class="muted small panel-sub">${sub}</p>
+    <div id="factsList">${factsListHtml(facts, state.factsPage)}</div>${more}</div>`;
+}
+
+function streaksAndFactsSection(all) {
+  return `<section class="two standings-row streaks-facts-row">${streaksPanelHtml(all)}${factsPanelHtml(all)}</section>`;
+}
