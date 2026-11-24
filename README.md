@@ -1,3 +1,31 @@
+## v8.2 changes
+
+**Dashboard - Current streaks and Did you know? (side by side above Insights this year; stacked on phones)**
+- **Current streaks:** every member's live winning or losing run in two rows of six tiles, with the date it started. Runs carry across seasons. Picks still waiting on a result (and N/A results) don't break a run, and a Stand Down ends a losing run, matching the fine rule.
+- **Individual record (IR):** when a member beats their own best winning run (from 5 straight), their tile turns gold with an IR badge and a gold "Individual record!" banner shows above the tiles.
+- **Syndicate record (SR):** when a member beats the longest winning run in IQ2GQ history, their tile turns purple with an SR badge and a crown banner shows above the tiles.
+- **Winning streak (longest) / Losing streak (longest):** the syndicate's record holders, shown under the tiles. Same figures as the Records page, so they update themselves when a record falls.
+- **Did you know?** replaces the facts that used to go to the WhatsApp group (like the "$1.09 picks" post). Two insights at a time, with "Show other insights" for the next pair. Worked out from the live Sheet every time the Hub opens - nothing to enter by hand. Only forward-looking:
+  - **This week's picks:** as soon as a pick is dropped for a round that hasn't started, it gets an insight - the history of that exact price, the member's record in that price range, and how the pick has gone for the syndicate. Weak history is flagged red as **Heads up** so the pick can still be changed. These drop off once the round date arrives.
+  - **Trends:** sports and bet types running hot or cold over the last 8 rounds, price ranges doing better or worse this season, MM conversion and MMs lost by a single pick, team MM droughts, member form against their career rate, and career-win milestones.
+  - **Streak records (13+ straight wins):** how often members have reached that number before and whether the next pick won or lost, and how far the member is from their individual record. An IR or SR is pinned to the top of the panel until the run ends.
+
+**Housekeeping**
+- Footer version updated to v8.2.
+
+## v8.1 changes
+
+**Stats - new Trends sub-tab**
+- **Season comparison:** this season against the last five, each cut at the same number of completed rounds.
+- **MMs vs money:** winning MMs and MM returns compared across the same seasons.
+- **Over / under:** each member's strike rate this season against their own career rate, as a line from most above to most below (small samples shaded).
+- **Minimum price what-if:** pick a minimum price ($1.20 to $2.00) to see the estimated effect on returns, for this season and the last five seasons.
+- MMs are scored against the team rosters each season actually had (2021/22 onwards). Add each new season's roster to TEAM_ROSTERS_BY_SEASON at the AGM.
+- Styled like the AGM report on a light purple background, built for phones.
+
+**Housekeeping**
+- Footer version updated to v8.1.
+
 ## v8.0 changes
 
 **New Results tab (between Drop a pick and Pick Assistant)**
